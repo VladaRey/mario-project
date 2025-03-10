@@ -24,7 +24,7 @@ const cardTypeOrder: CardType[] = [
   "No card",
 ];
 
-function FamePage({ children }: { children: ReactNode }) {
+function FamePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
