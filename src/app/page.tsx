@@ -1,14 +1,14 @@
 "use client";
 
 import { Inter } from "next/font/google";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { CardType, eventOperations, type Event } from "~/lib/db";
+import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { Calculator, Users } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });

@@ -1,14 +1,14 @@
 "use client";
 
 import { Inter } from "next/font/google";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { Switch } from "~/components/ui/switch";
 
 import { ReservationList } from "~/components/reservation-list";
 import { Toaster } from "~/components/ui/sonner";
 import { Card, CardContent } from "~/components/ui/card";
-import { CardType, eventOperations, type Event } from "~/lib/db";
+import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { Calculator, Users } from "lucide-react";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";

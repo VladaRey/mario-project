@@ -1,5 +1,5 @@
 import { Navbar } from "./navbar";
-import { ComponentType } from "react";
+import { type ComponentType } from "react";
 import { Toaster } from "./ui/sonner";
 import { withAuth } from "./with-auth";
 

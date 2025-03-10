@@ -1,4 +1,4 @@
-import { useEffect, useState, ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 
 const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;

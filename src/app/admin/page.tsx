@@ -11,7 +11,7 @@ import {
   type Event,
 } from "~/lib/db";
 
-export function AdminPage() {
+const AdminPage = () => {
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();

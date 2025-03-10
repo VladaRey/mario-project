@@ -5,7 +5,7 @@ import { PlayerSheet } from "~/components/add-player-sheet";
 import { PlayersList } from "~/components/player-list";
 import { Button } from "~/components/ui/button";
 import { withAdminLayout } from "~/components/with-admin-layout";
-import { CardType, playerOperations } from "~/lib/db";
+import { type CardType, playerOperations } from "~/lib/db";
 import { useState } from "react";
 
 function PlayersPage() {

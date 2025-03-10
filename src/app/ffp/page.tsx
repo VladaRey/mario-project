@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "~/components/ui/select";
-import { FC, PropsWithChildren, useEffect, useState } from "react";
+import { type FC, type PropsWithChildren, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Input } from "~/components/ui/ffp-input";
