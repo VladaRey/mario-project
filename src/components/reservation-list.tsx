@@ -43,7 +43,7 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
       console.log("dbReservations", dbReservations);
       setReservations(dbReservations);
       if (!activeTab && dbReservations.length > 0) {
-        setActiveTab(dbReservations[0].id);
+        setActiveTab(dbReservations[0]?.id || "");
       }
     } catch (error) {
       console.error("Failed to fetch reservations:", error);
