@@ -21,7 +21,7 @@ const cardTypeOrder: CardType[] = [
   "No card",
 ];
 
-export default function HomePage({ children }: { children: ReactNode }) {
+export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
