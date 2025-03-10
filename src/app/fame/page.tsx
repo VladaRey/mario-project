@@ -2,6 +2,7 @@
 
 import { Inter } from "next/font/google";
 import { ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
 import { Switch } from "~/components/ui/switch";
 
 import { ReservationList } from "~/components/reservation-list";
@@ -131,13 +132,10 @@ function FamePage({ children }: { children: ReactNode }) {
               asChild
               className="hidden w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:flex sm:w-fit"
             >
-              <a
-                target="_blank"
-                href={`https://rooman.github.io/ffp-2?mc=${mc}&ms=${ms}&msc=${msc}&nc=${nc}`}
-              >
+              <Link href={{ pathname: "/ffp", query: { mc, ms, msc, nc } }}>
                 <Calculator className="mr-2 h-4 w-4" />
                 Calculate
-              </a>
+              </Link>
             </Button>
           </div>
 
@@ -157,13 +155,10 @@ function FamePage({ children }: { children: ReactNode }) {
             asChild
             className="mt-4 w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:hidden"
           >
-            <a
-              target="_blank"
-              href={`https://rooman.github.io/ffp-2?mc=${mc}&ms=${ms}&msc=${msc}&nc=${nc}`}
-            >
+            <Link href={{ pathname: "/ffp", query: { mc, ms, msc, nc } }}>
               <Calculator className="mr-2 h-4 w-4" />
               Calculate
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

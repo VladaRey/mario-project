@@ -11,7 +11,7 @@ import {
   type Event,
 } from "~/lib/db";
 
-export function BlockPage() {
+export function AdminPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -65,4 +65,4 @@ export function BlockPage() {
   );
 }
 
-export default withAdminLayout(BlockPage);
+export default withAdminLayout(AdminPage);

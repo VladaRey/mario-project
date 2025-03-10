@@ -1,6 +1,8 @@
 import { useEffect, useState, ComponentType } from "react";
 import { useRouter } from "next/navigation";
 
+const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
+
 export function withFameAuth<P extends object>(
   WrappedComponent: ComponentType<P>,
 ) {

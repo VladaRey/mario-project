@@ -2,6 +2,7 @@
 
 import { Inter } from "next/font/google";
 import { ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
 
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
@@ -20,7 +21,7 @@ const cardTypeOrder: CardType[] = [
   "No card",
 ];
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function HomePage({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
@@ -114,13 +115,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               asChild
               className="hidden w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:flex sm:w-fit"
             >
-              <a
-                target="_blank"
-                href={`https://rooman.github.io/ffp-2?mc=${mc}&ms=${ms}&msc=${msc}&nc=${nc}`}
-              >
+              <Link href={{ pathname: "/ffp", query: { mc, ms, msc, nc } }}>
                 <Calculator className="mr-2 h-4 w-4" />
                 Calculate
-              </a>
+              </Link>
             </Button>
           </div>
 
@@ -140,13 +138,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             asChild
             className="mt-4 w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:hidden"
           >
-            <a
-              target="_blank"
-              href={`https://rooman.github.io/ffp-2?mc=${cardTypeCounts["Medicover"]}&ms=${cardTypeCounts["Multisport"]}&msc=${cardTypeCounts["Classic"]}&nc=${cardTypeCounts["No card"]}`}
-            >
+            <Link href={{ pathname: "/ffp", query: { mc, ms, msc, nc } }}>
               <Calculator className="mr-2 h-4 w-4" />
               Calculate
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

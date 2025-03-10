@@ -1,6 +1,8 @@
 import { useEffect, useState, ComponentType } from "react";
 import { useRouter } from "next/navigation";
 
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+
 export function withAuth<P extends object>(WrappedComponent: ComponentType<P>) {
   return function WithAuth(props: P) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
