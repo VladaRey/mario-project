@@ -10,7 +10,6 @@ import {
 } from "~/components/ui/select";
 import { type FC, type PropsWithChildren, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { Input } from "~/components/ui/ffp-input";
 import { ResultsPanel } from "~/components/ResultsPanel.component";
 import { calculateStatistics } from "~/services/calculation-service";
@@ -219,7 +218,7 @@ function FfpPage() {
           </Column>
         </Row>
 
-        <Image className={"mb-4 mt-2"} src="/divider.png" alt="divider" width={24} height={24} />
+        <img className={"mb-4 mt-2"} src="/divider.png" alt="divider" />
 
         <ResultsPanel statistics={statistics} />
       </div>
