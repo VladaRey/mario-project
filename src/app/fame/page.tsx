@@ -1,16 +1,17 @@
 "use client";
 
 import { Inter } from "next/font/google";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
+import { Switch } from "~/components/ui/switch";
 
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { Calculator, Users } from "lucide-react";
-
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { withFameAuth } from "~/components/with-fame-auth";
 const inter = Inter({ subsets: ["latin"] });
 
 
@@ -21,7 +22,7 @@ const cardTypeOrder: CardType[] = [
   "No card",
 ];
 
-export default function HomePage() {
+function FamePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
@@ -48,6 +49,21 @@ export default function HomePage() {
     loadInitialEvent();
   }, []);
 
+  const handlePaymentChange = async (playerId: string, paid: boolean) => {
+    if (!event) return;
+
+    try {
+      await eventOperations.updatePlayerPayment(event.id, playerId, paid);
+      setPaymentStatus((prev) => ({
+        ...prev,
+        [playerId]: paid,
+      }));
+    } catch (error) {
+      console.error("Failed to update payment status:", error);
+      // Optionally add error handling UI here
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -67,15 +83,15 @@ export default function HomePage() {
   function getCardTypeColor(cardType: CardType) {
     switch (cardType) {
       case "Medicover":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900";
       case "Multisport":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900";
       case "Classic":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900";
       case "No card":
-        return "bg-orange-100 text-slate-800";
+        return "bg-orange-100 text-slate-800 hover:bg-orange-200 hover:text-orange-900";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900";
     }
   }
 
@@ -102,14 +118,13 @@ export default function HomePage() {
   const msc = cardTypeCounts["Classic"] || 0;
   const nc = cardTypeCounts["No card"] || 0;
 
-
   return (
     <div className="container mx-auto space-y-8 p-4">
       <div className="space-y-6">
         <div className="rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg">
           <div className="mb-4 flex flex-col items-start justify-between sm:flex-row sm:items-center">
             <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">
-              {event.name}
+              {event.name} - Payment Status
             </h1>
             <Button
               asChild
@@ -161,14 +176,22 @@ export default function HomePage() {
                       <span className="font-medium text-[#2E2A5D]">
                         {player.name}
                       </span>
-                      <span
-                        className={`font-medium ${paymentStatus[player.id] ? "text-green-600" : "text-orange-400"}`}
-                      >
-                        {paymentStatus[player.id] ? "Paid" : "Unpaid"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-medium ${paymentStatus[player.id] ? "text-green-600" : "text-orange-400"}`}
+                        >
+                          {paymentStatus[player.id] ? "Paid" : "Unpaid"}
+                        </span>
+                        <Switch
+                          checked={paymentStatus[player.id]}
+                          onCheckedChange={(checked) =>
+                            handlePaymentChange(player.id, checked)
+                          }
+                        />
+                      </div>
                     </div>
                     <Badge
-                      className={`mt-1 ${getCardTypeColor(player.cardType)}`}
+                      className={`mt-1 ${getCardTypeColor(player.cardType)} `}
                     >
                       {player.cardType}
                     </Badge>
@@ -182,3 +205,6 @@ export default function HomePage() {
     </div>
   );
 }
+
+// Export with auth wrapper
+export default withFameAuth(FamePage);
