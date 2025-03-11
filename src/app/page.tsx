@@ -1,7 +1,7 @@
 "use client";
 
 import { Inter } from "next/font/google";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";

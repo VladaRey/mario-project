@@ -17,7 +17,6 @@ import {
 } from "./ui/alert-dialog";
 import { PlayerSheet } from "./add-player-sheet";
 import { playerOperations, type Player } from "../lib/db";
-import { Badge } from "./ui/badge";
 import { PlayerCard } from "./player-card";
 
 type PlayersListProps = {

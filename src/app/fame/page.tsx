@@ -5,8 +5,6 @@ import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { Switch } from "~/components/ui/switch";
 
-import { ReservationList } from "~/components/reservation-list";
-import { Toaster } from "~/components/ui/sonner";
 import { Card, CardContent } from "~/components/ui/card";
 import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { Calculator, Users } from "lucide-react";

@@ -24,7 +24,6 @@ import {
   type ReservationList,
   type Event,
 } from "../lib/db";
-import { Badge } from "./ui/badge";
 import { PlayerCard } from "./player-card";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";

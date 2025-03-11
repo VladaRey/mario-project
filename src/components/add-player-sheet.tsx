@@ -47,7 +47,7 @@ export function PlayerSheet({ player, onSave, trigger }: PlayerSheetProps) {
         <SheetHeader>
           <SheetTitle>Edit Player</SheetTitle>
           <SheetDescription>
-            Make changes to the player's information here.
+            {`Make changes to the player's information here.`}
           </SheetDescription>
         </SheetHeader>
         <form className="space-y-4 py-4">

@@ -4,8 +4,6 @@ import { ReservationList } from "~/components/reservation-list";
 import { AddReservationSheet } from "~/components/add-reservation-sheet";
 import { withAdminLayout } from "~/components/with-admin-layout";
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import type { SaveReservationData } from "~/components/reservation-list";
 import { reservationOperations } from "~/lib/db";
 

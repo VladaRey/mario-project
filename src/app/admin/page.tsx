@@ -4,12 +4,7 @@ import { useState, useEffect } from "react";
 import { EventForm } from "~/components/event-form";
 import { useRouter } from "next/navigation";
 import { withAdminLayout } from "~/components/with-admin-layout";
-import {
-  eventOperations,
-  playerOperations,
-  reservationOperations,
-  type Event,
-} from "~/lib/db";
+import { eventOperations, type Event } from "~/lib/db";
 
 const AdminPage = () => {
   const [event, setEvent] = useState<Event | null>(null);

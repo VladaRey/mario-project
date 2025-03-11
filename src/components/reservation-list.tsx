@@ -19,7 +19,6 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { reservationOperations, type ReservationList } from "../lib/db";
-import { Badge } from "./ui/badge";
 import { PlayerCard } from "./player-card"
 
 export interface SaveReservationData {
