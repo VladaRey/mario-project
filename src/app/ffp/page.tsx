@@ -220,7 +220,7 @@ function FfpPage() {
 
         <img className={"mb-4 mt-2"} src="/divider.png" alt="divider" />
 
-        <ResultsPanel statistics={statistics} />
+        <ResultsPanel statistics={statistics} theme="dark"/>
       </div>
     </div>
   );
