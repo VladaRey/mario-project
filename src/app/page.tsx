@@ -10,6 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { Calculator, Users } from "lucide-react";
+import { FfpSheet } from "~/components/ffp-sheet.component";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,9 @@ export default function HomePage() {
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
     {},
   );
+  const [playerPaymentAmount, setPlayerPaymentAmount] = useState<Record<string, number>>(
+    {},
+  );
 
   useEffect(() => {
     const loadInitialEvent = async () => {
@@ -38,6 +42,9 @@ export default function HomePage() {
           // Load payment status from database
           const payments = await eventOperations.getEventPayments(lastEvent.id);
           setPaymentStatus(payments);
+
+          const playerPayments = await eventOperations.getPlayerPaymentAmount(lastEvent.id);
+          setPlayerPaymentAmount(playerPayments);
         }
       } catch (error) {
         console.error("Failed to load event:", error);
@@ -47,6 +54,15 @@ export default function HomePage() {
     };
     loadInitialEvent();
   }, []);
+
+  const refreshPaymentAmounts = async () => {
+    if (event) {
+      const playerPayments = await eventOperations.getPlayerPaymentAmount(
+        event.id,
+      );
+      setPlayerPaymentAmount(playerPayments);
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -111,15 +127,9 @@ export default function HomePage() {
             <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">
               {event.name}
             </h1>
-            <Button
-              asChild
-              className="hidden w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:flex sm:w-fit"
-            >
-              <Link href={{ pathname: "/ffp", query: { mc, ms, msc, nc } }}>
-                <Calculator className="mr-2 h-4 w-4" />
-                Calculate
-              </Link>
-            </Button>
+            <div className="hidden sm:flex">
+            <FfpSheet mc={mc} ms={ms} msc={msc} nc={nc} onRefresh={refreshPaymentAmounts} eventId={event.id}/>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -133,16 +143,10 @@ export default function HomePage() {
               </Badge>
             ))}
           </div>
-
-          <Button
-            asChild
-            className="mt-4 w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:hidden"
-          >
-            <Link href={{ pathname: "/ffp", query: { mc, ms, msc, nc } }}>
-              <Calculator className="mr-2 h-4 w-4" />
-              Calculate
-            </Link>
-          </Button>
+          
+          <div className="mt-4 sm:hidden">
+          <FfpSheet mc={mc} ms={ms} msc={msc} nc={nc} onRefresh={refreshPaymentAmounts} eventId={event.id}/>
+          </div>
         </div>
       </div>
       <div className="space-y-2">
@@ -167,11 +171,16 @@ export default function HomePage() {
                         {paymentStatus[player.id] ? "Paid" : "Unpaid"}
                       </span>
                     </div>
+                    <div className="flex items-center justify-between">
                     <Badge
                       className={`mt-1 ${getCardTypeColor(player.cardType)}`}
                     >
                       {player.cardType}
                     </Badge>
+                    <span className="text-sm text-gray-600 font-bold">
+                      {playerPaymentAmount[player.id] === 0 ? "-" : playerPaymentAmount[player.id]} PLN
+                    </span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
