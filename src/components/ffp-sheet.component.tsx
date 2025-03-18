@@ -79,7 +79,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
           Calculate
         </Button>
       </SheetTrigger>
-      <SheetContent className="overflow-y-auto">
+      <SheetContent className="overflow-y-auto w-full">
         <SheetHeader className="pb-8">
           <SheetTitle className="hidden">Calculate payment amounts</SheetTitle>
         </SheetHeader>
