@@ -201,7 +201,7 @@ function FamePage() {
                       {player.cardType}
                     </Badge>
                     <span className="text-sm text-gray-600 font-bold">
-                      {playerPaymentAmount[player.id] === 0 ? "-" : playerPaymentAmount[player.id]} PLN
+                      {playerPaymentAmount[player.id]} PLN
                     </span>
                     </div>
                   </div>
