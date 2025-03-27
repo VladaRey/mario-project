@@ -29,6 +29,8 @@ interface FfpSheetProps {
 }
 
 export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps) {
+  const [open, setOpen] = useState(false);
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [calculatedStats, setCalculatedStats] = useState<Statistics | null>(
     null,
@@ -73,6 +75,9 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
 
       onRefresh();
       toast.success("Amounts updated successfully!");
+      setTimeout(() => { 
+        setOpen(false);
+      }, 2000);
     } catch (error) {
       console.error("Error updating amounts:", error);
       toast.error("Failed to update amounts.");
@@ -80,7 +85,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button className="w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:w-fit">
           <Calculator className="mr-2 h-4 w-4" />

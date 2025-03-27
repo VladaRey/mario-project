@@ -402,7 +402,7 @@ export const eventOperations = {
     if (error) throw error;
 
     return data.reduce((acc: Record<string, number>, payment) => {
-      acc[payment.player_id] = payment.amount ?? 0;  
+      acc[payment.player_id] = payment.amount != undefined ? payment.amount : null;  
       return acc;
     }, {});
   } catch (error) {
