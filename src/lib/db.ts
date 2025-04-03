@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  throw new Error("Missing Supabase environment variables");
 }
 
 const options = {
@@ -391,4 +391,55 @@ export const eventOperations = {
 
     if (error) throw error;
   },
+
+  async getPlayerPaymentAmount(eventId: string): Promise<Record<string, number>> {
+  try {
+    const { data, error } = await supabase
+      .from("player_event_payments")
+      .select("player_id, amount")
+      .eq("event_id", eventId);  
+
+    if (error) throw error;
+
+    return data.reduce((acc: Record<string, number>, payment) => {
+      acc[payment.player_id] = payment.amount != undefined ? payment.amount : null;  
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error("Error fetching player payment amounts:", error);
+    return {}; 
+  }
+},
+
+async updatePlayerPaymentAmount(eventId: string, cardType: string, amount: number) {
+  try {
+    const { data: players, error: selectError } = await supabase
+      .from("players")
+      .select("id, cardType")
+      .eq("cardType", cardType); 
+
+    if (selectError) {
+      throw new Error(`Error fetching players: ${selectError.message}`);
+    }
+
+    for (const player of players) {
+      const { error: updateError } = await supabase
+        .from("player_event_payments")
+        .update({ amount })
+        .eq("event_id", eventId)
+        .eq("player_id", player.id); 
+
+      if (updateError) {
+        throw new Error(
+          `Error updating player ${player.id}: ${updateError.message}`,
+        );
+      }
+    }
+
+    console.log("Player amounts updated successfully!");
+  } catch (error) {
+    console.error("Error updating player payment amount:", error);
+  }
+}
+
 }; 
