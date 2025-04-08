@@ -30,13 +30,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 type EventFormProps = {
   initialEvent?: Event;
-  onSave: (event: { name: string; players: string[] }) => void;
+  onSave: (event: { id: string; name: string; players: string[] }) => void;
+  mode: "create" | "edit";
 };
 
-export function EventForm({ initialEvent, onSave }: EventFormProps) {
+export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const [eventName, setEventName] = useState(initialEvent?.name || "");
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>(
-    initialEvent?.players.map((p) => p.id) || [],
+    initialEvent?.players?.map((p) => p.id) || [],
   );
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
   const [reservations, setReservations] = useState<ReservationList[]>([]);
@@ -80,8 +81,12 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave({ name: eventName, players: selectedPlayers });
-    toast.success("Event saved successfully");
+    await onSave({
+      id: initialEvent?.id || "",
+      name: eventName,
+      players: selectedPlayers,
+    });
+    toast.success(mode === "create" ? "Event created successfully" : "Event updated successfully");
   };
 
   const handleRemoveAllPlayers = () => {
@@ -170,7 +175,9 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label>Current Players</Label>
+        {selectedPlayers.length > 0 ? (
+          <Label>Current Players</Label>
+        ) : null}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {selectedPlayers.map((playerId) => {
             const player = availablePlayers.find((p) => p.id === playerId);
@@ -196,7 +203,7 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
       <div className="flex justify-between">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" disabled={selectedPlayers.length === 0}>
               Remove All Players
             </Button>
           </AlertDialogTrigger>
@@ -216,7 +223,9 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Button type="submit">Save Event</Button>
+        <Button type="submit">
+          {mode === "create" ? "Create Event" : "Save Event"}
+        </Button>
       </div>
     </form>
   );

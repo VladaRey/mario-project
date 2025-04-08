@@ -25,7 +25,7 @@ export function Navbar() {
             <Link href="/admin/reservations">Reservations</Link>
           </Button>
           <Button asChild variant="ghost">
-            <Link href="/admin/">Event</Link>
+            <Link href="/admin/">Events</Link>
           </Button>
         </div>
       </div>
@@ -38,7 +38,7 @@ export function Navbar() {
             <Link href="/admin/reservations">Reservations</Link>
           </Button>
           <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
-            <Link href="/admin/">Event</Link>
+            <Link href="/admin/">Events</Link>
           </Button>
         </div>
       )}

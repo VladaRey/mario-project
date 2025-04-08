@@ -244,6 +244,19 @@ export const eventOperations = {
         .insert(playerEvents);
 
       if (playerError) throw playerError;
+
+      // Initialize payment records for all new players as unpaid
+      const playerPayments = playerIds.map((playerId) => ({
+        event_id: event.id,
+        player_id: playerId,
+        paid: false,
+      }));
+
+      const { error: insertPaymentsError } = await supabase
+        .from("player_event_payments")
+        .insert(playerPayments);
+
+      if (insertPaymentsError) throw insertPaymentsError;
     }
 
     // Fetch complete event with players
@@ -270,6 +283,59 @@ export const eventOperations = {
       created_at: completeEvent.created_at,
       players: completeEvent.players.map((pe: any) => pe.players),
     };
+  },
+
+  async getAllEvents(): Promise<Event[]> {
+    const { data, error } = await supabase
+      .from("events")
+      .select(
+        `
+        id,
+        name,
+        created_at,
+        players:player_events(
+          players(id, name, created_at, cardType)
+        )
+      `,
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return data.map((event) => ({
+      id: event.id,
+      name: event.name,
+      created_at: event.created_at,
+      players: event.players.map((pe: any) => pe.players),
+    }));
+  },
+
+  async getEvent(id: string): Promise<Event | null> {
+    const { data, error } = await supabase
+      .from("events")
+      .select(
+        `
+        id,
+        name,
+        created_at,
+        players:player_events(
+          players(id, name, created_at, cardType)
+        )
+      `,
+      )
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    return data
+      ? {
+          id: data.id,
+          name: data.name,
+          created_at: data.created_at,
+          players: data.players.map((pe: any) => pe.players),
+        }
+      : null;
   },
 
   async getLastEvent(): Promise<Event | null> {
