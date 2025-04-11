@@ -44,6 +44,7 @@ export type ReservationList = {
 export type Event = {
   id: string;
   name: string;
+  date: string;
   created_at?: string;
   players: Player[];
 };
@@ -222,11 +223,15 @@ export const reservationOperations = {
 
 // Event operations
 export const eventOperations = {
-  async addEvent(name: string, playerIds: string[]): Promise<Event> {
+  async addEvent(
+    name: string,
+    date: string,
+    playerIds: string[],
+  ): Promise<Event> {
     // Create event
     const { data: event, error: eventError } = await supabase
       .from("events")
-      .insert([{ name }])
+      .insert([{ name, date }])
       .select()
       .single();
 
@@ -266,6 +271,7 @@ export const eventOperations = {
         `
         id,
         name,
+        date,
         created_at,
         players:player_events(
           players(id, name, created_at, cardType)
@@ -280,36 +286,43 @@ export const eventOperations = {
     return {
       id: completeEvent.id,
       name: completeEvent.name,
+      date: completeEvent.date,
       created_at: completeEvent.created_at,
       players: completeEvent.players.map((pe: any) => pe.players),
     };
   },
 
-  async getAllEvents(): Promise<Event[]> {
-    const { data, error } = await supabase
-      .from("events")
-      .select(
-        `
-        id,
-        name,
-        created_at,
-        players:player_events(
-          players(id, name, created_at, cardType)
-        )
-      `,
-      )
-      .order("created_at", { ascending: false });
+  async getAllEvents(): Promise<Record<string, Event[]>> {
+  const { data, error } = await supabase
+    .from("events")
+    .select(
+      `id, name, created_at, date, players:player_events(players(id, name, created_at, cardType))`,
+    )
+    .order("created_at", { ascending: false });
 
-    if (error) throw error;
+  if (error) throw error;
 
-    return data.map((event) => ({
-      id: event.id,
-      name: event.name,
-      created_at: event.created_at,
-      players: event.players.map((pe: any) => pe.players),
-    }));
-  },
+  const groupedEvents = data.reduce(
+    (acc, event) => {
+      const eventDate = event.date; 
+      if (!acc[eventDate]) {
+        acc[eventDate] = [];
+      }
+      acc[eventDate].push({
+        id: event.id,
+        name: event.name,
+        date: event.date,
+        created_at: event.created_at,
+        players: event.players.flatMap((pe: any) => pe.players),
+      });
+      return acc;
+    },
+    {} as Record<string, Event[]>,
+  );
 
+  return groupedEvents;
+},
+  
   async getEvent(id: string): Promise<Event | null> {
     const { data, error } = await supabase
       .from("events")
@@ -317,6 +330,7 @@ export const eventOperations = {
         `
         id,
         name,
+        date,
         created_at,
         players:player_events(
           players(id, name, created_at, cardType)
@@ -332,6 +346,7 @@ export const eventOperations = {
       ? {
           id: data.id,
           name: data.name,
+          date: data.date,
           created_at: data.created_at,
           players: data.players.map((pe: any) => pe.players),
         }
@@ -345,6 +360,7 @@ export const eventOperations = {
         `
         id,
         name,
+        date,
         created_at,
         players:player_events(
           players(id, name, created_at, cardType)
@@ -361,6 +377,7 @@ export const eventOperations = {
       ? {
           id: data.id,
           name: data.name,
+          date: data.date,
           created_at: data.created_at,
           players: data.players.map((pe: any) => pe.players),
         }
@@ -370,12 +387,13 @@ export const eventOperations = {
   async updateEvent(
     eventId: string,
     name: string,
+    date: string,
     playerIds: string[],
   ): Promise<void> {
     // Update event name
     const { error: updateError } = await supabase
       .from("events")
-      .update({ name })
+      .update({ name, date })
       .eq("id", eventId);
 
     if (updateError) throw updateError;
@@ -477,35 +495,40 @@ export const eventOperations = {
   }
 },
 
-async updatePlayerPaymentAmount(eventId: string, cardType: string, amount: number) {
-  try {
-    const { data: players, error: selectError } = await supabase
-      .from("players")
-      .select("id, cardType")
-      .eq("cardType", cardType); 
+  async updatePlayerPaymentAmount(eventId: string, cardType: string, amount: number) {
+    try {
+      const { data: players, error: selectError } = await supabase
+        .from("players")
+        .select("id")
+        .eq("cardType", cardType);
 
-    if (selectError) {
-      throw new Error(`Error fetching players: ${selectError.message}`);
-    }
+      if (selectError) {
+        throw new Error(`Error fetching players: ${selectError.message}`);
+      }
 
-    for (const player of players) {
+      if (!players || players.length === 0) {
+        console.log(`No players found with card type: ${cardType}`);
+        return;
+      }
+
+      const playerIds = players.map((player) => player.id);
+
       const { error: updateError } = await supabase
         .from("player_event_payments")
         .update({ amount })
         .eq("event_id", eventId)
-        .eq("player_id", player.id); 
+        .in("player_id", playerIds);
 
       if (updateError) {
         throw new Error(
-          `Error updating player ${player.id}: ${updateError.message}`,
+          `Error updating player amounts: ${updateError.message}`,
         );
       }
+
+      console.log("Player amounts updated successfully!");
+    } catch (error) {
+      console.error("Error updating player payment amount:", error);
+      throw error;
     }
-
-    console.log("Player amounts updated successfully!");
-  } catch (error) {
-    console.error("Error updating player payment amount:", error);
-  }
-}
-
+  },
 }; 

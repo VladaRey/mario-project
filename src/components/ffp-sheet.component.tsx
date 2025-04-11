@@ -1,4 +1,4 @@
-import { Calculator } from "lucide-react";
+import { Calculator, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { Toaster } from "./ui/sonner";
@@ -30,6 +30,7 @@ interface FfpSheetProps {
 
 export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [calculatedStats, setCalculatedStats] = useState<Statistics | null>(
@@ -55,6 +56,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
       return;
     }
 
+    setLoading(true);
     try {
       const paymentUpdates = {
         Medicover: calculatedStats.medicover,
@@ -74,12 +76,14 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
       );
 
       onRefresh();
+      setLoading(false);
       toast.success("Amounts updated successfully!");
       setTimeout(() => { 
         setOpen(false);
       }, 2000);
     } catch (error) {
       console.error("Error updating amounts:", error);
+      setLoading(false);
       toast.error("Failed to update amounts.");
     }
   };
@@ -100,7 +104,13 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
         <SheetDescription className="hidden">Apply payment amounts</SheetDescription>
         <FfpForm mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} theme="light"/>
         <SheetFooter className="pt-4">
-         {isAuthenticated && <Button className="w-full" onClick={handleApply}>Apply</Button>}
+         {isAuthenticated && 
+         <Button className="w-full" onClick={handleApply} disabled={loading}> 
+          {loading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+            ) : null} 
+          Apply
+          </Button>}
         </SheetFooter>
       </SheetContent>
     </Sheet>

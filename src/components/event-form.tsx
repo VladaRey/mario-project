@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent } from "./ui/card";
 import { MultiSelect } from "./multi-select";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,17 +25,16 @@ import {
   type Event,
 } from "../lib/db";
 import { PlayerCard } from "./player-card";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { format } from "date-fns";
+import { EventDatePicker } from "./event-date-picker.component";
 
 type EventFormProps = {
   initialEvent?: Event;
-  onSave: (event: { id: string; name: string; players: string[] }) => void;
+  onSave: (event: { id: string; name: string; date: string; players: string[] }) => void;
   mode: "create" | "edit";
 };
 
 export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
-  const [eventName, setEventName] = useState(initialEvent?.name || "");
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>(
     initialEvent?.players?.map((p) => p.id) || [],
   );
@@ -43,18 +42,26 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const [reservations, setReservations] = useState<ReservationList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [loading, setLoading] = useState(false);
+
+  const [date, setDate] = useState<Date | undefined>(initialEvent?.date ? new Date(initialEvent.date) : new Date());
+
+  const formatDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    };
+    return date.toLocaleDateString("en-GB", options);
+  };
+
+  const [eventName, setEventName] = useState(initialEvent?.name || formatDate(new Date()));
+
   const handleSetDate = (date: Date | undefined) => {
     setDate(date);
-    if (date) {
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: "long",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      };
-      const formattedDate = date.toLocaleDateString("en-GB", options);
-      setEventName(formattedDate);
+    if(!initialEvent?.name && date) {
+      setEventName(formatDate(date));
     }
   };
 
@@ -81,12 +88,15 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     await onSave({
       id: initialEvent?.id || "",
       name: eventName,
+      date: format(date!, "yyyy-MM-dd"),
       players: selectedPlayers,
     });
     toast.success(mode === "create" ? "Event created successfully" : "Event updated successfully");
+    setLoading(false);
   };
 
   const handleRemoveAllPlayers = () => {
@@ -115,24 +125,9 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
+        <EventDatePicker date={date!} setDate={handleSetDate} />
+        <div className="space-y-2">
         <Label htmlFor="eventName">Event Name</Label>
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={"outline"}>
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleSetDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
           <Input
             id="eventName"
             value={eventName}
@@ -140,7 +135,6 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
             placeholder="Enter event name"
             required
           />
-        </div>
       </div>
       <div className="space-y-2">
         <Label>Add Players from Reservations</Label>
@@ -223,7 +217,10 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Button type="submit">
+        <Button type="submit" disabled={loading}>
+          {loading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+          ) : null}
           {mode === "create" ? "Create Event" : "Save Event"}
         </Button>
       </div>

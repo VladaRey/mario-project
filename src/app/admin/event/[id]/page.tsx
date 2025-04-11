@@ -40,12 +40,14 @@ const EditEventPage = () => {
   const handleSaveEvent = async (updatedEvent: {
     id: string;
     name: string;
+    date: string;
     players: string[];
   }) => {
     try {
       await eventOperations.updateEvent(
         updatedEvent.id,
         updatedEvent.name,
+        updatedEvent.date,
         updatedEvent.players,
       );
     } catch (error) {
@@ -54,7 +56,7 @@ const EditEventPage = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold">
         Edit Event 
       </h1>
