@@ -17,11 +17,12 @@ const cardTypeOrder: CardType[] = [
 
 interface CurrentEventProps {
     id: string;
-    type: "main" | "fame";
 }
 
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
 
-export function CurrentEvent({type, id}: CurrentEventProps) {
+export function CurrentEvent({id}: CurrentEventProps) {
   function getInitials(name: string) {
     return name
       .split(" ")
@@ -45,6 +46,7 @@ export function CurrentEvent({type, id}: CurrentEventProps) {
     }
   } 
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
@@ -79,6 +81,13 @@ export function CurrentEvent({type, id}: CurrentEventProps) {
       }
     };
     loadInitialEvent();
+
+    const adminPassword = localStorage.getItem("admin-password");
+    const famePassword = localStorage.getItem("fame-password");
+
+    if (adminPassword === ADMIN_PASSWORD || famePassword === FAME_PASSWORD) {
+      setIsAuthenticated(true);
+    }
   }, []);
 
   const refreshPaymentAmounts = async () => {
@@ -142,7 +151,7 @@ export function CurrentEvent({type, id}: CurrentEventProps) {
       <div className="rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg">
         <div className="mb-4 flex flex-col items-start justify-between sm:flex-row sm:items-center">
           <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">
-            {type === "fame" ? `${event.name} - Payment Status` : event.name}
+            {event.name}
           </h1>
           <div className="hidden sm:flex">
             <FfpSheet
@@ -201,13 +210,14 @@ export function CurrentEvent({type, id}: CurrentEventProps) {
                         >
                           {paymentStatus[player.id] ? "Paid" : "Unpaid"}
                         </span>
-                        {type === "fame" && (
-                        <Switch
-                          checked={paymentStatus[player.id]}
-                          onCheckedChange={(checked) =>
-                            handlePaymentChange(player.id, checked)
-                          }
-                        />
+                        {isAuthenticated && (
+                          <Switch
+                            className="data-[state=checked]:bg-[#2E2A5D]"
+                            checked={paymentStatus[player.id]}
+                            onCheckedChange={(checked) =>
+                              handlePaymentChange(player.id, checked)
+                            }
+                          />
                         )}
                       </div>
                     </div>

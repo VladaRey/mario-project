@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import {
   playerOperations,
   reservationOperations,
+  eventOperations,
   type Player,
   type ReservationList,
   type Event,
@@ -27,6 +28,7 @@ import {
 import { PlayerCard } from "./player-card";
 import { format } from "date-fns";
 import { EventDatePicker } from "./event-date-picker.component";
+import { useRouter } from "next/navigation";
 
 type EventFormProps = {
   initialEvent?: Event;
@@ -35,6 +37,8 @@ type EventFormProps = {
 };
 
 export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
+  const router = useRouter();
+
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>(
     initialEvent?.players?.map((p) => p.id) || [],
   );
@@ -43,6 +47,8 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const [loading, setLoading] = useState(false);
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [date, setDate] = useState<Date | undefined>(initialEvent?.date ? new Date(initialEvent.date) : new Date());
 
@@ -97,6 +103,9 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     });
     toast.success(mode === "create" ? "Event created successfully" : "Event updated successfully");
     setLoading(false);
+    setTimeout(() => {
+      router.push("/admin");
+    }, 1000);
   };
 
   const handleRemoveAllPlayers = () => {
@@ -107,6 +116,16 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     setSelectedPlayers((prevPlayers) =>
       prevPlayers.filter((id) => id !== playerId),
     );
+  };
+
+  const handleDeleteEvent = async () => {
+    setIsDeleting(true);
+    await eventOperations.deleteEvent(initialEvent?.id || "");
+    toast.success("Event deleted successfully");
+    setIsDeleting(false);
+    setTimeout(() => {
+      router.push("/admin");
+    }, 1000);
   };
 
   const reservationOptions = reservations.map((reservation) => ({
@@ -217,12 +236,22 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        <div className="flex gap-4">
+        {mode === "edit" && (
+          <Button type="button" variant="outline" onClick={handleDeleteEvent} disabled={isDeleting}>
+            {isDeleting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+            ) : null}
+            Delete Event
+          </Button>
+        )}
         <Button type="submit" disabled={loading}>
           {loading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
           ) : null}
           {mode === "create" ? "Create Event" : "Save Event"}
-        </Button>
+          </Button>
+        </div>
       </div>
     </form>
   );

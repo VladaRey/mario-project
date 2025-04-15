@@ -12,17 +12,21 @@ export function withFameAuth<P extends object>(
 
     useEffect(() => {
       const password = localStorage.getItem("fame-password");
+
+      if (password === FAME_PASSWORD) {
+        router.push("/");
+        return;
+      }
+
       if (password !== FAME_PASSWORD) {
         const userPassword = prompt("Please enter payment page password:");
         if (userPassword === FAME_PASSWORD) {
           localStorage.setItem("fame-password", userPassword);
-          setIsAuthenticated(true);
+          router.push("/");
         } else {
           router.push("/");
         }
-      } else {
-        setIsAuthenticated(true);
-      }
+      } 
     }, [router]);
 
     if (!isAuthenticated) {

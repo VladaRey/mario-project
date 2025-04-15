@@ -14,7 +14,7 @@ export default function EventPage() {
   return (
     <div className="container mx-auto space-y-4 p-4">
       <EventBreadcrumbs />
-      <CurrentEvent type="main" id={id}/>     
+      <CurrentEvent id={id}/>     
     </div>
   );
 }

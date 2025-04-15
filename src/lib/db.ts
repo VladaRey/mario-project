@@ -282,6 +282,15 @@ export const eventOperations = {
     };
   },
 
+  async deleteEvent(id: string): Promise<void> {
+    const { error } = await supabase
+    .from("events")
+    .delete()
+    .eq("id", id);
+    
+    if (error) throw error;
+  },
+
   async getAllEvents(): Promise<Record<string, Event[]>> {
   const { data, error } = await supabase
     .from("events")

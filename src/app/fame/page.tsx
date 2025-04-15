@@ -1,5 +1,5 @@
 "use client";
-import { EventsList } from "~/components/events-list";
+
 import { withFameAuth } from "~/components/with-fame-auth";
 
 function FamePage() {
@@ -10,7 +10,6 @@ function FamePage() {
           Events - Players Payment Status
         </h1>
       </div>
-      <EventsList basePath="/fame/event" withBackground/>
     </div>
   );
 }
