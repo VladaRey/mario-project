@@ -244,6 +244,7 @@ export const eventOperations = {
       const playerEvents = playerIds.map((playerId) => ({
         event_id: event.id,
         player_id: playerId,
+        paid: false,
       }));
 
       const { error: playerError } = await supabase
@@ -251,19 +252,6 @@ export const eventOperations = {
         .insert(playerEvents);
 
       if (playerError) throw playerError;
-
-      // Initialize payment records for all new players as unpaid
-      const playerPayments = playerIds.map((playerId) => ({
-        event_id: event.id,
-        player_id: playerId,
-        paid: false,
-      }));
-
-      const { error: insertPaymentsError } = await supabase
-        .from("player_events")
-        .insert(playerPayments);
-
-      if (insertPaymentsError) throw insertPaymentsError;
     }
 
     // Fetch complete event with players
@@ -416,19 +404,12 @@ export const eventOperations = {
 
     if (deleteError) throw deleteError;
 
-    // Remove existing payment records
-    const { error: deletePaymentsError } = await supabase
-      .from("player_event_payments")
-      .delete()
-      .eq("event_id", eventId);
-
-    if (deletePaymentsError) throw deletePaymentsError;
-
     // Add new players
     if (playerIds.length > 0) {
       const playerEvents = playerIds.map((playerId) => ({
         event_id: eventId,
         player_id: playerId,
+        paid: false,
       }));
 
       const { error: insertError } = await supabase
@@ -436,19 +417,6 @@ export const eventOperations = {
         .insert(playerEvents);
 
       if (insertError) throw insertError;
-
-      // Initialize payment records for all new players as unpaid
-      const playerPayments = playerIds.map((playerId) => ({
-        event_id: eventId,
-        player_id: playerId,
-        paid: false,
-      }));
-
-      const { error: insertPaymentsError } = await supabase
-        .from("player_events")
-        .insert(playerPayments);
-
-      if (insertPaymentsError) throw insertPaymentsError;
     }
   },
 
