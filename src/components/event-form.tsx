@@ -213,7 +213,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
           })}
         </div>
       </div>
-      <div className="flex justify-between">
+      <div className="flex flex-col md:justify-between md:flex-row gap-6">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button type="button" variant="outline" disabled={selectedPlayers.length === 0}>
@@ -236,7 +236,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <div className="flex gap-4">
+        <div className="flex justify-between gap-4">
         {mode === "edit" && (
           <Button type="button" variant="outline" onClick={handleDeleteEvent} disabled={isDeleting}>
             {isDeleting ? (
