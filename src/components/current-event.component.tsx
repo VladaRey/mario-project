@@ -62,14 +62,13 @@ export function CurrentEvent({type, id}: CurrentEventProps) {
         setEvent(currentEvent);
 
         if (currentEvent) {
-          // Load payment status from database
-          const payments = await eventOperations.getEventPayments(
-            currentEvent.id,
+          const payments = Object.fromEntries(
+            currentEvent.players.map((player) => [player.id, player.paid]),
           );
           setPaymentStatus(payments);
 
-          const playerPayments = await eventOperations.getPlayerPaymentAmount(
-            currentEvent.id,
+          const playerPayments = Object.fromEntries(
+            currentEvent.players.map((player) => [player.id, player.amount]),
           );
           setPlayerPaymentAmount(playerPayments);
         }

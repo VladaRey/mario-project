@@ -32,6 +32,8 @@ export type Player = {
   name: string;
   cardType: CardType;
   created_at?: string;
+  paid: boolean;
+  amount: number;
 };
 
 export type ReservationList = {
@@ -258,7 +260,7 @@ export const eventOperations = {
       }));
 
       const { error: insertPaymentsError } = await supabase
-        .from("player_event_payments")
+        .from("player_events")
         .insert(playerPayments);
 
       if (insertPaymentsError) throw insertPaymentsError;
@@ -296,7 +298,7 @@ export const eventOperations = {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `id, name, created_at, date, players:player_events(players(id, name, created_at, cardType))`,
+      `id, name, created_at, date, players:player_events(player:players(id, name, created_at, cardType))`,
     )
     .order("created_at", { ascending: false });
 
@@ -313,7 +315,7 @@ export const eventOperations = {
         name: event.name,
         date: event.date,
         created_at: event.created_at,
-        players: event.players.flatMap((pe: any) => pe.players),
+        players: event.players.flatMap((pe: any) => pe.player),
       });
       return acc;
     },
@@ -333,7 +335,11 @@ export const eventOperations = {
         date,
         created_at,
         players:player_events(
-          players(id, name, created_at, cardType)
+          paid,
+          amount,
+          player:players(
+            id, name, created_at, cardType
+          )
         )
       `,
       )
@@ -348,7 +354,11 @@ export const eventOperations = {
           name: data.name,
           date: data.date,
           created_at: data.created_at,
-          players: data.players.map((pe: any) => pe.players),
+          players: data.players.map((pe: any) => ({
+            ...pe.player,
+            paid: pe.paid,
+            amount: pe.amount,
+          })),
         }
       : null;
   },
@@ -435,7 +445,7 @@ export const eventOperations = {
       }));
 
       const { error: insertPaymentsError } = await supabase
-        .from("player_event_payments")
+        .from("player_events")
         .insert(playerPayments);
 
       if (insertPaymentsError) throw insertPaymentsError;
@@ -444,7 +454,7 @@ export const eventOperations = {
 
   async getEventPayments(eventId: string): Promise<Record<string, boolean>> {
     const { data, error } = await supabase
-      .from("player_event_payments")
+      .from("player_events")
       .select("player_id, paid")
       .eq("event_id", eventId);
 
@@ -461,7 +471,7 @@ export const eventOperations = {
     playerId: string,
     paid: boolean,
   ): Promise<void> {
-    const { error } = await supabase.from("player_event_payments").upsert(
+    const { error } = await supabase.from("player_events").upsert(
       {
         event_id: eventId,
         player_id: playerId,
@@ -479,7 +489,7 @@ export const eventOperations = {
   async getPlayerPaymentAmount(eventId: string): Promise<Record<string, number>> {
   try {
     const { data, error } = await supabase
-      .from("player_event_payments")
+      .from("player_events")
       .select("player_id, amount")
       .eq("event_id", eventId);  
 
@@ -514,7 +524,7 @@ export const eventOperations = {
       const playerIds = players.map((player) => player.id);
 
       const { error: updateError } = await supabase
-        .from("player_event_payments")
+        .from("player_events")
         .update({ amount })
         .eq("event_id", eventId)
         .in("player_id", playerIds);
