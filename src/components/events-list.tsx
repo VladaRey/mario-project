@@ -38,7 +38,7 @@ export function EventsList({ basePath, withBackground }: EventsListProps) {
     "bg-orange-100 text-slate-800",
   ];
 
-  const formatDate = (date: string) => format(new Date(date), "dd/MM/yyyy");
+  const formatDate = (date: string) => format(new Date(date), "dd MMMM, yyyy");
 
   return (
     <div >

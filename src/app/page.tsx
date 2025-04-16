@@ -7,16 +7,26 @@ import { Button } from "~/components/ui/button";
 import { UserRound } from "lucide-react";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
 
 export default function HomePage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-   useEffect(() => {
-     const adminPassword = localStorage.getItem("admin-password");
-     if (adminPassword === ADMIN_PASSWORD) {
-       setIsAuthenticated(true);
-     }
-   }, []);
+  const [buttonLabel, setButtonLabel] = useState("Login");
+  const [buttonHref, setButtonHref] = useState("/login");
+
+  useEffect(() => {
+    const adminPassword = localStorage.getItem("admin-password");
+    const famePassword = localStorage.getItem("fame-password");
+
+    if (adminPassword === ADMIN_PASSWORD) {
+      setButtonLabel("Admin");
+      setButtonHref("/admin");
+    } else if (famePassword === FAME_PASSWORD) {
+      setButtonLabel("Fame");
+    } else {
+      setButtonLabel("Login");
+      setButtonHref("/login");
+    }
+  }, []);
 
   return (
     <div className="container mx-auto space-y-8 p-4">
@@ -24,10 +34,10 @@ export default function HomePage() {
         <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">Events</h1>       
           <Button variant="outline" 
           className="px-4 py-2 rounded-full transition-colors bg-white text-purple-800 hover:bg-purple-100" 
-          disabled={!isAuthenticated}>
-          <Link href="/admin" className="flex items-center">
-            <UserRound className="mr-2 h-4 w-4"/>
-            <span className="text-base font-medium">Admin</span>
+          disabled={buttonLabel  === "Fame"}>
+          <Link href={buttonHref} className="flex items-center">
+            {buttonLabel === "Admin" ? <UserRound className="mr-2 h-4 w-4"/> : null}
+            <span className="text-base font-medium">{buttonLabel}</span>
           </Link>
           </Button>           
       </div>
