@@ -238,12 +238,30 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
         </AlertDialog>
         <div className="flex justify-between gap-4">
         {mode === "edit" && (
-          <Button type="button" variant="outline" onClick={handleDeleteEvent} disabled={isDeleting}>
+          <AlertDialog>
+          <AlertDialogTrigger asChild>
+          <Button type="button" variant="destructive" disabled={isDeleting}>
             {isDeleting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
             ) : null}
             Delete Event
           </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will delete this event.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteEvent}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         )}
         <Button type="submit" disabled={loading}>
           {loading ? (

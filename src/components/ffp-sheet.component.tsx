@@ -80,7 +80,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
       toast.success("Amounts updated successfully!");
       setTimeout(() => { 
         setOpen(false);
-      }, 2000);
+      }, 1000);
     } catch (error) {
       console.error("Error updating amounts:", error);
       setLoading(false);

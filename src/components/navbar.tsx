@@ -9,7 +9,9 @@ export function Navbar() {
   return (
     <nav className="mb-2 py-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mario Group</h1>
+        <Link href="/">
+          <h1 className="text-2xl font-bold">Mario Group</h1>
+        </Link>
         <Button
           variant="ghost"
           className="sm:hidden"
