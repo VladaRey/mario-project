@@ -11,13 +11,7 @@ export function withAuth<P extends object>(WrappedComponent: ComponentType<P>) {
     useEffect(() => {
       const password = localStorage.getItem("admin-password");
       if (password !== ADMIN_PASSWORD) {
-        const userPassword = prompt("Please enter admin password:");
-        if (userPassword === ADMIN_PASSWORD) {
-          localStorage.setItem("admin-password", userPassword);
-          setIsAuthenticated(true);
-        } else {
-          router.push("/");
-        }
+        router.push("/login?redirect=/admin");
       } else {
         setIsAuthenticated(true);
       }

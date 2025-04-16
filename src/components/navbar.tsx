@@ -9,7 +9,9 @@ export function Navbar() {
   return (
     <nav className="mb-2 py-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mario Group</h1>
+        <Link href="/">
+          <h1 className="text-2xl font-bold">Mario Group</h1>
+        </Link>
         <Button
           variant="ghost"
           className="sm:hidden"
@@ -25,7 +27,7 @@ export function Navbar() {
             <Link href="/admin/reservations">Reservations</Link>
           </Button>
           <Button asChild variant="ghost">
-            <Link href="/admin/">Event</Link>
+            <Link href="/admin/">Events</Link>
           </Button>
         </div>
       </div>
@@ -38,7 +40,7 @@ export function Navbar() {
             <Link href="/admin/reservations">Reservations</Link>
           </Button>
           <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
-            <Link href="/admin/">Event</Link>
+            <Link href="/admin/">Events</Link>
           </Button>
         </div>
       )}

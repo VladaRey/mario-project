@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent } from "./ui/card";
 import { MultiSelect } from "./multi-select";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,40 +20,54 @@ import { toast } from "sonner";
 import {
   playerOperations,
   reservationOperations,
+  eventOperations,
   type Player,
   type ReservationList,
   type Event,
 } from "../lib/db";
 import { PlayerCard } from "./player-card";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { format } from "date-fns";
+import { EventDatePicker } from "./event-date-picker.component";
+import { useRouter } from "next/navigation";
 
 type EventFormProps = {
   initialEvent?: Event;
-  onSave: (event: { name: string; players: string[] }) => void;
+  onSave: (event: { id: string; name: string; date: string; players: string[] }) => void;
+  mode: "create" | "edit";
 };
 
-export function EventForm({ initialEvent, onSave }: EventFormProps) {
-  const [eventName, setEventName] = useState(initialEvent?.name || "");
+export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
+  const router = useRouter();
+
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>(
-    initialEvent?.players.map((p) => p.id) || [],
+    initialEvent?.players?.map((p) => p.id) || [],
   );
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
   const [reservations, setReservations] = useState<ReservationList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [loading, setLoading] = useState(false);
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [date, setDate] = useState<Date | undefined>(initialEvent?.date ? new Date(initialEvent.date) : new Date());
+
+  const formatDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    };
+    return date.toLocaleDateString("en-GB", options);
+  };
+
+  const [eventName, setEventName] = useState(initialEvent?.name || formatDate(new Date()));
+
   const handleSetDate = (date: Date | undefined) => {
     setDate(date);
-    if (date) {
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: "long",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      };
-      const formattedDate = date.toLocaleDateString("en-GB", options);
-      setEventName(formattedDate);
+    if(!initialEvent?.name && date) {
+      setEventName(formatDate(date));
     }
   };
 
@@ -80,8 +94,18 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave({ name: eventName, players: selectedPlayers });
-    toast.success("Event saved successfully");
+    setLoading(true);
+    await onSave({
+      id: initialEvent?.id || "",
+      name: eventName,
+      date: format(date!, "yyyy-MM-dd"),
+      players: selectedPlayers,
+    });
+    toast.success(mode === "create" ? "Event created successfully" : "Event updated successfully");
+    setLoading(false);
+    setTimeout(() => {
+      router.push("/admin");
+    }, 1000);
   };
 
   const handleRemoveAllPlayers = () => {
@@ -92,6 +116,16 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
     setSelectedPlayers((prevPlayers) =>
       prevPlayers.filter((id) => id !== playerId),
     );
+  };
+
+  const handleDeleteEvent = async () => {
+    setIsDeleting(true);
+    await eventOperations.deleteEvent(initialEvent?.id || "");
+    toast.success("Event deleted successfully");
+    setIsDeleting(false);
+    setTimeout(() => {
+      router.push("/admin");
+    }, 1000);
   };
 
   const reservationOptions = reservations.map((reservation) => ({
@@ -110,24 +144,9 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
+        <EventDatePicker date={date!} setDate={handleSetDate} />
+        <div className="space-y-2">
         <Label htmlFor="eventName">Event Name</Label>
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={"outline"}>
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleSetDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
           <Input
             id="eventName"
             value={eventName}
@@ -135,7 +154,6 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
             placeholder="Enter event name"
             required
           />
-        </div>
       </div>
       <div className="space-y-2">
         <Label>Add Players from Reservations</Label>
@@ -170,7 +188,9 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label>Current Players</Label>
+        {selectedPlayers.length > 0 ? (
+          <Label>Current Players</Label>
+        ) : null}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {selectedPlayers.map((playerId) => {
             const player = availablePlayers.find((p) => p.id === playerId);
@@ -193,10 +213,10 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
           })}
         </div>
       </div>
-      <div className="flex justify-between">
+      <div className="flex flex-col md:justify-between md:flex-row gap-6">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" disabled={selectedPlayers.length === 0}>
               Remove All Players
             </Button>
           </AlertDialogTrigger>
@@ -216,7 +236,40 @@ export function EventForm({ initialEvent, onSave }: EventFormProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Button type="submit">Save Event</Button>
+        <div className="flex justify-between gap-4">
+        {mode === "edit" && (
+          <AlertDialog>
+          <AlertDialogTrigger asChild>
+          <Button type="button" variant="destructive" disabled={isDeleting}>
+            {isDeleting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+            ) : null}
+            Delete Event
+          </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will delete this event.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteEvent}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        )}
+        <Button type="submit" disabled={loading}>
+          {loading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+          ) : null}
+          {mode === "create" ? "Create Event" : "Save Event"}
+          </Button>
+        </div>
       </div>
     </form>
   );
