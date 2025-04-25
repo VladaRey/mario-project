@@ -273,6 +273,13 @@ export const eventOperations = {
 
     if (fetchError) throw fetchError;
 
+    // Add waiting list and winners list
+    const { error: waitingListError } = await supabase
+      .from("lottery_results")
+      .insert([{ event_id: event.id, waiting_list: [], winners: [] }]);
+
+    if (waitingListError) throw waitingListError;
+
     return {
       id: completeEvent.id,
       name: completeEvent.name,
@@ -280,6 +287,48 @@ export const eventOperations = {
       created_at: completeEvent.created_at,
       players: completeEvent.players.map((pe: any) => pe.players),
     };
+  },
+
+  async updateWaitingList(eventId: string, players: Player[]): Promise<void> {
+    const { error } = await supabase
+      .from("lottery_results")
+      .update({ waiting_list: players })
+      .eq("event_id", eventId);
+
+    if (error) throw error;
+  },
+
+  async getWaitingList(eventId: string): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from("lottery_results")
+      .select("waiting_list")
+      .eq("event_id", eventId)
+      .single();
+
+    if (error) throw error;
+
+    return data?.waiting_list || [];
+  },
+
+  async updateWinnersList(eventId: string, winners: Player[]): Promise<void> {
+    const { error } = await supabase
+      .from("lottery_results")
+      .update({ winners: winners })
+      .eq("event_id", eventId);
+
+    if (error) throw error;
+  },
+
+  async getWinnersList(eventId: string): Promise<Player[]> {
+    const { data, error } = await supabase
+      .from("lottery_results")
+      .select("winners")
+      .eq("event_id", eventId)
+      .single();
+
+    if (error) throw error;
+
+    return data?.winners || [];
   },
 
   async deleteEvent(id: string): Promise<void> {

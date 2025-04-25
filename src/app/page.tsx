@@ -41,7 +41,7 @@ export default function HomePage() {
           </Link>
           </Button>           
       </div>
-      <EventsList basePath="/event" withBackground />
+      <EventsList basePath="/event" withBackground type="dashboard"/>
     </div>
   );
 }
