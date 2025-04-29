@@ -12,7 +12,8 @@ import { Separator } from "~/components/ui/separator";
 import { Card, CardContent } from "~/components/ui/card";
 import { PlayerCard } from "~/components/player-card";
 import { Trash2 } from "lucide-react";
-
+import { useLotteryService } from "~/services/lottery-service";
+import { WinnersList } from "~/components/winners-list";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
@@ -33,6 +34,9 @@ export default function LotteryPage() {
 
   const [isGenerated, setIsGenerated] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const { addtoEvent, addToWaitingList, addToWinnersList } =
+    useLotteryService();
 
   const invalidPlaces =
     selectedPlayers.length > 0 && places > selectedPlayers.length;
@@ -111,44 +115,21 @@ export default function LotteryPage() {
     );
   };
 
+  const handleAddPlayer = (playerId: string) => {
+    setGeneratedPlayers((prevPlayers) => [...prevPlayers, playerId]);
+  };
+
   const addPlayersToEvent = async () => {
     if (generatedPlayers.length === 0) return;
 
     try {
-      const currentEventPlayerIds =
-        event?.players.map((player) => player.id) || [];
-
-      const updatedPlayerIds = [...currentEventPlayerIds, ...generatedPlayers];
-      await eventOperations.updateEvent(
-        id,
-        event?.name || "",
-        event?.date || "",
-        updatedPlayerIds,
-      );
+      await addtoEvent(generatedPlayers, id, event, event?.name || "", event?.date || "");
 
       // Update winners 
-      const winners = availablePlayers.filter((player) =>
-        generatedPlayers.includes(player.id),
-      );
-      await eventOperations.updateWinnersList(id, winners);
+      await addToWinnersList(availablePlayers, generatedPlayers, id);
 
       // Update waiting list
-      const waitingPlayers = selectedPlayers
-        .filter((id) => !generatedPlayers.includes(id))
-        .map((id) => {
-          const player = availablePlayers.find((p) => p.id === id);
-          return {
-            id: player?.id || "",
-            name: player?.name || "",
-            cardType: player?.cardType || "No card",
-            paid: false,
-            amount: 0,
-          };
-        });
-
-      if (waitingPlayers.length > 0) {
-        await eventOperations.updateWaitingList(id, waitingPlayers);
-      }
+      await addToWaitingList(selectedPlayers, generatedPlayers, availablePlayers, id);
 
       toast.success("Players added to event successfully!");
       router.push(`/admin`);
@@ -171,29 +152,13 @@ export default function LotteryPage() {
         </p>
       </div>
 
-      {!isAuthenticated ? (
-        <div className="mb-10">
-          <div>
-            <h2 className="text-xl font-bold">Winners</h2>
-            <Separator className="my-4 bg-green-500" />
-            {winnersList.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                {winnersList.map((player) => {
-                  return (
-                    <Card key={player.id}>
-                      <CardContent className="flex flex-col gap-1 p-3 shadow-none">
-                        <PlayerCard player={player} />
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600">No winners yet.</p>
-            )}
-          </div>
-        </div>
+      {winnersList.length > 0 ? (
+        <WinnersList id={id} />
       ) : (
+        <p className="text-sm text-gray-600 mb-4">No winners yet.</p>
+      )}
+
+      {isAuthenticated && winnersList.length === 0 && (
         <div className="mb-10">
           <div className="mb-4 grid grid-cols-2 items-end gap-4 md:grid-cols-3">
             <div className="h-full">
@@ -216,10 +181,18 @@ export default function LotteryPage() {
             </div>
 
             <div className="h-full">
-              <Label htmlFor="places" className="text-md mb-2 block font-medium">
+              <Label
+                htmlFor="places"
+                className="text-md mb-2 block font-medium"
+              >
                 Number of Places
               </Label>
-              <Input id="places" type="number" min={1} value={places || ""} className="h-10 w-full"
+              <Input
+                id="places"
+                type="number"
+                min={1}
+                value={places || ""}
+                className="h-10 w-full"
                 onChange={(e) => {
                   const value = e.target.value;
                   setPlaces(value === "" ? 0 : Number.parseInt(value));
@@ -233,7 +206,9 @@ export default function LotteryPage() {
             </div>
 
             <div className="col-span-2 md:col-span-1">
-              <Button variant={"default"} className="w-full text-base md:w-auto" 
+              <Button
+                variant={"default"}
+                className="w-full text-base md:w-auto"
                 disabled={selectedPlayers.length === 0 || invalidPlaces}
                 onClick={handleShuffle}
               >
@@ -243,7 +218,7 @@ export default function LotteryPage() {
           </div>
 
           <div className="mb-6">
-            {selectedPlayers.length > 0 && (
+            {selectedPlayers.length > 0 && !isGenerated && (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {selectedPlayers.map((playerId) => {
                   const player = availablePlayers.find(
@@ -253,9 +228,12 @@ export default function LotteryPage() {
                     <Card key={playerId}>
                       <CardContent className="flex items-center justify-between gap-8 p-4">
                         <PlayerCard player={player}>
-                          <Button size="sm" variant="ghost" onClick={() => removePlayer(playerId)} 
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removePlayer(playerId)}
                             className="text-slate-500 hover:text-slate-700"
-                            >
+                          >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">
                               Remove {player.name}
@@ -277,7 +255,9 @@ export default function LotteryPage() {
           <div>
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">Winners</h2>
-              <Button variant="outline" className="rounded-md bg-green-500 text-white hover:bg-green-600 hover:text-white"
+              <Button
+                variant="outline"
+                className="rounded-md bg-green-500 text-white hover:bg-green-600 hover:text-white"
                 onClick={addPlayersToEvent}
               >
                 Add to event
@@ -310,8 +290,16 @@ export default function LotteryPage() {
                   );
                   return player ? (
                     <Card key={playerId}>
-                      <CardContent className="flex flex-col gap-1 p-3 shadow-none">
-                        <PlayerCard player={player} />
+                      <CardContent className="flex justify-between gap-1 p-3 shadow-none">
+                        <PlayerCard player={player}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAddPlayer(playerId)}
+                          >
+                            Add
+                          </Button>
+                        </PlayerCard>
                       </CardContent>
                     </Card>
                   ) : null;
@@ -321,5 +309,5 @@ export default function LotteryPage() {
         </div>
       )}
     </div>
-  )
-};
+  );
+}

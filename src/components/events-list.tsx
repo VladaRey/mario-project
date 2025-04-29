@@ -77,7 +77,7 @@ export function EventsList({ basePath, withBackground, type }: EventsListProps) 
                       </Link>
                     </div>
                     <div>
-                      <Link href={`/admin/event/${event?.id}/lottery`}>
+                      <Link href={`/event/${event?.id}/lottery`}>
                         <Button variant={"outline"}>
                           <span className="text-base font-medium">Lottery</span>
                         </Button>
