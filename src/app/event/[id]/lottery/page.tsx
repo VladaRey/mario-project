@@ -153,7 +153,7 @@ export default function LotteryPage() {
       </div>
 
       {winnersList.length > 0 ? (
-        <WinnersList id={id} />
+        <WinnersList winnersList={winnersList} />
       ) : (
         <p className="text-sm text-gray-600 mb-4">No winners yet.</p>
       )}
