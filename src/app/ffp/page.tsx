@@ -77,7 +77,7 @@ function FfpPage() {
 
   const [courts, setCourts] = useState(String(courtCount));
   const [hours, setHours] = useState("2");
-  const [pricePerHour, setPricePerHour] = useState("75");
+  const [pricePerHour, setPricePerHour] = useState("55");
   const [fameTotal, setFameTotal] = useState("");
   const [mCoverOwners, setMCoverOwners] = useState(medicoverQuery || "");
   const [msOwners, setMSOwners] = useState(multisportQuery || "");

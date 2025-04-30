@@ -143,7 +143,7 @@ export default function LotteryPage() {
       )}
 
       <div className="mb-8 flex items-center text-3xl font-bold">
-        <Link href="/admin">
+        <Link href="/">
           <h2 className="font-extrabold text-[#2E2A5D]">Mario Group</h2>
         </Link>
       </div>
