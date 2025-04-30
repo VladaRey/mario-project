@@ -310,6 +310,30 @@ export const eventOperations = {
     return data?.waiting_list || [];
   },
 
+  async removeFromWaitingList(
+    eventId: string,
+    playerId: string,
+  ): Promise<void> {
+    const { data, error } = await supabase
+      .from("lottery_results")
+      .select("waiting_list")
+      .eq("event_id", eventId)
+      .single();
+
+    if (error) throw error;
+
+    const updatedWaitingList = (data?.waiting_list || []).filter(
+      (p: Player) => p.id !== playerId,
+    );
+
+    const { error: updateError } = await supabase
+      .from("lottery_results")
+      .update({ waiting_list: updatedWaitingList })
+      .eq("event_id", eventId);
+
+    if (updateError) throw updateError;
+  },
+
   async updateWinnersList(eventId: string, winners: Player[]): Promise<void> {
     const { error } = await supabase
       .from("lottery_results")
@@ -329,6 +353,70 @@ export const eventOperations = {
     if (error) throw error;
 
     return data?.winners || [];
+  },
+
+  async addToWinnersList(eventId: string, player: Player): Promise<void> {
+    const { data, error } = await supabase
+      .from("lottery_results")
+      .select("winners, waiting_list")
+      .eq("event_id", eventId)
+      .single();
+
+    if (error) throw error;
+
+    const newPlayer = {
+      id: player.id || "",
+      name: player.name || "",
+      cardType: player.cardType || "No card",
+      paid: false,
+      amount: 0,
+    };
+
+    //Add player to winners list and remove from waiting list
+    const updatedWinners = [...(data?.winners || []), newPlayer];
+    const updatedWaitingList = (data?.waiting_list || []).filter(
+      (p: Player) => p.id !== player.id,
+    );
+
+    const { error: updateError } = await supabase
+      .from("lottery_results")
+      .update({ winners: updatedWinners, waiting_list: updatedWaitingList })
+      .eq("event_id", eventId);
+
+    if (updateError) throw updateError;
+  },
+
+  async removeFromWinnersList(
+    eventId: string,
+    playerId: string,
+  ): Promise<void> {
+    const { data, error } = await supabase
+      .from("lottery_results")
+      .select("winners")
+      .eq("event_id", eventId)
+      .single();
+
+    if (error) throw error;
+
+    const updatedWinners = (data?.winners || []).filter(
+      (p: Player) => p.id !== playerId,
+    );
+
+    const { error: updateError } = await supabase
+      .from("lottery_results")
+      .update({ winners: updatedWinners })
+      .eq("event_id", eventId);
+
+    if (updateError) throw updateError;
+  },
+
+  async removeLotteryResults(eventId: string): Promise<void> {
+    const { error } = await supabase
+      .from("lottery_results")
+      .update({ winners: [], waiting_list: [] })
+      .eq("event_id", eventId);
+
+    if (error) throw error;
   },
 
   async deleteEvent(id: string): Promise<void> {

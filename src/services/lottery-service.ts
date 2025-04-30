@@ -5,7 +5,7 @@ import { eventOperations, Player, Event } from "~/lib/db";
 export function useLotteryService() {
     
   async function addtoEvent(
-    generatedPlayers: string[],
+    players: Player[],
     id: string,
     event: Event | null,
     eventName: string,
@@ -14,7 +14,7 @@ export function useLotteryService() {
     const currentEventPlayerIds =
       event?.players.map((player) => player.id) || [];
 
-    const updatedPlayerIds = [...currentEventPlayerIds, ...generatedPlayers];
+    const updatedPlayerIds = [...currentEventPlayerIds, ...players.map((player) => player.id)];
     await eventOperations.updateEvent(
       id,
       eventName,
@@ -55,9 +55,32 @@ export function useLotteryService() {
    await eventOperations.updateWinnersList(id, winners);
   }
 
+
+  const generateRandomPlayers = (
+    playerIds: string[],
+    places: number,
+  ): string[] => {
+    if (!playerIds || playerIds.length === 0 || places <= 0) return [];
+
+    const availableIds = [...playerIds];
+    const result: string[] = [];
+
+    for (let i = 0; i < places; i++) {
+      const randomIndex = Math.floor(Math.random() * availableIds.length);
+      const selectedId = availableIds[randomIndex];
+      if (selectedId) {
+        result.push(selectedId);
+        availableIds.splice(randomIndex, 1);
+      }
+    }
+
+    return result;
+  };
+
   return {
     addtoEvent,
     addToWaitingList,
     addToWinnersList,
+    generateRandomPlayers
   };
 }
