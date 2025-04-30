@@ -16,7 +16,7 @@ const AdminPage = () => {
           Create New Event
         </Button>
       </div>
-      <EventsList basePath="/admin/event" />
+      <EventsList basePath="/admin/event" type="admin"/>
     </div>
   );
 };

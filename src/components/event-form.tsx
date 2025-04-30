@@ -29,6 +29,7 @@ import { PlayerCard } from "./player-card";
 import { format } from "date-fns";
 import { EventDatePicker } from "./event-date-picker.component";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type EventFormProps = {
   initialEvent?: Event;
@@ -64,6 +65,8 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   const [eventName, setEventName] = useState(initialEvent?.name || formatDate(new Date()));
 
+  const [waitingListPlayers, setWaitingListPlayers] = useState<Player[]>([]);
+
   const handleSetDate = (date: Date | undefined) => {
     setDate(date);
     if(!initialEvent?.name && date) {
@@ -71,16 +74,21 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     }
   };
 
-  // Load players and reservations
+  // Load players, reservations and waiting list
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [players, reservationLists] = await Promise.all([
-          playerOperations.getAllPlayers(),
-          reservationOperations.getAllReservationLists(),
-        ]);
+        const [players, reservationLists, waitingListPlayers] =
+          await Promise.all([
+            playerOperations.getAllPlayers(),
+            reservationOperations.getAllReservationLists(),
+            initialEvent?.id
+              ? eventOperations.getWaitingList(initialEvent.id)
+              : Promise.resolve([]),
+          ]);
         setAvailablePlayers(players);
         setReservations(reservationLists);
+        setWaitingListPlayers(waitingListPlayers);
 
         console.log("reservations", reservationLists);
       } catch (error) {
@@ -138,38 +146,60 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     label: player.name,
   }));
 
+  const waitingListOptions = waitingListPlayers.map((player) => ({
+    label: player.name,
+    value: player.id,
+  }));
+
   if (isLoading) {
     return <div>Loading form data...</div>;
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-        <EventDatePicker date={date!} setDate={handleSetDate} />
-        <div className="space-y-2">
-        <Label htmlFor="eventName">Event Name</Label>
-          <Input
-            id="eventName"
-            value={eventName}
-            onChange={(e) => setEventName(e.target.value)}
-            placeholder="Enter event name"
-            required
-          />
-      </div>
+      <EventDatePicker date={date!} setDate={handleSetDate} />
       <div className="space-y-2">
-        <Label>Add Players from Reservations</Label>
-        <MultiSelect
-          options={reservationOptions}
-          selected={[]}
-          onChange={(selectedReservations) => {
-            const newPlayers = reservations
-              .filter((r) => selectedReservations.includes(r.id))
-              .flatMap((r) => r.players.map((p) => p.id));
-            setSelectedPlayers((prevPlayers) => [
-              ...new Set([...prevPlayers, ...newPlayers]),
-            ]);
-          }}
-          placeholder="Select reservations"
+        <Label htmlFor="eventName">Event Name</Label>
+        <Input
+          id="eventName"
+          value={eventName}
+          onChange={(e) => setEventName(e.target.value)}
+          placeholder="Enter event name"
+          required
         />
+      </div>
+      <div className="flex flex-col items-center gap-2 md:flex-row md:justify-between">
+        <div className="flex-1 space-y-2">
+          <Label>Add Players from Reservations</Label>
+          <MultiSelect
+            options={reservationOptions}
+            selected={[]}
+            onChange={(selectedReservations) => {
+              const newPlayers = reservations
+                .filter((r) => selectedReservations.includes(r.id))
+                .flatMap((r) => r.players.map((p) => p.id));
+              setSelectedPlayers((prevPlayers) => [
+                ...new Set([...prevPlayers, ...newPlayers]),
+              ]);
+            }}
+            placeholder="Select reservations"
+          />
+        </div>
+        {waitingListPlayers.length > 0 && (
+          <div className="flex-1 space-y-2">
+            <Label>Add Players from Waiting List</Label>
+            <MultiSelect
+            options={waitingListOptions}
+            selected={[]}
+            onChange={(newPlayers) => {
+              setSelectedPlayers((prevPlayers) => [
+                ...new Set([...prevPlayers, ...newPlayers]),
+              ]);
+            }}
+            placeholder="Select players from waiting list"
+          />
+        </div>
+        )}
       </div>
       <div className="space-y-2">
         <Label>Add Individual Players</Label>
