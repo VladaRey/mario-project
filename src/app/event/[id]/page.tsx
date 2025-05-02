@@ -2,7 +2,7 @@
 
 import { Inter } from "next/font/google";
 import { EventBreadcrumbs } from "~/components/event-breadcrumbs.component";
-import { CurrentEvent } from "~/components/current-event.component";
+import { CurrentEvent } from "~/features/current-event/current-event.component";
 import { useParams } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });

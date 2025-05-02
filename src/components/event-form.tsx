@@ -2,20 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Card, CardContent } from "./ui/card";
 import { MultiSelect } from "./multi-select";
 import { Trash2, Loader2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
+import { ConfirmDialog } from "./confirmation-dialog";
 import { toast } from "sonner";
 import {
   playerOperations,
@@ -29,7 +18,6 @@ import { PlayerCard } from "./player-card";
 import { format } from "date-fns";
 import { EventDatePicker } from "./event-date-picker.component";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 type EventFormProps = {
   initialEvent?: Event;
@@ -225,73 +213,39 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
           {selectedPlayers.map((playerId) => {
             const player = availablePlayers.find((p) => p.id === playerId);
             return player ? (
-              <Card key={player.id}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <PlayerCard player={player}>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleRemovePlayer(player.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Remove {player.name}</span>
-                    </Button>
-                  </PlayerCard>
-                </CardContent>
-              </Card>
+              <PlayerCard key={player.id} player={player}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleRemovePlayer(player.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Remove {player.name}</span>
+                </Button>
+              </PlayerCard>
             ) : null;
           })}
         </div>
       </div>
       <div className="flex flex-col md:justify-between md:flex-row gap-6">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button type="button" variant="outline" disabled={selectedPlayers.length === 0}>
-              Remove All Players
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action will remove all players from the event. You can add
-                them back individually or from reservations.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleRemoveAllPlayers}>
-                Remove All
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <ConfirmDialog 
+            trigger={<Button type="button" variant="outline" disabled={selectedPlayers.length === 0}>
+            Remove All Players
+            </Button>} 
+            onConfirm={handleRemoveAllPlayers} 
+            description="This action will remove all players from the event. You can add them back individually or from reservations." 
+            confirmLabel="Remove All" />
         <div className="flex justify-between gap-4">
         {mode === "edit" && (
-          <AlertDialog>
-          <AlertDialogTrigger asChild>
-          <Button type="button" variant="destructive" disabled={isDeleting}>
-            {isDeleting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-            ) : null}
-            Delete Event
-          </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action will delete this event.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteEvent}>
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <ConfirmDialog trigger={<Button type="button" variant="destructive" disabled={isDeleting}>
+          {isDeleting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+          ) : null}
+          Delete Event
+          </Button>} 
+          onConfirm={handleDeleteEvent} 
+          description="This action will delete this event." 
+          confirmLabel="Delete" />
         )}
         <Button type="submit" disabled={loading}>
           {loading ? (

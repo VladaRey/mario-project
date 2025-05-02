@@ -1,6 +1,5 @@
 import { Player } from "~/lib/db";
 import { Separator } from "~/components/ui/separator";
-import { Card, CardContent } from "~/components/ui/card";
 import { PlayerCard } from "~/components/player-card";
 import { Button } from "~/components/ui/button";
 import { Trash2 } from "lucide-react";
@@ -50,10 +49,8 @@ export function LotteryResults({
               <>
                 {winnersList.map((player) => {
                   return (
-                    <Card key={player.id}>
-                      <CardContent className="flex items-center justify-between gap-1 p-3 shadow-none">
-                        <PlayerCard player={player}>
-                          {role === "admin" && (
+                    <PlayerCard key={player.id} player={player}>
+                      {role === "admin" && (
                             <Button
                               size="sm"
                               variant="ghost"
@@ -65,9 +62,7 @@ export function LotteryResults({
                               </span>
                             </Button>
                           )}
-                        </PlayerCard>
-                      </CardContent>
-                    </Card>
+                    </PlayerCard>
                   );
                 })}
               </>
@@ -86,10 +81,8 @@ export function LotteryResults({
             <>
               {waitingList.map((player) => {
                 return (
-                  <Card key={player.id}>
-                    <CardContent className="flex justify-between gap-1 p-3 shadow-none">
-                      <PlayerCard player={player}>
-                        {role === "admin" && (
+                  <PlayerCard key={player.id} player={player}>
+                    {role === "admin" && (
                           <div className="flex items-center gap-1">
                             <Button
                               size="sm"
@@ -112,9 +105,7 @@ export function LotteryResults({
                             </Button>
                           </div>
                         )}
-                      </PlayerCard>
-                    </CardContent>
-                  </Card>
+                  </PlayerCard>
                 );
               })}
             </>

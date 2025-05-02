@@ -5,28 +5,25 @@ import { useEffect, useState } from "react";
 import { EventsList } from "~/components/events-list";
 import { Button } from "~/components/ui/button";
 import { UserRound } from "lucide-react";
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
+import { useGetRole } from "~/hooks/use-get-role";
 
 export default function HomePage() {
   const [buttonLabel, setButtonLabel] = useState("Login");
   const [buttonHref, setButtonHref] = useState("/login");
 
-  useEffect(() => {
-    const adminPassword = localStorage.getItem("admin-password");
-    const famePassword = localStorage.getItem("fame-password");
+  const role = useGetRole();
 
-    if (adminPassword === ADMIN_PASSWORD) {
+  useEffect(() => {
+    if (role === "admin") {
       setButtonLabel("Admin");
       setButtonHref("/admin");
-    } else if (famePassword === FAME_PASSWORD) {
+    } else if (role === "fame") {
       setButtonLabel("Fame");
     } else {
       setButtonLabel("Login");
       setButtonHref("/login");
     }
-  }, []);
+  }, [role]);
 
   return (
     <div className="container mx-auto space-y-8 p-4">

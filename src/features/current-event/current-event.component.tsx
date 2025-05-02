@@ -1,11 +1,9 @@
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
-import { Card, CardContent } from "~/components/ui/card";
-import { Switch } from "~/components/ui/switch";
 import { Users } from "lucide-react";
 import { FfpSheet } from "~/components/ffp-sheet.component";
 import { useEffect, useState } from "react";
 import { type CardType, eventOperations, type Event } from "~/lib/db";
+import { PlayerPaymentCard } from "./player-payment-card";
 
 const cardTypeOrder: CardType[] = [
   "Medicover",
@@ -19,18 +17,9 @@ interface CurrentEventProps {
     id: string;
 }
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
 
 export function CurrentEvent({id}: CurrentEventProps) {
-  function getInitials(name: string) {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase();
-  }
-  
+
     function getCardTypeColor(cardType: CardType) {
     switch (cardType) {
       case "Medicover":
@@ -46,7 +35,6 @@ export function CurrentEvent({id}: CurrentEventProps) {
     }
   } 
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
@@ -81,13 +69,6 @@ export function CurrentEvent({id}: CurrentEventProps) {
       }
     };
     loadInitialEvent();
-
-    const adminPassword = localStorage.getItem("admin-password");
-    const famePassword = localStorage.getItem("fame-password");
-
-    if (adminPassword === ADMIN_PASSWORD || famePassword === FAME_PASSWORD) {
-      setIsAuthenticated(true);
-    }
   }, []);
 
   const refreshPaymentAmounts = async () => {
@@ -192,50 +173,8 @@ export function CurrentEvent({id}: CurrentEventProps) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(sortedPlayers || []).map((player) => {
             return player ? (
-              <Card key={player.id} className="transition-colors duration-200">
-                <CardContent className="flex items-center p-4">
-                  <Avatar className="mr-4 h-10 w-10">
-                    <AvatarFallback className="bg-[#7B3C7D] text-white">
-                      {getInitials(player.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-grow flex-col">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-[#2E2A5D]">
-                        {player.name}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`font-medium ${paymentStatus[player.id] ? "text-green-600" : "text-orange-400"}`}
-                        >
-                          {paymentStatus[player.id] ? "Paid" : "Unpaid"}
-                        </span>
-                        {isAuthenticated && (
-                          <Switch
-                            className="data-[state=checked]:bg-[#2E2A5D]"
-                            checked={paymentStatus[player.id]}
-                            onCheckedChange={(checked) =>
-                              handlePaymentChange(player.id, checked)
-                            }
-                          />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Badge
-                        className={`mt-1 ${getCardTypeColor(player.cardType)}`}
-                      >
-                        {player.cardType}
-                      </Badge>
-                      {playerPaymentAmount[player.id] != null && (
-                        <span className="text-sm font-bold text-gray-600">
-                          {playerPaymentAmount[player.id]} PLN
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <PlayerPaymentCard key={player.id} player={player} paymentStatus={paymentStatus} 
+              handlePaymentChange={handlePaymentChange} playerPaymentAmount={playerPaymentAmount} getCardTypeColor={getCardTypeColor}/>
             ) : null;
           })}
         </div>
