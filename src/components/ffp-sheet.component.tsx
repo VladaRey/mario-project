@@ -92,7 +92,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
           <SheetTitle className="hidden">Calculate payment amounts</SheetTitle>
         </SheetHeader>
         <SheetDescription className="hidden">Apply payment amounts</SheetDescription>
-        <FfpForm mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} theme="light"/>
+        <FfpForm mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} />
         <SheetFooter className="pt-4">
          {(role === "admin" || role === "fame") && 
          <Button className="w-full" onClick={handleApply} disabled={loading}> 

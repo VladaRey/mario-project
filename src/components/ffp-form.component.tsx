@@ -16,15 +16,14 @@ import {
 import { type Statistics } from "~/services/calculation-service";
 
 interface FfpFormProps {
-  mc: number;
-  ms: number;
-  msc: number;
-  nc: number;
-  onCalculate: (stats: Statistics) => void;
-  theme: "light" | "dark";
+  mc?: number;
+  ms?: number;
+  msc?: number;
+  nc?: number;
+  onCalculate?: (stats: Statistics) => void;
 }
 
-export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
+export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFormProps) {
   const playersCount = mc + ms + msc + nc;
   const courtCount = Math.ceil(playersCount / 4);
 
@@ -60,7 +59,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
   );
 
   useEffect(() => {
-    onCalculate(statistics);
+    onCalculate?.(statistics);
   }, [
     statistics.medicover,
     statistics.MS,
@@ -75,7 +74,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>Courts</Label>
           <Select value={courts} onValueChange={setCourts}>
-            <SelectTrigger className={`w-full ${theme === "light" ? "border-[#241e2f]" : ""}`}>
+            <SelectTrigger className="w-full border-[#241e2f]">
               <SelectValue defaultValue={"1"} />
             </SelectTrigger>
             <SelectContent>
@@ -92,7 +91,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>Hours</Label>
           <Select value={hours} onValueChange={setHours}>
-            <SelectTrigger className={`min-w-full ${theme === "light" ? "border-[#241e2f]" : ""}`}>
+            <SelectTrigger className="min-w-full border-[#241e2f]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -114,7 +113,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>Price per 1h</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={pricePerHour}
             onChange={(e) => setPricePerHour(e.target.value)}
           />
@@ -122,7 +121,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>FAME total</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={fameTotal}
             onChange={(e) => setFameTotal(e.target.value)}
           />
@@ -132,7 +131,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>Medicover owners</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={mCoverOwners}
             onChange={(e) => setMCoverOwners(e.target.value)}
           />
@@ -140,7 +139,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>Medicover usage</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={mCoverUsage}
             onChange={(e) => setMCoverUsage(e.target.value)}
           />
@@ -151,7 +150,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>MS+ owners</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={msOwners}
             onChange={(e) => setMSOwners(e.target.value)}
           />
@@ -159,7 +158,7 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>Multisport usage</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={msUsage}
             onChange={(e) => setMSUsage(e.target.value)}
           />
@@ -170,20 +169,20 @@ export function FfpForm({ mc, ms, msc, nc, onCalculate, theme }: FfpFormProps) {
         <Column>
           <Label>MS Classic owners</Label>
           <Input
-            className={theme === "light" ? "border-[#241e2f]" : ""}
+            className="border-[#241e2f]"
             value={msClassicOwners}
             onChange={(e) => setMSClassicOwners(e.target.value)}
           />
         </Column>
         <Column>
           <Label>No card</Label>
-          <Input className={theme === "light" ? "border-[#241e2f]" : ""} value={noCard} onChange={(e) => setNoCard(e.target.value)} />
+          <Input className="border-[#241e2f]" value={noCard} onChange={(e) => setNoCard(e.target.value)} />
         </Column>
       </Row>
 
       <img className={"mb-4 mt-2"} src="/divider.png" alt="divider" />
 
-      <ResultsPanel statistics={statistics} theme={theme} />
+      <ResultsPanel statistics={statistics} />
     </div>
   );
 }
