@@ -29,7 +29,7 @@ export default function LotteryPage() {
 
   const isWinners = winnersList.length > 0;
 
-  const role = useGetRole();
+  const { role } = useGetRole();
 
   const [isLoading, setIsLoading] = useState(true);
 

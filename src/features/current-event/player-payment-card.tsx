@@ -14,7 +14,7 @@ interface PlayerPaymentCardProps {
 }
 
 export function PlayerPaymentCard({player, paymentStatus, handlePaymentChange, playerPaymentAmount, getCardTypeColor}: PlayerPaymentCardProps) {
-    const role = useGetRole();
+    const { role } = useGetRole();
 
     function getInitials(name: string) {
       return name

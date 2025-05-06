@@ -13,7 +13,7 @@ export default function HomePage() {
   const [buttonLabel, setButtonLabel] = useState("Login");
   const [buttonHref, setButtonHref] = useState("/login");
 
-  const role = useGetRole();
+  const { role } = useGetRole();
 
   useEffect(() => {
     if (role === "admin") {

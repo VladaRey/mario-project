@@ -31,7 +31,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const role = useGetRole();
+  const { role } = useGetRole();
   const [calculatedStats, setCalculatedStats] = useState<Statistics | null>(
     null,
   );

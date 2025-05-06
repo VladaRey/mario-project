@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PasswordInput } from "~/features/login-page/password-input.component";
 import { LoginInput } from "~/features/login-page/login-input.component";
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
+import { useGetRole } from "~/hooks/use-get-role";
+import { Role } from "~/lib/roles";
 
 
 export function LoginForm() {
@@ -22,6 +21,8 @@ export function LoginForm() {
       password: "",
     });
 
+    const { login } = useGetRole();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -31,11 +32,8 @@ export function LoginForm() {
       e.preventDefault();
 
       // Store password in localStorage
-      if (formData.password === ADMIN_PASSWORD) {
-        localStorage.setItem("admin-password", formData.password);
-      } else if (formData.password === FAME_PASSWORD) {
-        localStorage.setItem("fame-password", formData.password);
-      } else {
+      const result = login(formData.password);
+      if (result === Role.Guest) {
         setError(true);
         return;
       }

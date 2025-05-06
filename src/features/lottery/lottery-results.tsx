@@ -24,7 +24,7 @@ export function LotteryResults({
   handleRemoveFromWaitingList
 }: LotteryResultsProps) {
 
-  const role = useGetRole();
+  const { role } = useGetRole();
 
   return (
     <>
