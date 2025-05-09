@@ -19,6 +19,7 @@ import { useGetRole } from "~/hooks/use-get-role";
 
 
 interface FfpSheetProps {
+  ml: number;
   mc: number;
   ms: number;
   msc: number;
@@ -27,7 +28,7 @@ interface FfpSheetProps {
   eventId: string;
 }
 
-export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps) {
+export function FfpSheet({ ml, mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -49,6 +50,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
     setLoading(true);
     try {
       const paymentUpdates = {
+        "Medicover Light": calculatedStats.medicoverLight,
         Medicover: calculatedStats.medicover,
         Multisport: calculatedStats.MS,
         Classic: calculatedStats.msClassic,
@@ -92,7 +94,7 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
           <SheetTitle className="hidden">Calculate payment amounts</SheetTitle>
         </SheetHeader>
         <SheetDescription className="hidden">Apply payment amounts</SheetDescription>
-        <FfpForm mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} />
+        <FfpForm ml={ml} mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} />
         <SheetFooter className="pt-4">
          {(role === "admin" || role === "fame") && 
          <Button className="w-full" onClick={handleApply} disabled={loading}> 

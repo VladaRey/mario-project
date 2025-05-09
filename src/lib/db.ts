@@ -18,10 +18,11 @@ const options = {
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey, options);
 
-export type CardType = "Medicover" | "Multisport" | "Classic" | "No card";
+export type CardType = "Medicover" | "Medicover Light" | "Multisport" | "Classic" | "No card";
 
 export const cardTypes: CardType[] = [
   "Medicover",
+  "Medicover Light",
   "Multisport",
   "Classic",
   "No card",
