@@ -1,25 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Edit, Trash2, PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AddReservationSheet } from "./add-reservation-sheet";
 import { cn } from "../lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
 import { reservationOperations, type ReservationList } from "../lib/db";
 import { PlayerCard } from "./player-card"
+import { ConfirmDialog } from "./confirmation-dialog";
 
 export interface SaveReservationData {
   name: string;
@@ -155,29 +144,15 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
             />
           )}
           {activeTab && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    this reservation.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDelete(activeTab)}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDialog
+              trigger={<Button size="sm" variant="outline">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>}
+              onConfirm={() => handleDelete(activeTab)}
+              description="This action cannot be undone. This will permanently delete this reservation."
+              confirmLabel="Delete"
+            />
           )}
         </div>
       </div>
@@ -189,39 +164,17 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {reservation.players.map((player) => (
-              <Card key={player.id}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <PlayerCard player={player}>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="ghost">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove player</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will remove the
-                            player from this reservation.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() =>
-                              handleRemovePlayer(reservation.id, player.id)
-                            }
-                          >
-                            Remove
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </PlayerCard>
-                </CardContent>
-              </Card>
+              <PlayerCard key={player.id} player={player}>
+                <ConfirmDialog
+                      trigger={<Button size="sm" variant="ghost">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remove player</span>
+                      </Button>}
+                      onConfirm={() => handleRemovePlayer(reservation.id, player.id)}
+                      description="This action cannot be undone. This will remove the player from this reservation."
+                      confirmLabel="Remove"
+                    />
+              </PlayerCard>
             ))}
           </div>
         </TabsContent>

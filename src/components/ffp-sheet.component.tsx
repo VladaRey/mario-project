@@ -12,12 +12,11 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { FfpForm } from "./ffp-form.component";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { eventOperations } from "../lib/db";
 import { type Statistics } from "~/services/calculation-service";
+import { useGetRole } from "~/hooks/use-get-role";
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
 
 interface FfpSheetProps {
   mc: number;
@@ -32,19 +31,10 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { role } = useGetRole();
   const [calculatedStats, setCalculatedStats] = useState<Statistics | null>(
     null,
   );
-
-  useEffect(() => {
-    const adminPassword = localStorage.getItem("admin-password");
-    const famePassword = localStorage.getItem("fame-password");
-
-    if (adminPassword === ADMIN_PASSWORD || famePassword === FAME_PASSWORD) {
-      setIsAuthenticated(true);
-    }
-  }, []);
 
   const handleCalculation = useCallback((stats: Statistics) => {
     setCalculatedStats(stats);
@@ -102,9 +92,9 @@ export function FfpSheet({ mc, ms, msc, nc, onRefresh, eventId }: FfpSheetProps)
           <SheetTitle className="hidden">Calculate payment amounts</SheetTitle>
         </SheetHeader>
         <SheetDescription className="hidden">Apply payment amounts</SheetDescription>
-        <FfpForm mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} theme="light"/>
+        <FfpForm mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} />
         <SheetFooter className="pt-4">
-         {isAuthenticated && 
+         {(role === "admin" || role === "fame") && 
          <Button className="w-full" onClick={handleApply} disabled={loading}> 
           {loading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin"/>

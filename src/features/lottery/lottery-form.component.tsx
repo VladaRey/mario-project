@@ -1,13 +1,12 @@
-import { Button } from "./ui/button";
-import { PlayerCard } from "./player-card";
-import { CardContent, Card } from "./ui/card";
+import { Button } from "~/components/ui/button";
+import { PlayerCard } from "~/components/player-card";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useLotteryService } from "~/services/lottery-service";
 import { toast } from "sonner";
 import { eventOperations, type Player, type Event } from "~/lib/db";
-import { LotteryPlaceInput } from "./lottery-place-input.component";
-import { LotteryAddPlayersInput } from "./lottery-add-players-input.component";
+import { LotteryPlaceInput } from "~/features/lottery/lottery-place-input.component";
+import { LotteryAddPlayersInput } from "~/features/lottery/lottery-add-players-input.component";
 
 interface LotteryFormProps {
   event: Event | null;
@@ -136,21 +135,17 @@ export function LotteryForm({
             {selectedPlayers.map((playerId) => {
               const player = availablePlayers.find((p) => p.id === playerId);
               return player ? (
-                <Card key={playerId}>
-                  <CardContent className="flex items-center justify-between gap-8 p-4">
-                    <PlayerCard player={player}>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-500 hover:text-slate-700"
-                        onClick={() => removePlayer(playerId)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remove {player.name}</span>
-                      </Button>
-                    </PlayerCard>
-                  </CardContent>
-                </Card>
+                <PlayerCard key={player.id} player={player}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-slate-500 hover:text-slate-700"
+                  onClick={() => removePlayer(playerId)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Remove {player.name}</span>
+                </Button>
+              </PlayerCard>
               ) : null;
             })}
           </div>

@@ -1,5 +1,5 @@
-import { Label } from "./ui/label";
-import { MultiSelect } from "./multi-select";
+import { Label } from "~/components/ui/label";
+import { MultiSelect } from "~/components/multi-select";
 import { Player } from "~/lib/db";
 
 

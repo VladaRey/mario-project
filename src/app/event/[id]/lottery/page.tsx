@@ -11,8 +11,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useGetRole } from "~/hooks/use-get-role";
-import { LotteryForm } from "~/components/lottery-form.component";
-import { LotteryResults } from "~/components/lottery-results";
+import { LotteryForm } from "~/features/lottery/lottery-form.component";
+import { LotteryResults } from "~/features/lottery/lottery-results";
 import { useLotteryService } from "~/services/lottery-service";
 import { toast, Toaster } from "sonner";
 
@@ -29,7 +29,7 @@ export default function LotteryPage() {
 
   const isWinners = winnersList.length > 0;
 
-  const role = useGetRole();
+  const { role } = useGetRole();
 
   const [isLoading, setIsLoading] = useState(true);
 
