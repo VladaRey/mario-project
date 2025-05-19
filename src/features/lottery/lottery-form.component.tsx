@@ -1,12 +1,12 @@
-import { Button } from "~/components/ui/button";
-import { PlayerCard } from "~/components/player-card";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useLotteryService } from "~/services/lottery-service";
 import { toast } from "sonner";
-import { eventOperations, type Player, type Event } from "~/lib/db";
-import { LotteryPlaceInput } from "~/features/lottery/lottery-place-input.component";
+import { PlayerCard } from "~/components/player-card";
+import { Button } from "~/components/ui/button";
 import { LotteryAddPlayersInput } from "~/features/lottery/lottery-add-players-input.component";
+import { LotteryPlaceInput } from "~/features/lottery/lottery-place-input.component";
+import { eventOperations, type Event, type Player } from "~/lib/db";
+import { useLotteryService } from "~/services/lottery-service";
 
 interface LotteryFormProps {
   event: Event | null;
@@ -25,7 +25,7 @@ export function LotteryForm({
 }: LotteryFormProps) {
 
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
-  const [generatedPlayers, setGeneratedPlayers] = useState<string[]>([]);
+
   const [places, setPlaces] = useState<number>(1);
   const [isGenerated, setIsGenerated] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -33,34 +33,25 @@ export function LotteryForm({
   const {
     addToWaitingList,
     addToWinnersList,
-    generateRandomPlayers,
+    generateRandomPlayers
   } = useLotteryService();
 
   const handleShuffle = async () => {
-    const randomIds = generateRandomPlayers(selectedPlayers, places);
-    setGeneratedPlayers(randomIds);
+    const lotteryPlayer= availablePlayers.filter((player) => selectedPlayers.includes(player.id));
+    const {winners, waitingList:waiting} = generateRandomPlayers(lotteryPlayer, places);
     setIsGenerated(true);
     setIsResetting(true);
 
     try {
       // Update winners
-      await addToWinnersList(availablePlayers, randomIds, event?.id || "");
+      await addToWinnersList( winners, event?.id || "");
 
       // Update waiting list
       await addToWaitingList(
-        selectedPlayers,
-        randomIds,
-        availablePlayers,
+        waiting,
         event?.id || "",
       );
 
-      const winners = availablePlayers.filter((player) =>
-        randomIds.includes(player.id),
-      );
-      const waiting = availablePlayers.filter(
-        (player) =>
-          selectedPlayers.includes(player.id) && !randomIds.includes(player.id),
-      );
       onLotteryGenerated?.(winners, waiting);
       toast.success("Winners and waiting list updated successfully!");
     } catch (error) {
@@ -78,7 +69,6 @@ export function LotteryForm({
   const handleReset = async () => {
     await eventOperations.removeLotteryResults(event?.id || "");
     setIsGenerated(false);
-    setGeneratedPlayers([]);
     setIsResetting(false);
     onReset();
   };
@@ -110,7 +100,7 @@ export function LotteryForm({
               disabled={
                 selectedPlayers.length === 0 ||
                 places > selectedPlayers.length ||
-                isWinners
+                places <= 0
               }
               onClick={handleShuffle}
             >

@@ -1,9 +1,9 @@
-import { eventOperations, Player, Event } from "~/lib/db";
+import { Event, eventOperations, Player } from "~/lib/db";
 
 
 
 export function useLotteryService() {
-    
+
   async function addtoEvent(
     players: Player[],
     id: string,
@@ -24,23 +24,9 @@ export function useLotteryService() {
   }
 
   async function addToWaitingList(
-    selectedPlayers: string[],
-    generatedPlayers: string[],
-    availablePlayers: Player[],
+    waitingPlayers: Player[],
     id: string,
   ) {
-    const waitingPlayers = selectedPlayers
-      .filter((id) => !generatedPlayers.includes(id))
-      .map((id) => {
-        const player = availablePlayers.find((p) => p.id === id);
-        return {
-          id: player?.id || "",
-          name: player?.name || "",
-          cardType: player?.cardType || "No card",
-          paid: false,
-          amount: 0,
-        };
-      });
 
     if (waitingPlayers.length > 0) {
       await eventOperations.updateWaitingList(id, waitingPlayers);
@@ -48,33 +34,22 @@ export function useLotteryService() {
   }
 
 
-  async function addToWinnersList (availablePlayers: Player[], generatedPlayers: string[], id: string){
-   const winners = availablePlayers.filter((player) =>
-     generatedPlayers.includes(player.id),
-   );
-   await eventOperations.updateWinnersList(id, winners);
+  async function addToWinnersList(winners: Player[], id: string) {
+    await eventOperations.updateWinnersList(id, winners);
   }
 
 
   const generateRandomPlayers = (
-    playerIds: string[],
+    players: Player[],
     places: number,
-  ): string[] => {
-    if (!playerIds || playerIds.length === 0 || places <= 0) return [];
+  ): ShuffleResult => {
+    const shuffledPlayers = [...players];
+    shuffle(shuffledPlayers);
 
-    const availableIds = [...playerIds];
-    const result: string[] = [];
+    const winners = shuffledPlayers.slice(0, places);
+    const waitingList = shuffledPlayers.slice(places);
 
-    for (let i = 0; i < places; i++) {
-      const randomIndex = Math.floor(Math.random() * availableIds.length);
-      const selectedId = availableIds[randomIndex];
-      if (selectedId) {
-        result.push(selectedId);
-        availableIds.splice(randomIndex, 1);
-      }
-    }
-
-    return result;
+    return { winners, waitingList };
   };
 
   return {
@@ -83,4 +58,28 @@ export function useLotteryService() {
     addToWinnersList,
     generateRandomPlayers
   };
+}
+
+export interface ShuffleResult {
+  winners: Player[];
+  waitingList: Player[];
+}
+
+
+function shuffle(array: any[]):any[] {
+  const shuffledArray = [...array];
+  let currentIndex = array.length;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+  return shuffledArray;
 }
