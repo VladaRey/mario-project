@@ -7,6 +7,7 @@ import { PlayerPaymentCard } from "./player-payment-card";
 
 const cardTypeOrder: CardType[] = [
   "Medicover",
+  "Medicover Light",
   "Multisport",
   "Classic",
   "No card",
@@ -24,6 +25,8 @@ export function CurrentEvent({id}: CurrentEventProps) {
     switch (cardType) {
       case "Medicover":
         return "bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900";
+      case "Medicover Light":
+        return "bg-purple-100 text-purple-800 hover:bg-purple-200 hover:text-purple-900";
       case "Multisport":
         return "bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900";
       case "Classic":
@@ -123,6 +126,7 @@ export function CurrentEvent({id}: CurrentEventProps) {
   );
 
   const mc = cardTypeCounts["Medicover"] || 0;
+  const ml = cardTypeCounts["Medicover Light"] || 0;
   const ms = cardTypeCounts["Multisport"] || 0;
   const msc = cardTypeCounts["Classic"] || 0;
   const nc = cardTypeCounts["No card"] || 0;
@@ -136,6 +140,7 @@ export function CurrentEvent({id}: CurrentEventProps) {
           </h1>
           <div className="hidden sm:flex">
             <FfpSheet
+              ml={ml}
               mc={mc}
               ms={ms}
               msc={msc}
@@ -160,6 +165,7 @@ export function CurrentEvent({id}: CurrentEventProps) {
 
         <div className="mt-4 sm:hidden">
           <FfpSheet
+            ml={ml}
             mc={mc}
             ms={ms}
             msc={msc}

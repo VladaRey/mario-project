@@ -9,6 +9,7 @@ export const ResultsPanel: FC<ResultsPanelProps> = ({ statistics }) => {
   return (
     <>
       <ResultRow title={"Medicover:"} value={statistics.medicover} />
+      <ResultRow title={"Medicover Light:"} value={statistics.medicoverLight} />
       <ResultRow title={"MS+:"} value={statistics.MS} />
       <ResultRow title={"MS classic:"} value={statistics.msClassic} />
       <ResultRow title={"No card:"} value={statistics.noMs} />

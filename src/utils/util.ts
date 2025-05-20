@@ -5,19 +5,23 @@ export interface State {
   hours: string;
   pricePerHour: string;
   fameTotal: string;
+  medicoverLightOwners: string;
   mCoverOwners: string;
   msOwners: string;
   msClassicOwners: string;
   noCard: string;
+  medicoverLightUsage: string;
   mCoverUsage: string;
   msUsage: string;
 }
 
 export function transformState(state: State): InputDataType {
   return {
+    medicoverLightOwners: parseStringOrZero(state.medicoverLightOwners),
     medicoverOwners: parseStringOrZero(state.mCoverOwners),
     msClassicOwners: parseStringOrZero(state.msClassicOwners),
     noCardOwners: parseStringOrZero(state.noCard),
+    medicoverLightCardUsages: parseStringOrZero(state.medicoverLightUsage),
     msCardUsages: parseStringOrZero(state.msUsage),
     courts: parseStringOrZero(state.courts),
     pricePerHour: parseStringOrZero(state.pricePerHour),
