@@ -444,3 +444,35 @@ test('2h 1ml 1nc 2ms 5u', () => {
 
     expect(calculateStatistics(data)).toStrictEqual(expected);
 });
+
+
+test('2h 2ml 4nc 2ms 7u 2mc', () => {
+    const data:InputDataType = {
+        msClassicOwners: 0,
+        msOwners: 1,
+        medicoverOwners:2,
+        medicoverLightOwners:1,
+        pricePerHour:55,
+        hours:2,
+        noCardOwners:4,
+        fameTotal:0,
+        courts:2,
+        medicoverCardUsages:4,
+        msCardUsages:2,
+        medicoverLightCardUsages:1
+    }
+
+    const expected:Statistics = {
+        totalPrice: '220.00',
+        discount: '105.00',
+        priceAfterDiscount: '115.00',
+        noMs: '26.00',
+        msClassic: undefined,
+        medicover: '0',
+        medicoverLight: '11.00',
+        MS: '0',
+        fameDiscount: '0.00'
+    }
+
+    expect(calculateStatistics(data)).toStrictEqual(expected);
+})

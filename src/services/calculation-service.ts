@@ -76,11 +76,11 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
   if (medicoverPrice < 0) {
     medicoverAdditionalDiscount =
       (medicoverPrice * inputData.medicoverOwners) /
-      (inputData.msOwners + inputData.msClassicOwners + inputData.noCardOwners);
+      (inputData.msOwners + inputData.msClassicOwners + inputData.medicoverLightOwners + inputData.noCardOwners);
   }
 
   const medicoverLightDiscaunt = inputData.medicoverLightCardUsages * 15;
-  const medicoverLightPrice =
+  let medicoverLightPrice =
     inputData.medicoverLightOwners > 0
       ? noMs - medicoverLightDiscaunt / inputData.medicoverLightOwners
       : 0;
@@ -103,7 +103,8 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
   const msPrice = noMs - msDiscaunt + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
   if (msPrice < 0) {
     msAdditionalDiscount =
-      (msPrice * inputData.msOwners) / inputData.noCardOwners;
+      (msPrice * inputData.msOwners) /
+      (inputData.noCardOwners + inputData.medicoverLightOwners);
   }
 
   const msClassicPrice =
@@ -114,6 +115,8 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
         medicoverLightAdditionalDiscount +
         msAdditionalDiscount
       : 0;
+
+  medicoverLightPrice += msAdditionalDiscount + medicoverAdditionalDiscount;
 
   noMs += msAdditionalDiscount + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
 
