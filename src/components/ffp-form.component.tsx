@@ -16,6 +16,7 @@ import {
 import { type Statistics } from "~/services/calculation-service";
 
 interface FfpFormProps {
+  ml?: number;
   mc?: number;
   ms?: number;
   msc?: number;
@@ -23,8 +24,8 @@ interface FfpFormProps {
   onCalculate?: (stats: Statistics) => void;
 }
 
-export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFormProps) {
-  const playersCount = mc + ms + msc + nc;
+export function FfpForm({ ml = 0, mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFormProps) {
+  const playersCount = ml + mc + ms + msc + nc;
   const courtCount = Math.ceil(playersCount / 4);
 
   const defaultMedicoverUsage = mc * 2;
@@ -36,12 +37,14 @@ export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFor
   const [hours, setHours] = useState("2");
   const [pricePerHour, setPricePerHour] = useState("55");
   const [fameTotal, setFameTotal] = useState("");
+  const [medicoverLightOwners, setMedicoverLightOwners] = useState(String(ml));
   const [mCoverOwners, setMCoverOwners] = useState(String(mc));
   const [msOwners, setMSOwners] = useState(String(ms));
   const [msClassicOwners, setMSClassicOwners] = useState(String(msc));
   const [noCard, setNoCard] = useState(String(nc));
   const [mCoverUsage, setMCoverUsage] = useState(String(defaultMedicoverUsage));
   const [msUsage, setMSUsage] = useState(String(realMSUsage));
+  const [medicoverLightUsage, setMedicoverLightUsage] = useState(String(ml));
 
   const statistics = calculateStatistics(
     transformState({
@@ -49,10 +52,12 @@ export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFor
       hours,
       pricePerHour,
       fameTotal,
+      medicoverLightOwners,
       mCoverOwners,
       msOwners,
       msClassicOwners,
       noCard,
+      medicoverLightUsage,
       mCoverUsage,
       msUsage,
     }),
@@ -66,6 +71,7 @@ export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFor
     statistics.msClassic,
     statistics.noMs,
     statistics.totalPrice,
+    statistics.medicoverLight,
   ]);
 
   return (
@@ -148,6 +154,25 @@ export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFor
 
       <Row>
         <Column>
+          <Label>Medicover Light owners</Label>
+          <Input
+            className="border-[#241e2f]"
+            value={medicoverLightOwners}
+            onChange={(e) => setMedicoverLightOwners(e.target.value)}
+          />
+        </Column>
+        <Column>
+          <Label>Medicover Light usage</Label>
+          <Input
+            className="border-[#241e2f]"
+            value={medicoverLightUsage}
+            onChange={(e) => setMedicoverLightUsage(e.target.value)}
+          />
+        </Column>
+      </Row>
+
+      <Row>
+        <Column>
           <Label>MS+ owners</Label>
           <Input
             className="border-[#241e2f]"
@@ -176,7 +201,11 @@ export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFor
         </Column>
         <Column>
           <Label>No card</Label>
-          <Input className="border-[#241e2f]" value={noCard} onChange={(e) => setNoCard(e.target.value)} />
+          <Input
+            className="border-[#241e2f]"
+            value={noCard}
+            onChange={(e) => setNoCard(e.target.value)}
+          />
         </Column>
       </Row>
 
@@ -196,5 +225,5 @@ const Label: FC<PropsWithChildren> = ({ children }) => {
 };
 
 const Column: FC<PropsWithChildren> = ({ children }) => {
-  return <div className={"flex flex-1 flex-col gap-y-2"}>{children}</div>;
+  return <div className={"flex flex-1 flex-col justify-between gap-y-2"}>{children}</div>;
 };
