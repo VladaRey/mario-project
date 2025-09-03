@@ -423,7 +423,7 @@ export const eventOperations = {
   async deleteEvent(id: string): Promise<void> {
     const { error } = await supabase
     .from("events")
-    .delete()
+    .update({ is_deleted: true })
     .eq("id", id);
     
     if (error) throw error;
@@ -435,6 +435,7 @@ export const eventOperations = {
     .select(
       `id, name, created_at, date, players:player_events(player:players(id, name, created_at, cardType))`,
     )
+    .eq("is_deleted", false)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
