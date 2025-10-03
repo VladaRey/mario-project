@@ -34,7 +34,7 @@ export function FfpForm({ mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFor
 
   const [courts, setCourts] = useState(String(courtCount));
   const [hours, setHours] = useState("2");
-  const [pricePerHour, setPricePerHour] = useState("55");
+  const [pricePerHour, setPricePerHour] = useState("80");
   const [fameTotal, setFameTotal] = useState("");
   const [mCoverOwners, setMCoverOwners] = useState(String(mc));
   const [msOwners, setMSOwners] = useState(String(ms));

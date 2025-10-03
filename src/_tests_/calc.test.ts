@@ -1,5 +1,5 @@
 import {expect, test} from "@jest/globals";
-import {calculateStatistics, InputDataType, Statistics} from "~/services/calculation-service";
+import {calculateStatistics, InputDataType, Statistics} from "../services/calculation-service";
 
 
 test('2h 2ms 2nc 4u', () => {
