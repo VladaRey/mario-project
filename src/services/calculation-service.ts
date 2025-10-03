@@ -2,9 +2,11 @@ export interface InputDataType {
   msOwners: number;
   medicoverOwners: number;
   msClassicOwners: number;
+  medicoverLightOwners: number;
   noCardOwners: number;
   msCardUsages: number;
   medicoverCardUsages: number;
+  medicoverLightCardUsages: number;
   courts: number;
   pricePerHour: number;
   hours: number;
@@ -17,6 +19,7 @@ export interface Statistics {
   discount: string;
   msClassic?: string;
   medicover?: string;
+  medicoverLight?: string;
   MS?: string;
   noMs?: string;
   fameDiscount: string;
@@ -24,7 +27,7 @@ export interface Statistics {
 
 export function calculateStatistics(inputData: InputDataType): Statistics {
   const discount =
-    (inputData.medicoverCardUsages + inputData.msCardUsages) * 15;
+    (inputData.medicoverCardUsages + inputData.medicoverLightCardUsages + inputData.msCardUsages) * 15;
 
   const total = inputData.courts * inputData.pricePerHour * inputData.hours;
 
@@ -33,6 +36,7 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
   const people =
     inputData.msOwners +
     inputData.medicoverOwners +
+    inputData.medicoverLightOwners +
     inputData.msClassicOwners +
     inputData.noCardOwners;
 
@@ -43,6 +47,20 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
     inputData.fameTotal > 0
       ? priceAfterDiscount - fameDiscount
       : priceAfterDiscount;
+
+  if (realTotal <= 0) {
+    return {
+      totalPrice: roundUp(total),
+      discount: roundUp(discount),
+      priceAfterDiscount: "0",
+      fameDiscount: inputData.fameTotal > 0 ? fameDiscount.toFixed(2) : "0.00",
+      noMs: inputData.noCardOwners ? "0" : undefined,
+      MS: inputData.msOwners ? "0" : undefined,
+      medicover: inputData.medicoverOwners ? "0" : undefined,
+      medicoverLight: inputData.medicoverLightOwners ? "0" : undefined,
+      msClassic: inputData.msClassicOwners ? "0" : undefined,
+    };
+  }
 
   let noMs = (total - fameDiscount) / people;
 
@@ -58,6 +76,20 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
   if (medicoverPrice < 0) {
     medicoverAdditionalDiscount =
       (medicoverPrice * inputData.medicoverOwners) /
+      (inputData.msOwners + inputData.msClassicOwners + inputData.medicoverLightOwners + inputData.noCardOwners);
+  }
+
+  const medicoverLightDiscaunt = inputData.medicoverLightCardUsages * 15;
+  let medicoverLightPrice =
+    inputData.medicoverLightOwners > 0
+      ? noMs - medicoverLightDiscaunt / inputData.medicoverLightOwners
+      : 0;
+
+  let medicoverLightAdditionalDiscount = 0;
+
+  if (medicoverLightPrice < 0) {
+    medicoverLightAdditionalDiscount =
+      (medicoverLightPrice * inputData.medicoverLightOwners) /
       (inputData.msOwners + inputData.msClassicOwners + inputData.noCardOwners);
   }
 
@@ -68,10 +100,11 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
       inputData.msClassicOwners * msClassicDiscount(inputData.hours));
   const msClassicDiscaunt = msDiscaunt * msClassicDiscount(inputData.hours);
 
-  const msPrice = noMs - msDiscaunt + medicoverAdditionalDiscount;
+  const msPrice = noMs - msDiscaunt + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
   if (msPrice < 0) {
     msAdditionalDiscount =
-      (msPrice * inputData.msOwners) / inputData.noCardOwners;
+      (msPrice * inputData.msOwners) /
+      (inputData.noCardOwners + inputData.medicoverLightOwners);
   }
 
   const msClassicPrice =
@@ -79,10 +112,13 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
       ? noMs -
         msClassicDiscaunt +
         medicoverAdditionalDiscount +
+        medicoverLightAdditionalDiscount +
         msAdditionalDiscount
       : 0;
 
-  noMs += msAdditionalDiscount + medicoverAdditionalDiscount;
+  medicoverLightPrice += msAdditionalDiscount + medicoverAdditionalDiscount;
+
+  noMs += msAdditionalDiscount + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
 
   return {
     totalPrice: roundUp(total),
@@ -94,6 +130,9 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
       : undefined,
     MS: inputData.msOwners ? roundUp(msPrice) : undefined,
     medicover: inputData.medicoverOwners ? roundUp(medicoverPrice) : undefined,
+    medicoverLight: inputData.medicoverLightOwners
+      ? roundUp(medicoverLightPrice)
+      : undefined,
     msClassic: inputData.msClassicOwners
       ? roundUp(msClassicPrice > 0 ? msClassicPrice : 0)
       : undefined,
