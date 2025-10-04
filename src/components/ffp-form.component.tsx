@@ -35,7 +35,7 @@ export function FfpForm({ ml = 0, mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }
 
   const [courts, setCourts] = useState(String(courtCount));
   const [hours, setHours] = useState("2");
-  const [pricePerHour, setPricePerHour] = useState("80");
+  const [pricePerHour, setPricePerHour] = useState("77");
   const [fameTotal, setFameTotal] = useState("");
   const [medicoverLightOwners, setMedicoverLightOwners] = useState(String(ml));
   const [mCoverOwners, setMCoverOwners] = useState(String(mc));
