@@ -103,6 +103,22 @@ export const playerOperations = {
 
     if (error) throw error;
   },
+
+  async getPlayerEventDates(playerId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("player_events")
+      .select("event:events(date)")
+      .eq("player_id", playerId);
+
+    if (error) throw error;
+
+    // data = [{ event: { date: "2025-10-01" } }, ...]
+    const sortedDates = data
+      .map((item: any) => item.event.date) // extract dates
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // sorting by time
+
+    return sortedDates;
+  }
 };
 
 // Reservation List operations
