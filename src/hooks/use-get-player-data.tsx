@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { Player, playerOperations } from "~/lib/db";
+import { Player, playerOperations, eventOperations } from "~/lib/db";
+
+export type LotteryResults = {
+  wins: number;
+  losses: number;
+};
 
 interface UseGetPlayerDataProps {
   playerId?: string;
@@ -9,6 +14,10 @@ export function useGetPlayerData({ playerId }: UseGetPlayerDataProps) {
   const [player, setPlayer] = useState<Player | null>(null);
   const [playerEventDates, setPlayerEventDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lotteryResults, setLotteryResults] = useState<LotteryResults>({
+    wins: 0,
+    losses: 0,
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -18,9 +27,10 @@ export function useGetPlayerData({ playerId }: UseGetPlayerDataProps) {
       }
 
       try {
-        const [allPlayers, eventDates] = await Promise.all([
+        const [allPlayers, eventDates, lotteryResults] = await Promise.all([
           playerOperations.getAllPlayers(),
           playerOperations.getPlayerEventDates(playerId),
+          eventOperations.getLotteryResultsByPlayerId(playerId),
         ]);
 
         const foundPlayer = allPlayers.find((p) => p.id === playerId);
@@ -30,6 +40,7 @@ export function useGetPlayerData({ playerId }: UseGetPlayerDataProps) {
         }
         setPlayer(foundPlayer);
         setPlayerEventDates(eventDates);
+        setLotteryResults(lotteryResults as LotteryResults);
       } catch (error) {
         console.error("Failed to fetch player data:", error);
       } finally {
@@ -40,5 +51,5 @@ export function useGetPlayerData({ playerId }: UseGetPlayerDataProps) {
     fetchData();
   }, [playerId]);
 
-  return { player, playerEventDates, loading };
+  return { player, playerEventDates, loading, lotteryResults };
 }

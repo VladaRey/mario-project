@@ -12,11 +12,6 @@ export default function PlayerHistory({ playerEventDates }: PlayerHistoryProps) 
         <div className="mb-4">
           <p className="text-sm text-gray-600">
             Calendar showing player activity.
-            {playerEventDates.length > 0 && (
-              <span className="ml-1 font-medium text-[#7B3C7D]">
-                Total playing days: {playerEventDates.length}
-              </span>
-            )}
           </p>
         </div>
         <PlayerActivityCalendarComponent playerEventDates={playerEventDates} />

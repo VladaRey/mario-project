@@ -6,6 +6,7 @@ import PlayerInfoCards from "~/features/players-page/player-info-cards";
 import PlayerHistory from "~/features/players-page/player-history";
 import { useGetPlayerData } from "~/hooks/use-get-player-data";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
+import FullSizeLoader from "~/components/full-size-loader";
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -13,16 +14,11 @@ export default function PlayerDetailPage() {
 
   const playerId = params.id as string;
 
-  const { player, playerEventDates, loading } = useGetPlayerData({ playerId });
+  const { player, playerEventDates, loading, lotteryResults } =
+    useGetPlayerData({ playerId });
 
   if (loading) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="flex items-center justify-center py-8">
-          <div className="text-lg">Loading player...</div>
-        </div>
-      </div>
-    );
+    return <FullSizeLoader />;
   }
 
   if (!player) {
@@ -46,7 +42,10 @@ export default function PlayerDetailPage() {
   return (
     <div className="container mx-auto p-4">
       <Breadcrumbs
-        items={[{ label: "Players", href: "/players" }, { label: player.name, href: `/players/player/${player.id}` }]}
+        items={[
+          { label: "Players", href: "/players" },
+          { label: player.name, href: `/players/player/${player.id}` },
+        ]}
         className="mb-4"
       />
 
@@ -58,7 +57,11 @@ export default function PlayerDetailPage() {
         </div>
 
         {/* Additional player details */}
-        <PlayerInfoCards player={player} playerEventDates={playerEventDates} />
+        <PlayerInfoCards
+          player={player}
+          playerEventDates={playerEventDates}
+          lotteryResults={lotteryResults}
+        />
 
         {/* Statistics overview */}
         <PlayerHistory playerEventDates={playerEventDates} />
