@@ -14,7 +14,7 @@ export default function PlayerInfoCards({
   playerEventDates,
   lotteryResults,
 }: PlayerInfoCardsProps) {
-  const cards = getPlayerCards(player, playerEventDates, lotteryResults.wins, lotteryResults.losses);
+  const cards = getPlayerCards(player, playerEventDates, lotteryResults.wins, lotteryResults.played);
 
   return (
     <div className="p-2">

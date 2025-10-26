@@ -3,7 +3,7 @@ import { Player, playerOperations, eventOperations } from "~/lib/db";
 
 export type LotteryResults = {
   wins: number;
-  losses: number;
+  played: number;
 };
 
 interface UseGetPlayerDataProps {
@@ -16,7 +16,7 @@ export function useGetPlayerData({ playerId }: UseGetPlayerDataProps) {
   const [loading, setLoading] = useState(true);
   const [lotteryResults, setLotteryResults] = useState<LotteryResults>({
     wins: 0,
-    losses: 0,
+    played: 0,
   });
 
   useEffect(() => {

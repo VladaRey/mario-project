@@ -438,7 +438,7 @@ export const eventOperations = {
 
   async getLotteryResultsByPlayerId(
     playerId: string,
-  ): Promise<{ wins: number; losses: number }> {
+  ): Promise<{ wins: number; played: number }> {
     const { data, error } = await supabase
       .from("lottery_results")
       .select("winners, waiting_list")
@@ -446,10 +446,10 @@ export const eventOperations = {
     console.log(data);
     if (error) throw error;
 
-    if (!data?.length) return { wins: 0, losses: 0 };
+    if (!data?.length) return { wins: 0, played: 0 };
 
     let wins = 0;
-    let losses = 0;
+    let played = 0;
 
     for (const row of data) {
       const winners = Array.isArray(row.winners) ? row.winners : [];
@@ -457,11 +457,15 @@ export const eventOperations = {
         ? row.waiting_list
         : [];
 
-      if (winners.some((p: any) => p.id === playerId)) wins += 1;
-      if (waitingList.some((p: any) => p.id === playerId)) losses += 1;
+      if (winners.some((p: any) => p.id === playerId)) {
+        wins += 1;
+        played += 1;
+      } else if (waitingList.some((p: any) => p.id === playerId)) {
+        played += 1;
+      }
     }
 
-    return { wins, losses };
+    return { wins, played };
   },
 
   async deleteEvent(id: string): Promise<void> {
