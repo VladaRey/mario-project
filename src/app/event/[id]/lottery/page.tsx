@@ -9,12 +9,12 @@ import {
 } from "~/lib/db";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { useGetRole } from "~/hooks/use-get-role";
 import { LotteryForm } from "~/features/lottery/lottery-form.component";
 import { LotteryResults } from "~/features/lottery/lottery-results";
 import { useLotteryService } from "~/services/lottery-service";
 import { toast, Toaster } from "sonner";
+import FullSizeLoader from "~/components/full-size-loader";
 
 export default function LotteryPage() {
   const params = useParams();
@@ -136,11 +136,7 @@ export default function LotteryPage() {
     <div className="container mx-auto max-w-4xl p-4">
       <Toaster position="top-center" />
 
-      {isLoading && (
-        <div className="flex h-screen items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin" />
-        </div>
-      )}
+      {isLoading && <FullSizeLoader />}
 
       <div className="mb-8 flex items-center text-3xl font-bold">
         <Link href="/">

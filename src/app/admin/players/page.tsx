@@ -29,6 +29,8 @@ function PlayersPage() {
             id: "",
             name: "",
             cardType: "Multisport",
+            paid: false,
+            amount: 0,
           }}
           onSave={handleAddPlayer}
           trigger={<Button>Add Player</Button>}

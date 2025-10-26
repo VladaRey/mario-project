@@ -103,6 +103,22 @@ export const playerOperations = {
 
     if (error) throw error;
   },
+
+  async getPlayerEventDates(playerId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("player_events")
+      .select("event:events(date)")
+      .eq("player_id", playerId);
+
+    if (error) throw error;
+
+    // data = [{ event: { date: "2025-10-01" } }, ...]
+    const sortedDates = data
+      .map((item: any) => item.event.date) // extract dates
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // sorting by time
+
+    return sortedDates;
+  }
 };
 
 // Reservation List operations
@@ -418,6 +434,34 @@ export const eventOperations = {
       .eq("event_id", eventId);
 
     if (error) throw error;
+  },
+
+  async getLotteryResultsByPlayerId(
+    playerId: string,
+  ): Promise<{ wins: number; losses: number }> {
+    const { data, error } = await supabase
+      .from("lottery_results")
+      .select("winners, waiting_list")
+
+    console.log(data);
+    if (error) throw error;
+
+    if (!data?.length) return { wins: 0, losses: 0 };
+
+    let wins = 0;
+    let losses = 0;
+
+    for (const row of data) {
+      const winners = Array.isArray(row.winners) ? row.winners : [];
+      const waitingList = Array.isArray(row.waiting_list)
+        ? row.waiting_list
+        : [];
+
+      if (winners.some((p: any) => p.id === playerId)) wins += 1;
+      if (waitingList.some((p: any) => p.id === playerId)) losses += 1;
+    }
+
+    return { wins, losses };
   },
 
   async deleteEvent(id: string): Promise<void> {
