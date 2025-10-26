@@ -14,7 +14,7 @@ export default function PlayerSearchList() {
     const playerName = player.name.toLowerCase();
     const search = searchTerm.toLowerCase();
 
-    return playerName.startsWith(search);
+    return playerName.includes(search);
   });
 
   const refreshPlayers = async () => {

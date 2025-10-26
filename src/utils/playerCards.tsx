@@ -13,8 +13,8 @@ export interface PlayerCard {
   icon: React.ReactNode;
 }
 
-export function getPlayerCards(player: Player, playerEventDates: string[], wins: number, losses: number): PlayerCard[] {
-  const lotteryResults = `${wins} / ${losses}`;
+export function getPlayerCards(player: Player, playerEventDates: string[], wins: number, played: number): PlayerCard[] {
+  const lotteryResults = `${wins} / ${played}`;
   const totalEvents = playerEventDates.length;
   
   return [
@@ -39,7 +39,7 @@ export function getPlayerCards(player: Player, playerEventDates: string[], wins:
       icon: <FlagTriangleRight className="h-4 w-4 text-muted-foreground" />,
     },
     {
-      title: "Count of playing / winning lottery",
+      title: "Wins / attempts lottery",
       value: lotteryResults,
       icon: <Dices className="h-4 w-4 text-muted-foreground" />,
     },

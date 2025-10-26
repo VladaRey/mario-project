@@ -29,21 +29,39 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto space-y-8 p-4">
-      <div className="flex flex-col md:flex-row justify-between rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg sm:items-center">
+      <div className="flex flex-col justify-between rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg sm:items-center md:flex-row">
         <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">Events</h1>
         <div className="flex gap-2">
           <Link href="/players">
             <Button
               variant="outline"
-              className="rounded-full w-full sm:w-fit bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100"
+              className="w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 sm:w-fit"
             >
               <Users className="h-4 w-4" />
               <span className="text-base font-medium">Players</span>
             </Button>
           </Link>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 sm:w-fit"
+              >
+                <Calculator className="h-4 w-4" />
+                <span className="text-base font-medium">FFP</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full overflow-y-auto pt-10">
+              <SheetTitle className="hidden">FFP</SheetTitle>
+              <SheetDescription className="hidden">
+                Calculate payment amounts
+              </SheetDescription>
+              <FfpForm />
+            </SheetContent>
+          </Sheet>
           <Button
             variant="outline"
-            className="rounded-full w-full sm:w-fit bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100"
+            className="w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 sm:w-fit"
             disabled={buttonLabel === "Fame"}
           >
             <Link href={buttonHref} className="flex items-center">
@@ -53,22 +71,6 @@ export default function HomePage() {
               <span className="text-base font-medium">{buttonLabel}</span>
             </Link>
           </Button>
-          <Sheet>
-            <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            className="rounded-full w-full sm:w-fit bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100"
-          >
-              <Calculator className="h-4 w-4" />
-              <span className="text-base font-medium">FFP</span>
-          </Button>
-            </SheetTrigger>
-            <SheetContent className="overflow-y-auto w-full pt-10">
-              <SheetTitle className="hidden">FFP</SheetTitle>
-              <SheetDescription className="hidden">Calculate payment amounts</SheetDescription>
-              <FfpForm />
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
       <EventsList basePath="/event" withBackground type="dashboard" />
