@@ -1,4 +1,5 @@
 import { Player } from "~/lib/db";
+import { format } from "date-fns";
 import {
   Calendar,
   CreditCard,
@@ -30,7 +31,7 @@ export function getPlayerCards(player: Player, playerEventDates: string[], wins:
     },
     player.created_at && {
       title: "Created",
-      value: new Date(player.created_at).toLocaleDateString(),
+      value: format(new Date(player.created_at), "dd/MM/yyyy"),
       icon: <Calendar className="h-4 w-4 text-muted-foreground" />,
     },
     {
