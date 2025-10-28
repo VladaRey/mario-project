@@ -29,9 +29,9 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto space-y-8 p-4">
-      <div className="flex flex-col justify-between rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg sm:items-center md:flex-row">
+      <div className="flex flex-col gap-2 md:justify-between rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg md:flex-row">
         <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">Events</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap md:flex-nowrap gap-2">          
           <Link href="/players">
             <Button
               variant="outline"
@@ -45,7 +45,7 @@ export default function HomePage() {
             <SheetTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 sm:w-fit"
+                className="w-fit md:w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100"
               >
                 <Calculator className="h-4 w-4" />
                 <span className="text-base font-medium">FFP</span>
@@ -61,7 +61,7 @@ export default function HomePage() {
           </Sheet>
           <Button
             variant="outline"
-            className="w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 sm:w-fit"
+            className="w-fit md:w-full rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100"
             disabled={buttonLabel === "Fame"}
           >
             <Link href={buttonHref} className="flex items-center">
