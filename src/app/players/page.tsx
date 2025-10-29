@@ -14,9 +14,12 @@ export default function PlayersPage() {
           className="mb-4 ml-1"
         />
       </div>
-
-      {/* players list with search input*/}
-      <PlayerSearchList />
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">All players</h2>
+        
+        {/* players list with search input*/}
+        <PlayerSearchList />
+      </div>
     </div>
   );
 }

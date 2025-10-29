@@ -150,6 +150,9 @@ export function CurrentEvent({ id }: CurrentEventProps) {
         />
       </div>
       <div className="space-y-4">
+        <div className="space-y-3">
+          <h2 className="text-2xl font-bold">Event: {event.name}</h2>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
             <Users className="h-4 w-4" />

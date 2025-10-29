@@ -40,7 +40,11 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg md:flex-row md:justify-between">
-      <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">{title}</h1>
+      <Link href="/">
+        <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">
+          Mario Group
+        </h1>
+      </Link>
       <div className="flex flex-wrap gap-2 md:flex-nowrap">
         <Link href="/players">
           <Button

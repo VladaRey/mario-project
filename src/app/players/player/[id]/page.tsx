@@ -41,7 +41,7 @@ export default function PlayerDetailPage() {
   }
 
   return (
-    <div className="mx-auto space-y-8 p-4">
+    <div className="mx-auto space-y-6 p-4">
       <div className="space-y-4">
         <Navbar title="Player details" />
         <Breadcrumbs
