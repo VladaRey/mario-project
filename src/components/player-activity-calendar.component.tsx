@@ -2,7 +2,8 @@ import { ActivityCalendar } from "react-activity-calendar";
 import { format } from "date-fns";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
-import React, { useMemo} from "react";
+import React, { useMemo } from "react";
+import { buildActivityData } from "~/utils/playerHistory";
 
 interface PlayerActivityCalendarComponentProps {
   playerEventDates: string[];
@@ -11,31 +12,21 @@ interface PlayerActivityCalendarComponentProps {
 export default function PlayerActivityCalendarComponent({
   playerEventDates,
 }: PlayerActivityCalendarComponentProps) {
-  // If no dates provided, show empty calendar
-  if (!playerEventDates?.length) {
-    return null;
-  }
+  const data = useMemo(
+    () => buildActivityData(playerEventDates || []),
+    [playerEventDates],
+  );
 
-  // Convert dates to activity data
-  const data = useMemo(() => {
-    const grouped = playerEventDates.reduce<Record<string, number>>(
-      (acc, date) => {
-        const key = format(new Date(date), "yyyy-MM-dd");
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      },
-      {},
+  // Show empty state if no data (library requires non-empty data)
+  if (!data.length) {
+    return (
+      <div className="flex h-32 w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          No activity recorded 
+        </p>
+      </div>
     );
-
-    return Object.entries(grouped)
-      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-      .map(([date, count]) => ({
-        date,
-        count,
-        level: Math.min(count, 4),
-        title: `${count} event(s) — ${format(new Date(date), "MMMM d, yyyy")}`,
-      }));
-  }, [playerEventDates]);
+  }
 
   return (
     <div className="w-full overflow-x-auto">
