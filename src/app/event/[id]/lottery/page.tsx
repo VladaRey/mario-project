@@ -8,13 +8,14 @@ import {
   type Event,
 } from "~/lib/db";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { useGetRole } from "~/hooks/use-get-role";
 import { LotteryForm } from "~/features/lottery/lottery-form.component";
 import { LotteryResults } from "~/features/lottery/lottery-results";
 import { useLotteryService } from "~/services/lottery-service";
 import { toast, Toaster } from "sonner";
 import FullSizeLoader from "~/components/full-size-loader";
+import { Navbar } from "~/components/navbar";
+import { Breadcrumbs } from "~/components/breadcrumbs.component";
 
 export default function LotteryPage() {
   const params = useParams();
@@ -133,40 +134,42 @@ export default function LotteryPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl p-4">
+    <div className="container mx-auto p-4">
       <Toaster position="top-center" />
 
       {isLoading && <FullSizeLoader />}
 
-      <div className="mb-8 flex items-center text-3xl font-bold">
-        <Link href="/">
-          <h2 className="font-extrabold text-[#2E2A5D]">Mario Group</h2>
-        </Link>
-      </div>
+      <Navbar title="Lottery" />
 
-      <div className="mb-6 rounded-lg border border-violet-200 bg-violet-50 p-4">
-        <h2 className="mb-2 text-xl font-bold">Event: {event?.name}</h2>
-        <p className="text-sm text-gray-600">Choose random players to add to the event</p>
-      </div>
+      <Breadcrumbs items={[{ label: "Lottery", href: `/event/${event?.id}/lottery` }]} className="pt-4 ml-1"/>
 
-      {role === "admin" && (
-        <LotteryForm
-          event={event}
-          availablePlayers={availablePlayers}
-          isWinners={isWinners}
-          onReset={handleReset}
-          onLotteryGenerated={handleLotteryGenerated}
+      <div className="max-w-5xl mx-auto pt-4">
+        <div className="mb-6 rounded-lg border border-violet-200 bg-violet-50 p-4">
+          <h2 className="mb-2 text-xl font-bold">Event: {event?.name}</h2>
+          <p className="text-sm text-gray-600">
+            Choose random players to add to the event
+          </p>
+        </div>
+
+        {role === "admin" && (
+          <LotteryForm
+            event={event}
+            availablePlayers={availablePlayers}
+            isWinners={isWinners}
+            onReset={handleReset}
+            onLotteryGenerated={handleLotteryGenerated}
+          />
+        )}
+
+        <LotteryResults
+          winnersList={winnersList}
+          waitingList={waitingList}
+          addPlayersToEvent={addPlayersToEvent}
+          handleAddPlayer={handleAddPlayer}
+          handleRemoveWinner={handleRemoveWinner}
+          handleRemoveFromWaitingList={handleRemoveFromWaitingList}
         />
-      )}
-
-      <LotteryResults
-        winnersList={winnersList}
-        waitingList={waitingList}
-        addPlayersToEvent={addPlayersToEvent}
-        handleAddPlayer={handleAddPlayer}
-        handleRemoveWinner={handleRemoveWinner}
-        handleRemoveFromWaitingList={handleRemoveFromWaitingList}
-      />
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import PlayerHistory from "~/features/players-page/player-history";
 import { useGetPlayerData } from "~/hooks/use-get-player-data";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
 import FullSizeLoader from "~/components/full-size-loader";
+import { Navbar } from "~/components/navbar";
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -40,32 +41,27 @@ export default function PlayerDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Breadcrumbs
-        items={[
-          { label: "Players", href: "/players" },
-          { label: player.name, href: `/players/player/${player.id}` },
-        ]}
-        className="mb-4"
+    <div className="mx-auto space-y-8 p-4">
+      <div className="space-y-4">
+        <Navbar title="Player details" />
+        <Breadcrumbs
+          items={[
+            { label: "Players", href: "/players" },
+            { label: player.name, href: `/players/player/${player.id}` },
+          ]}
+          className="mb-4 ml-1"
+        />
+      </div>
+
+      {/* Additional player details */}
+      <PlayerInfoCards
+        player={player}
+        playerEventDates={playerEventDates}
+        lotteryResults={lotteryResults}
       />
 
-      <div className="space-y-4">
-        <div className="rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold sm:text-4xl">Player details</h1>
-          </div>
-        </div>
-
-        {/* Additional player details */}
-        <PlayerInfoCards
-          player={player}
-          playerEventDates={playerEventDates}
-          lotteryResults={lotteryResults}
-        />
-
-        {/* Statistics overview */}
-        <PlayerHistory playerEventDates={playerEventDates} />
-      </div>
+      {/* Statistics overview */}
+      <PlayerHistory playerEventDates={playerEventDates} />
     </div>
   );
 }
