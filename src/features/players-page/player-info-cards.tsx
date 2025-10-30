@@ -17,7 +17,7 @@ export default function PlayerInfoCards({
   const cards = getPlayerCards(player, playerEventDates, lotteryResults.wins, lotteryResults.played);
 
   return (
-    <div className="p-2 space-y-2">
+    <div className="space-y-2">
       <div>
         <h2 className="text-2xl font-bold">Player details</h2>
       </div>

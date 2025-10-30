@@ -42,16 +42,14 @@ export default function PlayerDetailPage() {
 
   return (
     <div className="mx-auto space-y-6 p-4">
-      <div className="space-y-4">
         <Navbar title="Player details" />
         <Breadcrumbs
           items={[
             { label: "Players", href: "/players" },
             { label: player.name, href: `/players/player/${player.id}` },
           ]}
-          className="mb-4 ml-1"
+          className="ml-1"
         />
-      </div>
 
       {/* Additional player details */}
       <PlayerInfoCards

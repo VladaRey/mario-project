@@ -129,48 +129,46 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   const nc = cardTypeCounts["No card"] || 0;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <Navbar title={event.name}>
-          <FfpSheet
-            ml={ml}
-            mc={mc}
-            ms={ms}
-            msc={msc}
-            nc={nc}
-            onRefresh={refreshPaymentAmounts}
-            eventId={event.id}
-          />
-        </Navbar>
-        <Breadcrumbs
-          items={[
-            { label: event?.name || "", href: `/admin/event/${event?.id}` },
-          ]}
-          className="ml-1 mt-4"
+    <div className="space-y-4">
+      <Navbar title={event.name}>
+        <FfpSheet
+          ml={ml}
+          mc={mc}
+          ms={ms}
+          msc={msc}
+          nc={nc}
+          onRefresh={refreshPaymentAmounts}
+          eventId={event.id}
         />
-      </div>
+      </Navbar>
+      <Breadcrumbs
+        items={[
+          { label: event?.name || "", href: `/admin/event/${event?.id}` },
+        ]}
+        className="ml-1"
+      />
       <div className="space-y-4">
-        <div className="space-y-3">
+        <div className="space-y-1">
           <h2 className="text-2xl font-bold">Event: {event.name}</h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
-            <Users className="h-4 w-4" />
-            <span>{event.players.length} Players</span>
-          </div>
-          <div className="h-6 w-px bg-gray-300" />
-          {sortedCardTypeCounts.map(({ type, count }) => (
-            <div
-              key={type}
-              className={`${getCardTypeColor(type)} flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium`}
-            >
-              <span>{type}:</span>
-              <span className="font-bold">{count}</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
+              <Users className="h-4 w-4" />
+              <span>{event.players.length} Players</span>
             </div>
-          ))}
+            <div className="h-6 w-px bg-gray-300" />
+            {sortedCardTypeCounts.map(({ type, count }) => (
+              <div
+                key={type}
+                className={`${getCardTypeColor(type)} flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium`}
+              >
+                <span>{type}:</span>
+                <span className="font-bold">{count}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(sortedPlayers || []).map((player) => {
             return player ? (
               <PlayerPaymentCard

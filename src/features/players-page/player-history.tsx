@@ -28,10 +28,10 @@ export default function PlayerHistory({
   );
 
   return (
-    <div className="p-2">
-      <h2 className="mb-3 text-2xl font-semibold">Playing history</h2>
+    <div>
+      <h2 className="mb-2 text-2xl font-semibold">Playing history</h2>
       {playerEventDates.length > 0 && (
-        <div className="mb-4 max-w-fit">
+        <div className="mb-2 max-w-fit">
           <div className="flex flex-col gap-2 md:flex-row">
             <Popover>
               <PopoverTrigger asChild>
