@@ -132,11 +132,13 @@ export default function LotteryPage() {
     setWaitingList(waiting);
   };
 
-  return (
-    <div className="container mx-auto p-4">
-      <Toaster position="top-center" />
+  if (isLoading) {
+    return <FullSizeLoader />;
+  }
 
-      {isLoading && <FullSizeLoader />}
+  return (
+    <div className="mx-auto p-4">
+      <Toaster position="top-center" />
 
       <div className="space-y-6">
         <Navbar title="Lottery" />
