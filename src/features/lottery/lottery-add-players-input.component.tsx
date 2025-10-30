@@ -18,7 +18,7 @@ export function LotteryAddPlayersInput({availablePlayers, selectedPlayers, onAdd
 
   return (
     <div>
-      <Label className="text-md mb-2 block">Add Players</Label>
+      <Label className="text-sm mb-1 block">Add Players</Label>
       <div className="flex gap-2">
         <MultiSelect
           options={playerOptions.filter(

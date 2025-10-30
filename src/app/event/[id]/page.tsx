@@ -1,7 +1,6 @@
 "use client";
 
 import { Inter } from "next/font/google";
-import { EventBreadcrumbs } from "~/components/event-breadcrumbs.component";
 import { CurrentEvent } from "~/features/current-event/current-event.component";
 import { useParams } from "next/navigation";
 
@@ -13,7 +12,6 @@ export default function EventPage() {
 
   return (
     <div className="container mx-auto space-y-4 p-4">
-      {/* <EventBreadcrumbs /> */}
       <CurrentEvent id={id}/>     
     </div>
   );
