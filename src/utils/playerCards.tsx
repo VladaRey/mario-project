@@ -31,7 +31,7 @@ export function getPlayerCards(player: Player, playerEventDates: string[], wins:
     },
     player.created_at && {
       title: "Created",
-      value: format(new Date(player.created_at), "dd/MM/yyyy"),
+      value: format(new Date(player.created_at), "MMM d, yyyy"),
       icon: <Calendar className="h-4 w-4 text-muted-foreground" />,
     },
     {

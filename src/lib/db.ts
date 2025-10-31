@@ -442,8 +442,10 @@ export const eventOperations = {
     const { data, error } = await supabase
       .from("lottery_results")
       .select("winners, waiting_list")
+      .or(
+        `winners.cs.[{"id":"${playerId}"}],waiting_list.cs.[{"id":"${playerId}"}]`,
+      );
 
-    console.log(data);
     if (error) throw error;
 
     if (!data?.length) return { wins: 0, played: 0 };

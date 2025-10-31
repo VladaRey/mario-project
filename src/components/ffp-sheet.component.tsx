@@ -83,8 +83,8 @@ export function FfpSheet({ ml, mc, ms, msc, nc, onRefresh, eventId }: FfpSheetPr
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button className="w-full bg-white text-[#2E2A5D] transition-colors duration-200 hover:bg-gray-100 sm:w-fit">
-          <Calculator className="mr-2 h-4 w-4" />
+        <Button className="w-fit rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 md:w-full">
+          <Calculator className="h-4 w-4" />
           Calculate
         </Button>
       </SheetTrigger>

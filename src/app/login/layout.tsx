@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
+import FullSizeLoader from "~/components/full-size-loader";
 
 export default function LoginLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<FullSizeLoader />}>
       <div>{children}</div>
     </Suspense>
   );
