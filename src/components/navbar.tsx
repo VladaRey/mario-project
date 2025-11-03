@@ -26,8 +26,8 @@ export function Navbar() {
   }, [role]);
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col justify-between bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg sm:flex-row">
+      <div className="flex items-center justify-between">
         <Link href="/">
           <h1 className="text-3xl font-bold md:text-4xl">Mario Group</h1>
         </Link>
@@ -43,10 +43,23 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 sm:hidden">
           <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
-            <Link href="/players">Players</Link>
+            <Link href="/players">
+              <Users className="h-4 w-4" />
+              <span className="text-base font-medium">Players</span>
+            </Link>
           </Button>
-          <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
-            <Link href="/admin">Admin</Link>
+          <Button
+            asChild
+            variant="ghost"
+            onClick={() => setIsMenuOpen(false)}
+            disabled={buttonLabel === "Fame"}
+          >
+            <Link href={buttonHref} className="flex items-center">
+              {buttonLabel === "Admin" ? (
+                <UserRound className="h-4 w-4" />
+              ) : null}
+              <span className="text-base font-medium">{buttonLabel}</span>
+            </Link>
           </Button>
         </div>
       )}
