@@ -141,7 +141,7 @@ export default function LotteryPage() {
       <Toaster position="top-center" />
 
       <div className="space-y-6">
-        <Navbar title="Lottery" />
+        {/* <Navbar /> */}
 
         <div className="space-y-8 max-w-6xl mx-auto">
           <div className="space-y-6">

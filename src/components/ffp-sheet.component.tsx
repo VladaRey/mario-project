@@ -83,26 +83,36 @@ export function FfpSheet({ ml, mc, ms, msc, nc, onRefresh, eventId }: FfpSheetPr
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button className="w-fit rounded-full bg-white px-4 py-2 text-purple-800 transition-colors hover:bg-purple-100 md:w-full">
+        <Button className="w-fit rounded-lg bg-[#7B3C7D] transition-colors px-4 py-2 text-white hover:bg-[#2E2A5D]">
           <Calculator className="h-4 w-4" />
           Calculate
         </Button>
       </SheetTrigger>
-      <SheetContent className="overflow-y-auto w-full">
+      <SheetContent className="w-full overflow-y-auto">
         <SheetHeader className="pb-8">
-          <Toaster position="top-right"/>
+          <Toaster position="top-right" />
           <SheetTitle className="hidden">Calculate payment amounts</SheetTitle>
         </SheetHeader>
-        <SheetDescription className="hidden">Apply payment amounts</SheetDescription>
-        <FfpForm ml={ml} mc={mc} ms={ms} msc={msc} nc={nc} onCalculate={handleCalculation} />
+        <SheetDescription className="hidden">
+          Apply payment amounts
+        </SheetDescription>
+        <FfpForm
+          ml={ml}
+          mc={mc}
+          ms={ms}
+          msc={msc}
+          nc={nc}
+          onCalculate={handleCalculation}
+        />
         <SheetFooter className="pt-4">
-         {(role === "admin" || role === "fame") && 
-         <Button className="w-full" onClick={handleApply} disabled={loading}> 
-          {loading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-            ) : null} 
-          Apply
-          </Button>}
+          {(role === "admin" || role === "fame") && (
+            <Button className="w-full" onClick={handleApply} disabled={loading}>
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Apply
+            </Button>
+          )}
         </SheetFooter>
       </SheetContent>
     </Sheet>

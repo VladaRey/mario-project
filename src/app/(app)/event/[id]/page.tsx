@@ -11,7 +11,7 @@ export default function EventPage() {
   const id = params.id as string;
 
   return (
-    <div className="container mx-auto space-y-4 p-4">
+    <div className="px-2 space-y-4">
       <CurrentEvent id={id}/>     
     </div>
   );

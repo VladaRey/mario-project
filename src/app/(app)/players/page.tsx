@@ -2,15 +2,13 @@
 
 import PlayerSearchList from "~/features/players-page/player-search-list";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
-import { Navbar } from "~/components/navbar";
 
 export default function PlayersPage() {
   return (
-    <div className="mx-auto space-y-6 p-4">
-      <Navbar title="Players" />
+    <div className="px-2 space-y-4">
       <Breadcrumbs
         items={[{ label: "Players", href: "/players" }]}
-        className="mb-4 ml-1"
+        className="mb-4"
       />
 
       <div className="space-y-2">

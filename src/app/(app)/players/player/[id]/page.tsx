@@ -7,7 +7,6 @@ import PlayerHistory from "~/features/players-page/player-history";
 import { useGetPlayerData } from "~/hooks/use-get-player-data";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
 import FullSizeLoader from "~/components/full-size-loader";
-import { Navbar } from "~/components/navbar";
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -41,14 +40,12 @@ export default function PlayerDetailPage() {
   }
 
   return (
-    <div className="mx-auto space-y-6 p-4">
-        <Navbar title="Player details" />
+    <div className="px-2 space-y-4">
         <Breadcrumbs
           items={[
             { label: "Players", href: "/players" },
             { label: player.name, href: `/players/player/${player.id}` },
           ]}
-          className="ml-1"
         />
 
       {/* Additional player details */}

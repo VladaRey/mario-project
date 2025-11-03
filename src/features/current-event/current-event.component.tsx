@@ -5,7 +5,6 @@ import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { PlayerPaymentCard } from "./player-payment-card";
 import FullSizeLoader from "~/components/full-size-loader";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
-import { Navbar } from "~/components/navbar";
 
 const cardTypeOrder: CardType[] = [
   "Medicover",
@@ -130,41 +129,42 @@ export function CurrentEvent({ id }: CurrentEventProps) {
 
   return (
     <div className="space-y-4">
-      <Navbar title={event.name}>
-        <FfpSheet
-          ml={ml}
-          mc={mc}
-          ms={ms}
-          msc={msc}
-          nc={nc}
-          onRefresh={refreshPaymentAmounts}
-          eventId={event.id}
-        />
-      </Navbar>
       <Breadcrumbs
         items={[
           { label: event?.name || "", href: `/admin/event/${event?.id}` },
         ]}
-        className="ml-1"
       />
       <div className="space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Event: {event.name}</h2>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
-              <Users className="h-4 w-4" />
-              <span>{event.players.length} Players</span>
-            </div>
-            <div className="h-6 w-px bg-gray-300" />
-            {sortedCardTypeCounts.map(({ type, count }) => (
-              <div
-                key={type}
-                className={`${getCardTypeColor(type)} flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium`}
-              >
-                <span>{type}:</span>
-                <span className="font-bold">{count}</span>
+        <div className="space-y-1 flex flex-col gap-6 md:gap-4 md:flex-row md:justify-between md:items-end">
+          <div>
+            <h2 className="text-2xl font-bold">Event: {event.name}</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
+                <Users className="h-4 w-4" />
+                <span>{event.players.length} Players</span>
               </div>
-            ))}
+              <div className="h-6 w-px bg-gray-300" />
+              {sortedCardTypeCounts.map(({ type, count }) => (
+                <div
+                  key={type}
+                  className={`${getCardTypeColor(type)} flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium`}
+                >
+                  <span>{type}:</span>
+                  <span className="font-bold">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <FfpSheet
+              ml={ml}
+              mc={mc}
+              ms={ms}
+              msc={msc}
+              nc={nc}
+              onRefresh={refreshPaymentAmounts}
+              eventId={event.id}
+            />
           </div>
         </div>
 
