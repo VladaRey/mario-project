@@ -14,11 +14,16 @@ export interface PlayerCard {
   icon: React.ReactNode;
 }
 
-export function getPlayerCards(player: Player, playerEventDates: string[], wins: number, played: number): PlayerCard[] {
+export function getPlayerCards(
+  player: Player,
+  playerEventDates: string[],
+  wins: number,
+  played: number,
+): { infoCards: PlayerCard[]; statisticsCards: PlayerCard[] } {
   const lotteryResults = `${wins} / ${played}`;
   const totalEvents = playerEventDates.length;
-  
-  return [
+
+  const infoCards: PlayerCard[] = [
     {
       title: "Name",
       value: player.name,
@@ -34,6 +39,9 @@ export function getPlayerCards(player: Player, playerEventDates: string[], wins:
       value: format(new Date(player.created_at), "MMM d, yyyy"),
       icon: <Calendar className="h-4 w-4 text-muted-foreground" />,
     },
+  ].filter(Boolean) as PlayerCard[];
+
+  const statisticsCards: PlayerCard[] = [
     {
       title: "Total events",
       value: totalEvents,
@@ -44,6 +52,7 @@ export function getPlayerCards(player: Player, playerEventDates: string[], wins:
       value: lotteryResults,
       icon: <Dices className="h-4 w-4 text-muted-foreground" />,
     },
-  ].filter(Boolean) as PlayerCard[];
+  ];
+
+  return { infoCards, statisticsCards };
 }
-    

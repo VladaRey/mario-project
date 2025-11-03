@@ -38,7 +38,7 @@ export function EventsList({ basePath, withBackground, type }: EventsListProps) 
       {sortedDates.map((date) => (
         <div key={date} className="mb-6">
           <h2 className="mb-2 text-lg font-semibold">{formatDate(date)}</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {groupedEvents[date]?.map((event, index) => (
               <div key={event.id}>
                 <EventCard event={event} withBackground={withBackground} index={index} basePath={basePath} type={type} />

@@ -56,7 +56,7 @@ export default function PlayerDetailPage() {
       />
 
       {/* Statistics overview */}
-      <PlayerHistory playerEventDates={playerEventDates} />
+      <PlayerHistory player={player} lotteryResults={lotteryResults} playerEventDates={playerEventDates} />
     </div>
   );
 }

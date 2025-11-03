@@ -12,13 +12,21 @@ import { CalendarIcon } from "lucide-react";
 import PlayerActivityCalendarComponent from "~/components/player-activity-calendar.component";
 
 import { filterDatesByRange } from "~/utils/playerHistory";
+import { LotteryResults } from "~/hooks/use-get-player-data";
+import { Player } from "~/lib/db";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { getPlayerCards, type PlayerCard } from "~/utils/playerCards";
 
 interface PlayerHistoryProps {
   playerEventDates: string[];
+  lotteryResults: LotteryResults;
+  player: Player;
 }
 
 export default function PlayerHistory({
   playerEventDates,
+  lotteryResults,
+  player,
 }: PlayerHistoryProps) {
   const [range, setRange] = useState<{ from?: Date; to?: Date }>({});
 
@@ -27,9 +35,29 @@ export default function PlayerHistory({
     [playerEventDates, range],
   );
 
+  const { statisticsCards } = getPlayerCards(player, playerEventDates, lotteryResults.wins, lotteryResults.played);
+
   return (
     <div>
-      <h2 className="mb-2 text-2xl font-semibold">Playing history</h2>
+      <div className="mb-6">
+        <h2 className="mb-2 text-2xl font-semibold">Playing history</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {statisticsCards.map((card: PlayerCard) => (
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {card.title}
+                </CardTitle>
+                {card.icon}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold">{card.value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       {playerEventDates.length > 0 && (
         <div className="mb-2 max-w-fit">
           <div className="flex flex-col gap-2 md:flex-row">
