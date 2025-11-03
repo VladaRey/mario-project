@@ -131,7 +131,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     <div className="space-y-4">
       <Breadcrumbs
         items={[
-          { label: event?.name || "", href: `/admin/event/${event?.id}` },
+          { label: event?.name || "", href: `/event/${event?.id}` },
         ]}
       />
       <div className="space-y-4">
