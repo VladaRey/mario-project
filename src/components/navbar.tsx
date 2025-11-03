@@ -42,21 +42,20 @@ export function Navbar() {
 
       {isMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 sm:hidden">
-          <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
-            <Link href="/players">
-              <Users className="h-4 w-4" />
+          <Button variant="ghost" onClick={() => setIsMenuOpen(false)}>
+            <Link href="/players" className="flex items-center">
+              <Users className="mr-2 h-4 w-4" />
               <span className="text-base font-medium">Players</span>
             </Link>
           </Button>
           <Button
-            asChild
             variant="ghost"
             onClick={() => setIsMenuOpen(false)}
             disabled={buttonLabel === "Fame"}
           >
             <Link href={buttonHref} className="flex items-center">
               {buttonLabel === "Admin" ? (
-                <UserRound className="h-4 w-4" />
+                <UserRound className="mr-2 h-4 w-4" />
               ) : null}
               <span className="text-base font-medium">{buttonLabel}</span>
             </Link>
