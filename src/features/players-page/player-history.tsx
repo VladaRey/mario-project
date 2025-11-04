@@ -35,31 +35,27 @@ export default function PlayerHistory({
     [playerEventDates, range],
   );
 
-  const { statisticsCards } = getPlayerCards(player, playerEventDates, lotteryResults.wins, lotteryResults.played);
+  const filteredWins = filterDatesByRange(
+    lotteryResults.wins.map((w) => w.date),
+    range,
+  );
+  const filteredPlayed = filterDatesByRange(
+    lotteryResults.played.map((p) => p.date),
+    range,
+  );
+
+  const { statisticsCards } = getPlayerCards(
+    player,
+    filteredDates,
+    filteredWins.length,
+    filteredPlayed.length,
+  );
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="mb-2 text-2xl font-semibold">Playing history</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {statisticsCards.map((card: PlayerCard) => (
-            <Card key={card.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {card.title}
-                </CardTitle>
-                {card.icon}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-semibold">{card.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
+      <h2 className="mb-2 text-2xl font-semibold">Playing history</h2>
       {playerEventDates.length > 0 && (
-        <div className="mb-2 max-w-fit">
+        <div className="mb-3 max-w-fit">
           <div className="flex flex-col gap-2 md:flex-row">
             <Popover>
               <PopoverTrigger asChild>
@@ -100,6 +96,25 @@ export default function PlayerHistory({
           </div>
         </div>
       )}
+
+      <div className="mb-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {statisticsCards.map((card: PlayerCard) => (
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {card.title}
+                </CardTitle>
+                {card.icon}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold">{card.value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-fit rounded-lg border border-gray-200 p-4 shadow-sm">
         <div className="mb-4">
           <p className="text-sm text-gray-600">

@@ -43,7 +43,7 @@ export function getPlayerCards(
 
   const statisticsCards: PlayerCard[] = [
     {
-      title: "Total events",
+      title: "Events",
       value: totalEvents,
       icon: <FlagTriangleRight className="h-4 w-4 text-muted-foreground" />,
     },
