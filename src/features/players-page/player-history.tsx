@@ -115,7 +115,7 @@ export default function PlayerHistory({
         </div>
       </div>
 
-      <div className="max-w-fit rounded-lg border border-gray-200 p-4 shadow-sm">
+      <div className="max-w-fit rounded-lg border border-gray-200 py-4 px-6 shadow-md">
         <div className="mb-4">
           <p className="text-sm text-gray-600">
             Calendar showing player activity.
