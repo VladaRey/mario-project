@@ -20,7 +20,7 @@ export function EventCard({ event, withBackground, index, basePath, type }: Even
         key={event.id}
         className={withBackground ? getCardVariant(index) : "bg-transparent"}
       >
-        <CardContent className="flex flex-col items-start gap-2 p-4 md:flex-row md:items-center md:justify-between">
+        <CardContent className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col">
             <div className="text-lg font-medium">{event.name}</div>
             <div className="flex items-center text-sm text-gray-500">

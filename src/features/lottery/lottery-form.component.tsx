@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PlayerCard } from "~/components/player-card";
@@ -30,6 +30,8 @@ export function LotteryForm({
   const [isGenerated, setIsGenerated] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     addToWaitingList,
     addToWinnersList,
@@ -37,26 +39,29 @@ export function LotteryForm({
   } = useLotteryService();
 
   const handleShuffle = async () => {
+    setIsLoading(true);
     const lotteryPlayer= availablePlayers.filter((player) => selectedPlayers.includes(player.id));
     const {winners, waitingList:waiting} = generateRandomPlayers(lotteryPlayer, places);
-    setIsGenerated(true);
-    setIsResetting(true);
-
+    
     try {
       // Update winners
       await addToWinnersList( winners, event?.id || "");
-
+      
       // Update waiting list
       await addToWaitingList(
         waiting,
         event?.id || "",
       );
+      setIsGenerated(true);
+      setIsResetting(true);
 
       onLotteryGenerated?.(winners, waiting);
       toast.success("Winners and waiting list updated successfully!");
     } catch (error) {
       console.error("Failed to update winners and waiting list:", error);
       toast.error("Failed to update winners and waiting list.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,8 +79,8 @@ export function LotteryForm({
   };
 
   return (
-    <div className="mb-10">
-      <div className="mb-4 grid grid-cols-2 items-end gap-4 md:grid-cols-3">
+    <div>
+      <div className="mb-3 grid grid-cols-2 items-end gap-4 md:grid-cols-3">
         <div className="h-full">
           <LotteryAddPlayersInput
             availablePlayers={availablePlayers}
@@ -93,18 +98,19 @@ export function LotteryForm({
         </div>
 
         <div className="col-span-2 md:col-span-1">
-          <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
+          <div className="flex w-full flex-col gap-2 md:w-fit md:flex-row">
             <Button
-              variant={"default"}
               className="w-full text-base md:w-auto"
               disabled={
                 selectedPlayers.length === 0 ||
                 places > selectedPlayers.length ||
-                places <= 0
+                places <= 0 ||
+                isLoading
               }
               onClick={handleShuffle}
             >
-              Play
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isLoading ? "Generating..." : "Play"}
             </Button>
             <Button
               variant={"destructive"}
@@ -119,9 +125,9 @@ export function LotteryForm({
         </div>
       </div>
 
-      <div className="mb-6">
-        {selectedPlayers.length > 0 && !isGenerated && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {selectedPlayers.length > 0 && !isGenerated && (
+      <div className={`mb-6 ${isLoading ? "opacity-50" : ""}`}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {selectedPlayers.map((playerId) => {
               const player = availablePlayers.find((p) => p.id === playerId);
               return player ? (
@@ -139,8 +145,8 @@ export function LotteryForm({
               ) : null;
             })}
           </div>
-        )}
       </div>
+        )}
     </div>
   );
 }

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Player, playerOperations, eventOperations } from "~/lib/db";
 
 export type LotteryResults = {
-  wins: number;
-  played: number;
+  wins: { eventId: string; date: string }[];
+  played: { eventId: string; date: string }[];
 };
 
 interface UseGetPlayerDataProps {
@@ -15,8 +15,8 @@ export function useGetPlayerData({ playerId }: UseGetPlayerDataProps) {
   const [playerEventDates, setPlayerEventDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [lotteryResults, setLotteryResults] = useState<LotteryResults>({
-    wins: 0,
-    played: 0,
+    wins: [],
+    played: [],
   });
 
   useEffect(() => {

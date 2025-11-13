@@ -436,37 +436,44 @@ export const eventOperations = {
     if (error) throw error;
   },
 
-  async getLotteryResultsByPlayerId(
-    playerId: string,
-  ): Promise<{ wins: number; played: number }> {
-    const { data, error } = await supabase
-      .from("lottery_results")
-      .select("winners, waiting_list")
+  async getLotteryResultsByPlayerId(playerId: string) {
+  const { data, error } = await supabase
+    .from("lottery_results")
+    .select("event_id, winners, waiting_list")
+    .or(
+      `winners.cs.[{"id":"${playerId}"}],waiting_list.cs.[{"id":"${playerId}"}]`
+    );
 
-    console.log(data);
-    if (error) throw error;
+  if (error) throw error;
+  if (!data?.length) return { wins: [], played: [] };
 
-    if (!data?.length) return { wins: 0, played: 0 };
+  const eventIds = data.map((r) => r.event_id);
 
-    let wins = 0;
-    let played = 0;
+  const { data: events } = await supabase
+    .from("events")
+    .select("id, date")
+    .in("id", eventIds);
 
-    for (const row of data) {
-      const winners = Array.isArray(row.winners) ? row.winners : [];
-      const waitingList = Array.isArray(row.waiting_list)
-        ? row.waiting_list
-        : [];
+  const eventMap = Object.fromEntries(events?.map((e) => [e.id, e.date]) || []);
 
-      if (winners.some((p: any) => p.id === playerId)) {
-        wins += 1;
-        played += 1;
-      } else if (waitingList.some((p: any) => p.id === playerId)) {
-        played += 1;
-      }
+  const wins: { eventId: string; date: string }[] = [];
+  const played: { eventId: string; date: string }[] = [];
+
+  for (const row of data) {
+    const winners = Array.isArray(row.winners) ? row.winners : [];
+    const waitingList = Array.isArray(row.waiting_list) ? row.waiting_list : [];
+    const date = eventMap[row.event_id];
+
+    if (winners.some((p: any) => p.id === playerId)) {
+      wins.push({ eventId: row.event_id, date });
+      played.push({ eventId: row.event_id, date });
+    } else if (waitingList.some((p: any) => p.id === playerId)) {
+      played.push({ eventId: row.event_id, date });
     }
+  }
 
-    return { wins, played };
-  },
+  return { wins, played };
+},
 
   async deleteEvent(id: string): Promise<void> {
     const { error } = await supabase

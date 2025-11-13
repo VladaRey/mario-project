@@ -25,7 +25,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/">All events</Link>
+            <Link href="/">Events</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
 

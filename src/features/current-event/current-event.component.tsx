@@ -1,9 +1,10 @@
-import { Badge } from "~/components/ui/badge";
 import { Users } from "lucide-react";
 import { FfpSheet } from "~/components/ffp-sheet.component";
 import { useEffect, useState } from "react";
 import { type CardType, eventOperations, type Event } from "~/lib/db";
 import { PlayerPaymentCard } from "./player-payment-card";
+import FullSizeLoader from "~/components/full-size-loader";
+import { Breadcrumbs } from "~/components/breadcrumbs.component";
 
 const cardTypeOrder: CardType[] = [
   "Medicover",
@@ -13,15 +14,12 @@ const cardTypeOrder: CardType[] = [
   "No card",
 ];
 
-
 interface CurrentEventProps {
-    id: string;
+  id: string;
 }
 
-
-export function CurrentEvent({id}: CurrentEventProps) {
-
-    function getCardTypeColor(cardType: CardType) {
+export function CurrentEvent({ id }: CurrentEventProps) {
+  function getCardTypeColor(cardType: CardType) {
     switch (cardType) {
       case "Medicover":
         return "bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900";
@@ -36,7 +34,7 @@ export function CurrentEvent({id}: CurrentEventProps) {
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900";
     }
-  } 
+  }
 
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
@@ -47,7 +45,6 @@ export function CurrentEvent({id}: CurrentEventProps) {
     Record<string, number>
   >({});
 
-  
   useEffect(() => {
     const loadInitialEvent = async () => {
       try {
@@ -83,29 +80,28 @@ export function CurrentEvent({id}: CurrentEventProps) {
     }
   };
 
-   const handlePaymentChange = async (playerId: string, paid: boolean) => {
-     if (!event) return;
+  const handlePaymentChange = async (playerId: string, paid: boolean) => {
+    if (!event) return;
 
-     try {
-       await eventOperations.updatePlayerPayment(event.id, playerId, paid);
-       setPaymentStatus((prev) => ({
-         ...prev,
-         [playerId]: paid,
-       }));
-     } catch (error) {
-       console.error("Failed to update payment status:", error);
-       // Optionally add error handling UI here
-     }
-   };
+    try {
+      await eventOperations.updatePlayerPayment(event.id, playerId, paid);
+      setPaymentStatus((prev) => ({
+        ...prev,
+        [playerId]: paid,
+      }));
+    } catch (error) {
+      console.error("Failed to update payment status:", error);
+      // Optionally add error handling UI here
+    }
+  };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <FullSizeLoader />;
   }
 
   if (!event) {
     return <div>No event found</div>;
   }
-
 
   const cardTypeCounts = event.players.reduce(
     (acc, player) => {
@@ -132,13 +128,34 @@ export function CurrentEvent({id}: CurrentEventProps) {
   const nc = cardTypeCounts["No card"] || 0;
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg">
-        <div className="mb-4 flex flex-col items-start justify-between sm:flex-row sm:items-center">
-          <h1 className="mb-2 text-3xl font-bold sm:mb-0 sm:text-4xl">
-            {event.name}
-          </h1>
-          <div className="hidden sm:flex">
+    <div className="space-y-4">
+      <Breadcrumbs
+        items={[
+          { label: event?.name || "", href: `/event/${event?.id}` },
+        ]}
+      />
+      <div className="space-y-4">
+        <div className="space-y-1 flex flex-col gap-6 md:gap-4 md:flex-row md:justify-between md:items-end">
+          <div>
+            <h2 className="text-2xl font-bold">Event: {event.name}</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
+                <Users className="h-4 w-4" />
+                <span>{event.players.length} Players</span>
+              </div>
+              <div className="h-6 w-px bg-gray-300" />
+              {sortedCardTypeCounts.map(({ type, count }) => (
+                <div
+                  key={type}
+                  className={`${getCardTypeColor(type)} flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium`}
+                >
+                  <span>{type}:</span>
+                  <span className="font-bold">{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
             <FfpSheet
               ml={ml}
               mc={mc}
@@ -151,36 +168,17 @@ export function CurrentEvent({id}: CurrentEventProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <div className="flex items-center">
-            <Users className="mr-2 h-5 w-5" />
-            <span>{event.players.length} Players</span>
-          </div>
-          {sortedCardTypeCounts.map(({ type, count }) => (
-            <Badge key={type} className={`${getCardTypeColor(type)} text-xs`}>
-              {type}: {count}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="mt-4 sm:hidden">
-          <FfpSheet
-            ml={ml}
-            mc={mc}
-            ms={ms}
-            msc={msc}
-            nc={nc}
-            onRefresh={refreshPaymentAmounts}
-            eventId={event.id}
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {(sortedPlayers || []).map((player) => {
             return player ? (
-              <PlayerPaymentCard key={player.id} player={player} paymentStatus={paymentStatus} 
-              handlePaymentChange={handlePaymentChange} playerPaymentAmount={playerPaymentAmount} getCardTypeColor={getCardTypeColor}/>
+              <PlayerPaymentCard
+                key={player.id}
+                player={player}
+                paymentStatus={paymentStatus}
+                handlePaymentChange={handlePaymentChange}
+                playerPaymentAmount={playerPaymentAmount}
+                getCardTypeColor={getCardTypeColor}
+              />
             ) : null;
           })}
         </div>

@@ -40,32 +40,23 @@ export default function PlayerDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Breadcrumbs
-        items={[
-          { label: "Players", href: "/players" },
-          { label: player.name, href: `/players/player/${player.id}` },
-        ]}
-        className="mb-4"
-      />
-
-      <div className="space-y-4">
-        <div className="rounded-lg bg-gradient-to-r from-[#2E2A5D] to-[#7B3C7D] p-6 text-white shadow-lg">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold sm:text-4xl">Player details</h1>
-          </div>
-        </div>
-
-        {/* Additional player details */}
-        <PlayerInfoCards
-          player={player}
-          playerEventDates={playerEventDates}
-          lotteryResults={lotteryResults}
+    <div className="px-2 space-y-4">
+        <Breadcrumbs
+          items={[
+            { label: "Players", href: "/players" },
+            { label: player.name, href: `/players/player/${player.id}` },
+          ]}
         />
 
-        {/* Statistics overview */}
-        <PlayerHistory playerEventDates={playerEventDates} />
-      </div>
+      {/* Additional player details */}
+      <PlayerInfoCards
+        player={player}
+        playerEventDates={playerEventDates}
+        lotteryResults={lotteryResults}
+      />
+
+      {/* Statistics overview */}
+      <PlayerHistory player={player} lotteryResults={lotteryResults} playerEventDates={playerEventDates} />
     </div>
   );
 }

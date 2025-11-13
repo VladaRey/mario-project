@@ -12,7 +12,7 @@ export function LotteryPlaceInput({selectedPlayers, places, setPlaces}: LotteryP
 
   return (
     <div>
-      <Label htmlFor="places" className="text-md mb-2 block font-medium">
+      <Label htmlFor="places" className="text-sm mb-1 block font-medium">
         Number of Places
       </Label>
       <Input
@@ -20,7 +20,7 @@ export function LotteryPlaceInput({selectedPlayers, places, setPlaces}: LotteryP
         type="number"
         min={1}
         value={places || ""}
-        className="h-10 w-full"
+        className="h-10 w-full bg-white"
         onChange={(e) => {
           const value = e.target.value;
           setPlaces(value === "" ? 0 : Number.parseInt(value));

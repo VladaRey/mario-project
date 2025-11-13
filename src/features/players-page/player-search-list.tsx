@@ -31,7 +31,7 @@ export default function PlayerSearchList() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* search input */}
       <div className="flex items-center gap-2">
         <Input
