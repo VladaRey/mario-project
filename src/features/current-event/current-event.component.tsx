@@ -144,10 +144,10 @@ export function CurrentEvent({ id }: CurrentEventProps) {
       await calculatePayments(event, draftPricingParams, playerUsages);
       setAppliedPricingParams(draftPricingParams);
       await refreshPaymentAmounts();
-      toast.success("Amounts updated successfully!");
+      toast.success("Player payment amounts updated successfully!");
     } catch (error) {
-      console.error("Error updating amounts:", error);
-      toast.error("Failed to update amounts.");
+      console.error("Error updating player payment amounts:", error);
+      toast.error("Failed to update player payment amounts.");
     } finally {
       setSavingPricing(false);
     }
