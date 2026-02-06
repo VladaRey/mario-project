@@ -2,18 +2,31 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Switch } from "~/components/ui/switch";
+import { PlayerCardUsage } from "~/components/player-card-usage";
 import { CardType, Player } from "~/lib/db";
 import { useGetRole } from "~/hooks/use-get-role";
 
 interface PlayerPaymentCardProps {
-    player: Player;
-    paymentStatus: Record<string, boolean>;
-    handlePaymentChange: (playerId: string, checked: boolean) => void;
-    playerPaymentAmount: Record<string, number>;
-    getCardTypeColor: (cardType: CardType) => string;
+  player: Player;
+  paymentStatus: Record<string, boolean>;
+  handlePaymentChange: (playerId: string, checked: boolean) => void;
+  playerPaymentAmount: Record<string, number>;
+  getCardTypeColor: (cardType: CardType) => string;
+  displayAmount?: string;
+  usage: number;
+  onUsageChange: (playerId: string, usage: number) => void;
 }
 
-export function PlayerPaymentCard({player, paymentStatus, handlePaymentChange, playerPaymentAmount, getCardTypeColor}: PlayerPaymentCardProps) {
+export function PlayerPaymentCard({
+  player,
+  paymentStatus,
+  handlePaymentChange,
+  playerPaymentAmount,
+  getCardTypeColor,
+  displayAmount,
+  usage,
+  onUsageChange,
+}: PlayerPaymentCardProps) {
     const { role } = useGetRole();
 
     function getInitials(name: string) {
@@ -26,7 +39,7 @@ export function PlayerPaymentCard({player, paymentStatus, handlePaymentChange, p
 
     return (
       <div>
-        <Card key={player.id} className="transition-colors duration-200">
+        <Card key={player.id} className="transition-colors duration-200 min-h-[113px]">
           <CardContent className="flex items-center p-4">
             <Avatar className="mr-4 h-10 w-10">
               <AvatarFallback className="bg-[#7B3C7D] text-white">
@@ -59,12 +72,19 @@ export function PlayerPaymentCard({player, paymentStatus, handlePaymentChange, p
                 <Badge className={`mt-1 ${getCardTypeColor(player.cardType)}`}>
                   {player.cardType}
                 </Badge>
-                {playerPaymentAmount[player.id] != null && (
+                {displayAmount != null && displayAmount !== undefined && (
                   <span className="text-sm font-bold text-gray-600">
-                    {playerPaymentAmount[player.id]} PLN
+                    {displayAmount} PLN
                   </span>
                 )}
               </div>
+              {player.cardType !== "No card" && (
+                <PlayerCardUsage
+                  usage={usage}
+                  playerId={player.id}
+                  onUsageChange={onUsageChange}
+                />
+              )}
             </div>
           </CardContent>
         </Card>

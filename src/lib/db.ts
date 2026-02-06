@@ -35,6 +35,8 @@ export type Player = {
   created_at?: string;
   paid: boolean;
   amount: number;
+  /** Card usage count for this player in the event (from player_events.card_usage). */
+  cardUsage?: number;
 };
 
 export type ReservationList = {
@@ -262,6 +264,7 @@ export const eventOperations = {
         event_id: event.id,
         player_id: playerId,
         paid: false,
+        card_usage: 0,
       }));
 
       const { error: playerError } = await supabase
@@ -528,6 +531,7 @@ export const eventOperations = {
         players:player_events(
           paid,
           amount,
+          card_usage,
           player:players(
             id, name, created_at, cardType
           )
@@ -549,6 +553,7 @@ export const eventOperations = {
             ...pe.player,
             paid: pe.paid,
             amount: pe.amount,
+            cardUsage: pe.card_usage ?? 0,
           })),
         }
       : null;
@@ -613,6 +618,7 @@ export const eventOperations = {
         event_id: eventId,
         player_id: playerId,
         paid: false,
+        card_usage: 0,
       }));
 
       const { error: insertError } = await supabase
@@ -653,6 +659,20 @@ export const eventOperations = {
         ignoreDuplicates: false,
       },
     );
+
+    if (error) throw error;
+  },
+
+  async updatePlayerCardUsage(
+    eventId: string,
+    playerId: string,
+    cardUsage: number,
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("player_events")
+      .update({ card_usage: cardUsage })
+      .eq("event_id", eventId)
+      .eq("player_id", playerId);
 
     if (error) throw error;
   },
@@ -711,5 +731,34 @@ export const eventOperations = {
       console.error("Error updating player payment amount:", error);
       throw error;
     }
+  },
+
+  /**
+   * Update payment amounts for all card types in one go, using known player IDs
+   * per card type. Avoids N GET requests (one per card type) to fetch players.
+   */
+  async updatePlayerPaymentAmountsBatch(
+    eventId: string,
+    cardTypeToAmount: Record<string, number>,
+    playerIdsByCardType: Record<string, string[]>,
+  ): Promise<void> {
+    const updates = Object.entries(cardTypeToAmount).map(
+      ([cardType, amount]) => {
+        const playerIds = playerIdsByCardType[cardType] ?? [];
+        if (playerIds.length === 0) return Promise.resolve();
+        return supabase
+          .from("player_events")
+          .update({ amount })
+          .eq("event_id", eventId)
+          .in("player_id", playerIds)
+          .then(({ error }) => {
+            if (error)
+              throw new Error(
+                `Error updating player amounts for ${cardType}: ${error.message}`,
+              );
+          });
+      },
+    );
+    await Promise.all(updates);
   },
 }; 
