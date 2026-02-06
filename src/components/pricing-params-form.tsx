@@ -16,16 +16,15 @@ export interface PricingParamsFormValue {
   hours: number;
   pricePerHour: number;
   fameTotal: number;
-  medicoverOwners: number;
-  medicoverLightOwners: number;
-  msOwners: number;
-  msClassicOwners: number;
-  noCardOwners: number;
 }
 
 interface PricingParamsFormProps {
   value: PricingParamsFormValue;
   onChange: (value: PricingParamsFormValue) => void;
+  /** Display-only: Fame discount from calculation (e.g. from Statistics) */
+  fameDiscount?: string;
+  /** Display-only: To be paid from calculation (e.g. from Statistics) */
+  priceAfterDiscount?: string;
 }
 
 const Row: FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -40,7 +39,27 @@ const Column: FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex flex-1 flex-col justify-between gap-y-2">{children}</div>
 );
 
-export function PricingParamsForm({ value, onChange }: PricingParamsFormProps) {
+const ResultRow = ({
+  title,
+  value,
+}: {
+  title: string;
+  value: undefined | string;
+}) => (
+  <div className="mb-3 flex flex-row justify-between">
+    <p className="text-xs font-semibold text-[#241e2f]">{title}</p>
+    <p className="text-xs font-semibold text-[#241e2f]">
+      {value ? value + " PLN" : "—"}
+    </p>
+  </div>
+);
+
+export function PricingParamsForm({
+  value,
+  onChange,
+  fameDiscount,
+  priceAfterDiscount,
+}: PricingParamsFormProps) {
   const courtsStr = String(value.courts);
   const hoursStr = String(value.hours);
   const pricePerHourStr = String(value.pricePerHour);
@@ -126,82 +145,12 @@ export function PricingParamsForm({ value, onChange }: PricingParamsFormProps) {
         </Column>
       </Row>
 
-      <Row>
-        <Column>
-          <Label>Medicover owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={String(value.medicoverOwners)}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                medicoverOwners: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </Column>
-        <Column>
-          <Label>Medicover Light owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={String(value.medicoverLightOwners)}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                medicoverLightOwners: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </Column>
-      </Row>
-
-      <Row>
-        <Column>
-          <Label>MS+ owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={String(value.msOwners)}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                msOwners: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </Column>
-        <Column>
-          <Label>MS Classic owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={String(value.msClassicOwners)}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                msClassicOwners: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </Column>
-      </Row>
-
-      <Row>
-        <Column>
-          <Label>No card</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={String(value.noCardOwners)}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                noCardOwners: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </Column>
-        <Column>
-          <span></span>
-        </Column>
-      </Row>
+      {(fameDiscount != null || priceAfterDiscount != null) && (
+        <div className="mt-4">
+          <ResultRow title="Fame discount:" value={fameDiscount} />
+          <ResultRow title="To be paid:" value={priceAfterDiscount} />
+        </div>
+      )}
     </div>
   );
 }

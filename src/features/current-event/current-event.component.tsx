@@ -1,16 +1,22 @@
 import { Users } from "lucide-react";
 import { toast } from "sonner";
-import { AutoPricingSheet } from "~/components/auto-pricing-sheet";
+import {
+  AutoPricingSheet,
+  AutoPricingSheetTrigger,
+} from "~/components/auto-pricing-sheet";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { eventOperations, type Event } from "~/lib/db";
 import { PlayerPaymentCard } from "./player-payment-card";
+import { PlayersByCardTypeDropdown } from "./players-by-card-type-dropdown";
 import FullSizeLoader from "~/components/full-size-loader";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
 import {
   getDefaultAutoParams,
   DEFAULT_AUTO_PARAMS,
+  buildInputDataFromEvent,
 } from "~/utils/auto-pricing-util";
 import type { AutoParams } from "~/utils/auto-pricing-util";
+import { calculateStatistics } from "~/services/calculation-service";
 import { ConfirmDialog } from "~/components/confirmation-dialog";
 import {
   calculatePayments,
@@ -197,6 +203,16 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     setPlayerPaymentAmount,
   );
 
+  const pricingStatistics = useMemo(() => {
+    if (!event) return null;
+    const inputData = buildInputDataFromEvent(
+      event,
+      draftPricingParams,
+      playerUsages,
+    );
+    return calculateStatistics(inputData);
+  }, [event, draftPricingParams, playerUsages]);
+
   if (isLoading) {
     return <FullSizeLoader />;
   }
@@ -214,34 +230,53 @@ export function CurrentEvent({ id }: CurrentEventProps) {
         items={[{ label: event?.name || "", href: `/event/${event?.id}` }]}
       />
       <div className="space-y-4">
-        <div className="flex flex-col gap-6 space-y-1 md:flex-row md:items-end md:justify-between md:gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">Event: {event.name}</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
-                <Users className="h-4 w-4" />
-                <span>{event.players.length} Players</span>
+        <div className="flex flex-row justify-between gap-2 space-y-1 md:gap-4">
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center justify-between">
+              <h2 className="mb-1 text-2xl font-bold">Event: {event.name}</h2>
+              <div className="flex gap-2 md:hidden">
+                <AutoPricingSheetTrigger
+                  onOpen={() => handleAutoPricingSheetOpenChange(true)}
+                />
               </div>
-              <div className="h-6 w-px bg-gray-300" />
-              <CardTypeCounts items={sortedCardTypeCounts} />
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex max-w-[312px] flex-1 md:hidden mt-3">
+                <PlayersByCardTypeDropdown event={event} />
+              </div>
+              {/* md and desktop: players count + card type counts */}
+              <div className="hidden md:flex md:flex-wrap md:items-center md:gap-3">
+                <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
+                  <Users className="h-4 w-4" />
+                  <span>{event.players.length} Players</span>
+                </div>
+                <div className="h-6 w-px bg-gray-300"/>
+                <CardTypeCounts items={sortedCardTypeCounts} />
+              </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <AutoPricingSheet
-              open={autoPricingSheetOpen}
-              onOpenChange={handleAutoPricingSheetOpenChange}
-              params={draftPricingParams}
-              onParamsChange={setDraftPricingParams}
-              event={event}
-              playerUsages={playerUsages}
-              isDirty={isAutoPricingDirty}
-              onSave={handleApplyAutoPricing}
-              saving={savingPricing}
+          <div className="hidden gap-2 md:flex md:items-end">
+            <AutoPricingSheetTrigger
+              onOpen={() => handleAutoPricingSheetOpenChange(true)}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Single sheet instance (opened by mobile or desktop trigger) */}
+        <AutoPricingSheet
+          open={autoPricingSheetOpen}
+          onOpenChange={handleAutoPricingSheetOpenChange}
+          params={draftPricingParams}
+          onParamsChange={setDraftPricingParams}
+          isDirty={isAutoPricingDirty}
+          onSave={handleApplyAutoPricing}
+          saving={savingPricing}
+          showTrigger={false}
+          fameDiscount={pricingStatistics?.fameDiscount}
+          priceAfterDiscount={pricingStatistics?.priceAfterDiscount}
+        />
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {(sortedPlayers || []).map((player) => {
             return player ? (
               <PlayerPaymentCard
@@ -249,7 +284,6 @@ export function CurrentEvent({ id }: CurrentEventProps) {
                 player={player}
                 paymentStatus={paymentStatus}
                 handlePaymentChange={handlePaymentChange}
-                playerPaymentAmount={playerPaymentAmount}
                 getCardTypeColor={getCardTypeColor}
                 displayAmount={
                   playerPaymentAmount[player.id] != null

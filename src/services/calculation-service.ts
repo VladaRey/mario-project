@@ -65,7 +65,7 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
   let noMs = (total - fameDiscount) / people;
 
   const medicoverDiscaunt = inputData.medicoverCardUsages * 15;
-  const medicoverPrice =
+  let medicoverPrice =
     inputData.medicoverOwners > 0
       ? noMs - medicoverDiscaunt / inputData.medicoverOwners
       : 0;
@@ -100,14 +100,14 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
       inputData.msClassicOwners * msClassicDiscount(inputData.hours));
   const msClassicDiscaunt = msDiscaunt * msClassicDiscount(inputData.hours);
 
-  const msPrice = noMs - msDiscaunt + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
+  let msPrice = noMs - msDiscaunt + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
   if (msPrice < 0) {
     msAdditionalDiscount =
       (msPrice * inputData.msOwners) /
       (inputData.noCardOwners + inputData.medicoverLightOwners);
   }
 
-  const msClassicPrice =
+  let msClassicPrice =
     inputData.msClassicOwners > 0
       ? noMs -
         msClassicDiscaunt +
@@ -116,9 +116,30 @@ export function calculateStatistics(inputData: InputDataType): Statistics {
         msAdditionalDiscount
       : 0;
 
-  medicoverLightPrice += msAdditionalDiscount + medicoverAdditionalDiscount;
+  let msClassicAdditionalDiscount = 0;
+  const classicRecipients =
+    inputData.msOwners +
+    inputData.medicoverOwners +
+    inputData.medicoverLightOwners +
+    inputData.noCardOwners;
+  if (msClassicPrice < 0 && classicRecipients > 0) {
+    msClassicAdditionalDiscount =
+      (msClassicPrice * inputData.msClassicOwners) / classicRecipients;
+  }
 
-  noMs += msAdditionalDiscount + medicoverAdditionalDiscount + medicoverLightAdditionalDiscount;
+  medicoverLightPrice +=
+    msAdditionalDiscount +
+    medicoverAdditionalDiscount +
+    msClassicAdditionalDiscount;
+
+  noMs +=
+    msAdditionalDiscount +
+    medicoverAdditionalDiscount +
+    medicoverLightAdditionalDiscount +
+    msClassicAdditionalDiscount;
+
+  msPrice += msClassicAdditionalDiscount;
+  medicoverPrice += msClassicAdditionalDiscount;
 
   return {
     totalPrice: roundUp(total),

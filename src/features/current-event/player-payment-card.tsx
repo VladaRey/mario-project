@@ -1,16 +1,15 @@
 import { Card, CardContent } from "~/components/ui/card";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Switch } from "~/components/ui/switch";
 import { PlayerCardUsage } from "~/components/player-card-usage";
 import { CardType, Player } from "~/lib/db";
 import { useGetRole } from "~/hooks/use-get-role";
+import { getCardTypeDisplayLabel } from "~/utils/card-type-display";
 
 interface PlayerPaymentCardProps {
   player: Player;
   paymentStatus: Record<string, boolean>;
   handlePaymentChange: (playerId: string, checked: boolean) => void;
-  playerPaymentAmount: Record<string, number>;
   getCardTypeColor: (cardType: CardType) => string;
   displayAmount?: string;
   usage: number;
@@ -21,73 +20,60 @@ export function PlayerPaymentCard({
   player,
   paymentStatus,
   handlePaymentChange,
-  playerPaymentAmount,
   getCardTypeColor,
   displayAmount,
   usage,
   onUsageChange,
 }: PlayerPaymentCardProps) {
-    const { role } = useGetRole();
+  const { role } = useGetRole();
 
-    function getInitials(name: string) {
-      return name
-        .split(" ")
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase();
-    }
+  return (
+    <div>
+      <Card key={player.id} className="transition-colors duration-200">
+        <CardContent className="flex min-h-[97px] items-center justify-between p-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className="font-medium text-[#2E2A5D] text-lg">{player.name}</span>
+              <Badge className={`${getCardTypeColor(player.cardType)}`}>
+                {getCardTypeDisplayLabel(player.cardType)}
+              </Badge>
+            </div>
 
-    return (
-      <div>
-        <Card key={player.id} className="transition-colors duration-200 min-h-[113px]">
-          <CardContent className="flex items-center p-4">
-            <Avatar className="mr-4 h-10 w-10">
-              <AvatarFallback className="bg-[#7B3C7D] text-white">
-                {getInitials(player.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-grow flex-col">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-[#2E2A5D]">
-                  {player.name}
+            <div className="flex items-center justify-between">
+              {displayAmount != null && displayAmount !== undefined && (
+                <span className="text-sm font-bold text-gray-600">
+                  {displayAmount} PLN
                 </span>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`font-medium ${paymentStatus[player.id] ? "text-green-600" : "text-orange-400"}`}
-                  >
-                    {paymentStatus[player.id] ? "Paid" : "Unpaid"}
-                  </span>
-                  {(role === "admin" || role === "fame") && (
-                    <Switch
-                      className="data-[state=checked]:bg-[#2E2A5D]"
-                      checked={paymentStatus[player.id]}
-                      onCheckedChange={(checked) =>
-                        handlePaymentChange(player.id, checked)
-                      }
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <Badge className={`mt-1 ${getCardTypeColor(player.cardType)}`}>
-                  {player.cardType}
-                </Badge>
-                {displayAmount != null && displayAmount !== undefined && (
-                  <span className="text-sm font-bold text-gray-600">
-                    {displayAmount} PLN
-                  </span>
-                )}
-              </div>
-              {player.cardType !== "No card" && (
-                <PlayerCardUsage
-                  usage={usage}
-                  playerId={player.id}
-                  onUsageChange={onUsageChange}
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center justify-end gap-2">
+              <span
+                className={`font-medium ${paymentStatus[player.id] ? "text-green-600" : "text-orange-400"}`}
+              >
+                {paymentStatus[player.id] ? "Paid" : "Unpaid"}
+              </span>
+              {(role === "admin" || role === "fame") && (
+                <Switch
+                  className="data-[state=checked]:bg-[#2E2A5D]"
+                  checked={paymentStatus[player.id]}
+                  onCheckedChange={(checked) =>
+                    handlePaymentChange(player.id, checked)
+                  }
                 />
               )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+            {player.cardType !== "No card" && (
+              <PlayerCardUsage
+                usage={usage}
+                playerId={player.id}
+                onUsageChange={onUsageChange}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
