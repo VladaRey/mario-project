@@ -241,7 +241,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex max-w-[312px] flex-1 md:hidden mt-3">
+              <div className="flex sm:max-w-[312px] flex-1 md:hidden mt-3">
                 <PlayersByCardTypeDropdown event={event} />
               </div>
               {/* md and desktop: players count + card type counts */}

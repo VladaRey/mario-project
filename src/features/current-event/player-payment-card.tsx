@@ -32,11 +32,19 @@ export function PlayerPaymentCard({
       <Card key={player.id} className="transition-colors duration-200">
         <CardContent className="flex min-h-[97px] items-center justify-between p-4">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <span className="font-medium text-[#2E2A5D] text-lg">{player.name}</span>
+            <div className="block md:hidden">
               <Badge className={`${getCardTypeColor(player.cardType)}`}>
                 {getCardTypeDisplayLabel(player.cardType)}
               </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-medium text-[#2E2A5D] text-lg">{player.name}</span>
+              <div className="hidden md:block">
+              <Badge className={`${getCardTypeColor(player.cardType)}`}>
+                {getCardTypeDisplayLabel(player.cardType)}
+              </Badge>
+
+              </div>
             </div>
 
             <div className="flex items-center justify-between">

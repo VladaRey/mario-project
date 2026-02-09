@@ -22,7 +22,7 @@ export function PlayerCardUsage({
   const canEdit = role === Role.Admin || role === Role.Fame;
 
   return (
-    <div className="mt-2 flex items-center text-center gap-1">
+    <div className="mt-2 flex flex-col md:flex-row items-center text-center gap-1">
       <span className="text-sm font-medium text-gray-500">Card usage:</span>
       <div className="flex items-center gap-1">
         {canEdit ? (
