@@ -10,8 +10,7 @@ import { PlayerPaymentCard } from "./player-payment-card";
 import { PlayersByCardTypeDropdown } from "./players-by-card-type-dropdown";
 import FullSizeLoader from "~/components/full-size-loader";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
-import { paramsFromEvent } from "~/utils/auto-pricing-util";
-import type { AutoParams } from "~/utils/auto-pricing-util";
+import { paramsFromEvent, type AutoParams } from "~/utils/auto-pricing-util";
 import {
   DEFAULT_HOURS,
   DEFAULT_PRICE_PER_HOUR,
@@ -106,15 +105,6 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     loadInitialEvent();
   }, [id]);
 
-  const refreshPaymentAmounts = async () => {
-    if (event) {
-      const playerPayments = await eventOperations.getPlayerPaymentAmount(
-        event.id,
-      );
-      setPlayerPaymentAmount(playerPayments);
-    }
-  };
-
   const isAutoPricingDirty = useMemo(
     () =>
       appliedPricingParams != null &&
@@ -127,7 +117,6 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     if (!event) return;
     setSavingPricing(true);
     try {
-      // Use V2 (same as load and useUsageChange) so amounts respect fame_total rescaling.
       const { amounts } = calculateEventStatistics(
         event,
         draftPricingParams,
@@ -209,6 +198,8 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     draftPricingParams,
     setPlayerUsages,
     setPlayerPaymentAmount,
+    setDraftPricingParams,
+    setEvent,
   );
 
   const pricingStatistics = useMemo(() => {
