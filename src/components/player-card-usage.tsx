@@ -5,8 +5,6 @@ import { Button } from "~/components/ui/button";
 import { useGetRole } from "~/hooks/use-get-role";
 import { Role } from "~/lib/roles";
 
-const MAX_USAGE = 10;
-
 interface PlayerCardUsageProps {
   usage: number;
   playerId: string;
@@ -48,9 +46,8 @@ export function PlayerCardUsage({
               size="icon"
               className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-muted/80"
               onClick={() =>
-                onUsageChange(playerId, Math.min(MAX_USAGE, usage + 1))
+                onUsageChange(playerId, usage + 1)
               }
-              disabled={usage >= MAX_USAGE}
             >
               <Plus className="h-3.5 w-3.5" />
             </Button>
