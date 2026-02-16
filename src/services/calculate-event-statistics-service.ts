@@ -34,99 +34,76 @@ export function calculateEventStatistics(
     playerId: string;
     usage: number;
     price: number;
-    cardType: string;
   };
 
-  // Create player slots
   const playerInfos: PlayerInfo[] = event.players.map((p) => ({
     playerId: p.id,
     usage: playerUsages[p.id] ?? 0,
     price: 0,
-    cardType: p.cardType,
   }));
 
   // Base share per player with usage discount
   const baseShare = baseTotal / event.players.length;
-  playerInfos.forEach((playerInfo) => {
-    playerInfo.price = baseShare - playerInfo.usage * DISCOUNT_PER_USAGE;
+
+  playerInfos.forEach((p) => {
+    p.price = baseShare - p.usage * DISCOUNT_PER_USAGE;
   });
 
-  // Overflow redistribution by cards (as before)
-  const overflowOrder: Array<{ sourceType: string; recipientTypes: string[] }> =
-    [
-      {
-        sourceType: "Medicover",
-        recipientTypes: ["Multisport", "Classic", "Medicover Light", "No card"],
-      },
-      {
-        sourceType: "Medicover Light",
-        recipientTypes: ["Multisport", "Classic", "No card"],
-      },
-      {
-        sourceType: "Multisport",
-        recipientTypes: ["No card", "Medicover Light"],
-      },
-      {
-        sourceType: "Classic",
-        recipientTypes: [
-          "Multisport",
-          "Medicover",
-          "Medicover Light",
-          "No card",
-        ],
-      },
-    ];
+  // Redistribute negative balances proportionally across ALL players
+  let needsRedistribution = true;
 
-  for (const { sourceType, recipientTypes } of overflowOrder) {
-    const sourceSlots = playerInfos.filter((playerInfo) => playerInfo.cardType === sourceType);
-    let overflow = 0;
-    sourceSlots.forEach((playerInfo) => {
-      if (playerInfo.price < 0) {
-        overflow += -playerInfo.price;
-        playerInfo.price = 0;
-      }
+  while (needsRedistribution) {
+    const negativePlayers = playerInfos.filter((p) => p.price < 0);
+    if (!negativePlayers.length) break;
+
+    let totalNegative = 0;
+    negativePlayers.forEach((p) => {
+      totalNegative += -p.price;
+      p.price = 0;
     });
-    if (overflow <= 0) continue;
 
-    const recipientSlots = playerInfos.filter((playerInfo) =>
-      recipientTypes.includes(playerInfo.cardType),
-    );
-    if (recipientSlots.length === 0) continue;
+    const positivePlayers = playerInfos.filter((p) => p.price > 0);
+    if (!positivePlayers.length) break;
 
-    const additionPerRecipient = overflow / recipientSlots.length;
-    recipientSlots.forEach((playerInfo) => {
-      playerInfo.price += additionPerRecipient;
+    const totalPositive = positivePlayers.reduce((acc, p) => acc + p.price, 0);
+
+    positivePlayers.forEach((p) => {
+      const proportion = p.price / totalPositive;
+      p.price = Math.max(0, p.price - totalNegative * proportion);
     });
   }
 
-  // Calculate total after usage discount
-  let totalFromPlayers = playerInfos.reduce((acc, playerInfo) => acc + playerInfo.price, 0);
+  // Total AFTER usage economy
+  let totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
 
-  // Fame discount (if fameTotal is set)
+  // Fame override
   let fameDiscount = 0;
+
   if (params.fameTotal != null && params.fameTotal > 0) {
-    // discount = difference between totalFromPlayers and fameTotal
+    // fame compares to the REAL total after usage
     fameDiscount = Math.max(0, totalFromPlayers - params.fameTotal);
 
-    // proportionally reduce player prices
-    const ratio = params.fameTotal / totalFromPlayers;
-    playerInfos.forEach((playerInfo) => {
-      playerInfo.price = playerInfo.price * ratio;
-    });
+    if (totalFromPlayers > 0) {
+      const ratio = params.fameTotal / totalFromPlayers;
 
-    // update totalFromPlayers after fame discount
-    totalFromPlayers = playerInfos.reduce((acc, playerInfo) => acc + playerInfo.price, 0);
+      // scale everyone proportionally
+      playerInfos.forEach((p) => {
+        p.price = p.price * ratio;
+      });
+
+      totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
+    }
   }
 
-  // Round final amounts
+  // Final rounded amounts
   const amounts: Record<string, number> = {};
-  playerInfos.forEach((playerInfo) => {
-    amounts[playerInfo.playerId] = roundAmount(playerInfo.price);
+  playerInfos.forEach((p) => {
+    amounts[p.playerId] = roundAmount(p.price);
   });
 
-  // Informational indicators
+  // informational usage discount (unchanged)
   const totalUsageDiscount = playerInfos.reduce(
-    (acc, playerInfo) => acc + playerInfo.usage * DISCOUNT_PER_USAGE,
+    (acc, p) => acc + p.usage * DISCOUNT_PER_USAGE,
     0,
   );
 
