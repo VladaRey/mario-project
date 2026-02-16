@@ -5,11 +5,7 @@ import { Calculator, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 
 /** Standalone trigger button to open the pricing sheet (use with AutoPricingSheet showTrigger={false} for one sheet, multiple triggers). */
-export function AutoPricingSheetTrigger({
-  onOpen,
-}: {
-  onOpen: () => void;
-}) {
+export function AutoPricingSheetTrigger({ onOpen }: { onOpen: () => void }) {
   return (
     <Button
       type="button"
@@ -76,7 +72,7 @@ export function AutoPricingSheet({
       pricePerHour: params.pricePerHour,
       fameTotal: params.fameTotal,
     }),
-    [params.courts, params.hours, params.pricePerHour, params.fameTotal]
+    [params.courts, params.hours, params.pricePerHour, params.fameTotal],
   );
 
   const handleParamsFormChange = (next: PricingParamsFormValue) => {
@@ -103,7 +99,9 @@ export function AutoPricingSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {showTrigger ? <SheetTrigger asChild>{triggerButton}</SheetTrigger> : null}
+      {showTrigger ? (
+        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
+      ) : null}
       <SheetContent className="w-full overflow-y-auto">
         <SheetHeader className="pb-8">
           <SheetTitle className="hidden">Live pricing</SheetTitle>
@@ -121,15 +119,15 @@ export function AutoPricingSheet({
           />
         </div>
         {(role === Role.Admin || role === Role.Fame) && (
-        <SheetFooter className="pt-4">
-          <Button
-            className="w-full"
-            onClick={onSave}
-            disabled={!isDirty || saving}
-          >
-            {saving ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
+          <SheetFooter className="pt-4">
+            <Button
+              className="w-full"
+              onClick={onSave}
+              disabled={!isDirty || saving}
+            >
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
               Apply
             </Button>
           </SheetFooter>

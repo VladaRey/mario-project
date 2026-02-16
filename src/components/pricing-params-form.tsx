@@ -15,7 +15,8 @@ export interface PricingParamsFormValue {
   courts: number;
   hours: number;
   pricePerHour: number;
-  fameTotal: number;
+  /** null = no value (selector shows empty). */
+  fameTotal: number | null;
 }
 
 interface PricingParamsFormProps {
@@ -63,7 +64,10 @@ export function PricingParamsForm({
   const courtsStr = String(value.courts);
   const hoursStr = String(value.hours);
   const pricePerHourStr = String(value.pricePerHour);
-  const fameTotalStr = value.fameTotal === 0 ? "" : String(value.fameTotal);
+  const fameTotalStr =
+    value.fameTotal === null || value.fameTotal === undefined
+      ? ""
+      : String(value.fameTotal);
 
   return (
     <div>
@@ -94,9 +98,7 @@ export function PricingParamsForm({
           <Label>Hours</Label>
           <Select
             value={hoursStr}
-            onValueChange={(v) =>
-              onChange({ ...value, hours: Number(v) || 0 })
-            }
+            onValueChange={(v) => onChange({ ...value, hours: Number(v) || 0 })}
           >
             <SelectTrigger className="min-w-full border-[#241e2f]">
               <SelectValue />
@@ -135,12 +137,13 @@ export function PricingParamsForm({
           <Input
             className="border-[#241e2f]"
             value={fameTotalStr}
-            onChange={(e) =>
+            onChange={(e) => {
+              const raw = e.target.value.trim();
               onChange({
                 ...value,
-                fameTotal: Number(e.target.value) || 0,
-              })
-            }
+                fameTotal: raw === "" ? null : Number(raw) || 0,
+              });
+            }}
           />
         </Column>
       </Row>

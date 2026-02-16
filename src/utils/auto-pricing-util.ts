@@ -1,11 +1,12 @@
-import type { Event, CardType } from "~/lib/db";
-import type { InputDataType } from "~/services/calculation-service";
+import type { Event } from "~/lib/db";
+import { getCourtsFromPlayersCount, DEFAULT_HOURS, DEFAULT_PRICE_PER_HOUR } from "~/constants/event-pricing-defaults";
 
 export interface AutoParams {
   courts: number;
   hours: number;
   pricePerHour: number;
-  fameTotal: number;
+  /** FAME total input; null means "no value" (selector shows empty). Use ?? 0 for calculation. */
+  fameTotal: number | null;
   /** Optional overrides for owner counts; when omitted, derived from event. */
   medicoverOwners?: number;
   medicoverLightOwners?: number;
@@ -14,72 +15,23 @@ export interface AutoParams {
   noCardOwners?: number;
 }
 
-/** Initial auto params before event is loaded (used for useState initial value). */
-export const DEFAULT_AUTO_PARAMS: AutoParams = {
-  courts: 1,
-  hours: 2,
-  pricePerHour: 77,
-  fameTotal: 0,
-};
 
-export function getDefaultAutoParams(playersCount: number): AutoParams {
-  const courtCount = Math.ceil(playersCount / 4);
-  return {
-    courts: courtCount,
-    hours: 2,
-    pricePerHour: 77,
-    fameTotal: 0,
-  };
-}
-
-
-export function buildInputDataFromEvent(
+/**
+ * Build AutoParams from event. fame_total is the stored input; when null, selector shows no value.
+ */
+export function paramsFromEvent(
   event: Event,
-  params: AutoParams,
-  playerUsages: Record<string, number>
-): InputDataType {
-  const counts = event.players.reduce(
-    (acc, p) => {
-      acc[p.cardType] = (acc[p.cardType] || 0) + 1;
-      return acc;
-    },
-    {} as Record<CardType, number>
-  );
-
-  let medicoverCardUsages = 0;
-  let medicoverLightCardUsages = 0;
-  let msCardUsages = 0;
-
-  for (const player of event.players) {
-    const usage = playerUsages[player.id] ?? 0;
-    switch (player.cardType) {
-      case "Medicover":
-        medicoverCardUsages += usage;
-        break;
-      case "Medicover Light":
-        medicoverLightCardUsages += usage;
-        break;
-      case "Multisport":
-      case "Classic":
-        msCardUsages += usage;
-        break;
-      case "No card":
-        break;
-    }
-  }
+  _playerUsages: Record<string, number> = {},
+): AutoParams {
+  const courts = event.courts ?? getCourtsFromPlayersCount(event.players.length);
+  const hours = event.hours ?? DEFAULT_HOURS;
+  const pricePerHour = event.price_per_hour ?? DEFAULT_PRICE_PER_HOUR;
+  const fameTotal = event.fame_total !== undefined && event.fame_total !== null ? event.fame_total : null;
 
   return {
-    msOwners: params.msOwners ?? counts["Multisport"] ?? 0,
-    medicoverOwners: params.medicoverOwners ?? counts["Medicover"] ?? 0,
-    msClassicOwners: params.msClassicOwners ?? counts["Classic"] ?? 0,
-    medicoverLightOwners: params.medicoverLightOwners ?? counts["Medicover Light"] ?? 0,
-    noCardOwners: params.noCardOwners ?? counts["No card"] ?? 0,
-    msCardUsages,
-    medicoverCardUsages,
-    medicoverLightCardUsages,
-    courts: params.courts,
-    pricePerHour: params.pricePerHour,
-    hours: params.hours,
-    fameTotal: params.fameTotal,
+    courts,
+    hours,
+    pricePerHour,
+    fameTotal,
   };
 }

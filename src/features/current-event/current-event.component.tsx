@@ -10,26 +10,20 @@ import { PlayerPaymentCard } from "./player-payment-card";
 import { PlayersByCardTypeDropdown } from "./players-by-card-type-dropdown";
 import FullSizeLoader from "~/components/full-size-loader";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
-import {
-  getDefaultAutoParams,
-  DEFAULT_AUTO_PARAMS,
-  buildInputDataFromEvent,
-} from "~/utils/auto-pricing-util";
+import { paramsFromEvent } from "~/utils/auto-pricing-util";
 import type { AutoParams } from "~/utils/auto-pricing-util";
-import { calculateStatistics } from "~/services/calculation-service";
-import { ConfirmDialog } from "~/components/confirmation-dialog";
 import {
-  calculatePayments,
-  getPaymentUpdatesForEvent,
-} from "~/utils/calculatePayments";
+  DEFAULT_HOURS,
+  DEFAULT_PRICE_PER_HOUR,
+} from "~/constants/event-pricing-defaults";
+import { calculateEventStatistics } from "~/services/calculate-event-statistics-service";
+import { ConfirmDialog } from "~/components/confirmation-dialog";
 import { CardTypeCounts } from "~/components/card-type-counts";
 import { getCardTypeColor } from "~/utils/getCardTypeColor";
 import { useUsageChange } from "../../hooks/use-usage-change";
 import {
   getSortedCardTypeCounts,
   getSortedPlayers,
-  getPlayerIdsByCardType,
-  buildPlayerPaymentAmountFromCardTypes,
 } from "~/utils/event-players-util";
 
 interface CurrentEventProps {
@@ -45,9 +39,19 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   const [playerPaymentAmount, setPlayerPaymentAmount] = useState<
     Record<string, number>
   >({});
-  const [draftPricingParams, setDraftPricingParams] = useState<AutoParams>(DEFAULT_AUTO_PARAMS);
-  const [appliedPricingParams, setAppliedPricingParams] = useState<AutoParams>(DEFAULT_AUTO_PARAMS);
+  const [draftPricingParams, setDraftPricingParams] = useState<AutoParams>(
+    () => ({
+      courts: 1,
+      hours: DEFAULT_HOURS,
+      pricePerHour: DEFAULT_PRICE_PER_HOUR,
+      fameTotal: null,
+    }),
+  );
   const [playerUsages, setPlayerUsages] = useState<Record<string, number>>({});
+  const appliedPricingParams = useMemo(
+    () => (event ? paramsFromEvent(event, playerUsages) : null),
+    [event, playerUsages],
+  );
   const [autoPricingSheetOpen, setAutoPricingSheetOpen] = useState(false);
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
@@ -76,46 +80,21 @@ export function CurrentEvent({ id }: CurrentEventProps) {
         );
         setPlayerUsages(initialUsages);
 
-        const playerIdsByCardType = getPlayerIdsByCardType(currentEvent);
+        const initialParams = paramsFromEvent(currentEvent, initialUsages);
 
-        // check for amount null
-        const playersToUpdate = currentEvent.players.filter(
-          (p) => p.amount == null,
+        // Always recalc amounts from event's current params (courts, hours, price_per_hour, fame_total)
+        // so we never show stale amounts that were computed with default/old params (e.g. without fame_total).
+        const { amounts: initialAmounts } = calculateEventStatistics(
+          currentEvent,
+          initialParams,
+          initialUsages,
         );
-
-        if (playersToUpdate.length > 0) {
-          // calculate amounts with default auto parameters
-          const defaultParams = getDefaultAutoParams(
-            currentEvent.players.length,
-          );
-          const paymentUpdates = getPaymentUpdatesForEvent(
-            currentEvent,
-            defaultParams,
-            initialUsages,
-          );
-
-          await eventOperations.updatePlayerPaymentAmountsBatch(
-            currentEvent.id,
-            paymentUpdates,
-            playerIdsByCardType,
-          );
-          setPlayerPaymentAmount(
-            buildPlayerPaymentAmountFromCardTypes(
-              playerIdsByCardType,
-              paymentUpdates,
-            ),
-          );
-        } else {
-          const amountsFromDb = await eventOperations.getPlayerPaymentAmount(
-            currentEvent.id,
-          );
-          setPlayerPaymentAmount(amountsFromDb);
-        }
-
-        // set default auto parameters
-        const defaults = getDefaultAutoParams(currentEvent.players.length);
-        setDraftPricingParams(defaults);
-        setAppliedPricingParams(defaults);
+        await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
+          currentEvent.id,
+          initialAmounts,
+        );
+        setPlayerPaymentAmount(initialAmounts);
+        setDraftPricingParams(initialParams);
       } finally {
         if (loadingEventIdRef.current === id) {
           loadingEventIdRef.current = null;
@@ -138,8 +117,9 @@ export function CurrentEvent({ id }: CurrentEventProps) {
 
   const isAutoPricingDirty = useMemo(
     () =>
+      appliedPricingParams != null &&
       JSON.stringify(draftPricingParams) !==
-      JSON.stringify(appliedPricingParams),
+        JSON.stringify(appliedPricingParams),
     [draftPricingParams, appliedPricingParams],
   );
 
@@ -147,9 +127,35 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     if (!event) return;
     setSavingPricing(true);
     try {
-      await calculatePayments(event, draftPricingParams, playerUsages);
-      setAppliedPricingParams(draftPricingParams);
-      await refreshPaymentAmounts();
+      // Use V2 (same as load and useUsageChange) so amounts respect fame_total rescaling.
+      const { amounts } = calculateEventStatistics(
+        event,
+        draftPricingParams,
+        playerUsages,
+      );
+      await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
+        event.id,
+        amounts,
+      );
+      setPlayerPaymentAmount(amounts);
+
+      await eventOperations.updateEventPricing(event.id, {
+        courts: draftPricingParams.courts,
+        hours: draftPricingParams.hours,
+        price_per_hour: draftPricingParams.pricePerHour,
+        fame_total: draftPricingParams.fameTotal ?? null,
+      });
+      setEvent((prev) =>
+        prev
+          ? {
+              ...prev,
+              courts: draftPricingParams.courts,
+              hours: draftPricingParams.hours,
+              price_per_hour: draftPricingParams.pricePerHour,
+              fame_total: draftPricingParams.fameTotal ?? null,
+            }
+          : null,
+      );
       toast.success("Player payment amounts updated successfully!");
     } catch (error) {
       console.error("Error updating player payment amounts:", error);
@@ -175,7 +181,9 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   );
 
   const handleDiscardAutoPricing = useCallback(() => {
-    setDraftPricingParams(appliedPricingParams);
+    if (appliedPricingParams != null) {
+      setDraftPricingParams(appliedPricingParams);
+    }
     setAutoPricingSheetOpen(false);
     setDiscardDialogOpen(false);
   }, [appliedPricingParams]);
@@ -205,12 +213,12 @@ export function CurrentEvent({ id }: CurrentEventProps) {
 
   const pricingStatistics = useMemo(() => {
     if (!event) return null;
-    const inputData = buildInputDataFromEvent(
+    const { statistics } = calculateEventStatistics(
       event,
       draftPricingParams,
       playerUsages,
     );
-    return calculateStatistics(inputData);
+    return statistics;
   }, [event, draftPricingParams, playerUsages]);
 
   if (isLoading) {
@@ -241,7 +249,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex sm:max-w-[312px] flex-1 md:hidden mt-3">
+              <div className="mt-3 flex flex-1 sm:max-w-[312px] md:hidden">
                 <PlayersByCardTypeDropdown event={event} />
               </div>
               {/* md and desktop: players count + card type counts */}
@@ -250,7 +258,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
                   <Users className="h-4 w-4" />
                   <span>{event.players.length} Players</span>
                 </div>
-                <div className="h-6 w-px bg-gray-300"/>
+                <div className="h-6 w-px bg-gray-300" />
                 <CardTypeCounts items={sortedCardTypeCounts} />
               </div>
             </div>

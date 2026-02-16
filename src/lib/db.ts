@@ -1,4 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import {
+  getCourtsFromPlayersCount,
+  DEFAULT_HOURS,
+  DEFAULT_PRICE_PER_HOUR,
+} from "~/constants/event-pricing-defaults";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -52,6 +57,11 @@ export type Event = {
   date: string;
   created_at?: string;
   players: Player[];
+  /** Pricing (events table: hours, courts nullable, price_per_hour, fame_total). fame_total is the input value; when null, selector shows no value. */
+  hours?: number;
+  courts?: number | null;
+  price_per_hour?: number;
+  fame_total?: number | null;
 };
 
 // Add these types
@@ -249,10 +259,14 @@ export const eventOperations = {
     date: string,
     playerIds: string[],
   ): Promise<Event> {
-    // Create event
+    const courts = getCourtsFromPlayersCount(playerIds.length);
+    const hours = DEFAULT_HOURS;
+    const price_per_hour = DEFAULT_PRICE_PER_HOUR;
+    const fame_total: number | null = null;
+
     const { data: event, error: eventError } = await supabase
       .from("events")
-      .insert([{ name, date }])
+      .insert([{ name, date, courts, hours, price_per_hour, fame_total }])
       .select()
       .single();
 
@@ -274,7 +288,7 @@ export const eventOperations = {
       if (playerError) throw playerError;
     }
 
-    // Fetch complete event with players
+    // Fetch complete event with players and pricing
     const { data: completeEvent, error: fetchError } = await supabase
       .from("events")
       .select(
@@ -283,6 +297,10 @@ export const eventOperations = {
         name,
         date,
         created_at,
+        hours,
+        courts,
+        price_per_hour,
+        fame_total,
         players:player_events(
           players(id, name, created_at, cardType)
         )
@@ -305,6 +323,10 @@ export const eventOperations = {
       name: completeEvent.name,
       date: completeEvent.date,
       created_at: completeEvent.created_at,
+      hours: completeEvent.hours,
+      courts: completeEvent.courts,
+      price_per_hour: completeEvent.price_per_hour,
+      fame_total: completeEvent.fame_total ?? null,
       players: completeEvent.players.map((pe: any) => pe.players),
     };
   },
@@ -491,7 +513,7 @@ export const eventOperations = {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `id, name, created_at, date, players:player_events(player:players(id, name, created_at, cardType))`,
+      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(player:players(id, name, created_at, cardType))`,
     )
     .eq("is_deleted", false)
     .order("created_at", { ascending: false });
@@ -509,6 +531,10 @@ export const eventOperations = {
         name: event.name,
         date: event.date,
         created_at: event.created_at,
+        hours: event.hours,
+        courts: event.courts,
+        price_per_hour: event.price_per_hour,
+        fame_total: event.fame_total ?? null,
         players: event.players.flatMap((pe: any) => pe.player),
       });
       return acc;
@@ -528,6 +554,10 @@ export const eventOperations = {
         name,
         date,
         created_at,
+        hours,
+        courts,
+        price_per_hour,
+        fame_total,
         players:player_events(
           paid,
           amount,
@@ -549,6 +579,10 @@ export const eventOperations = {
           name: data.name,
           date: data.date,
           created_at: data.created_at,
+          hours: data.hours,
+          courts: data.courts,
+          price_per_hour: data.price_per_hour,
+          fame_total: data.fame_total ?? null,
           players: data.players.map((pe: any) => ({
             ...pe.player,
             paid: pe.paid,
@@ -568,6 +602,10 @@ export const eventOperations = {
         name,
         date,
         created_at,
+        hours,
+        courts,
+        price_per_hour,
+        fame_total,
         players:player_events(
           players(id, name, created_at, cardType)
         )
@@ -585,6 +623,10 @@ export const eventOperations = {
           name: data.name,
           date: data.date,
           created_at: data.created_at,
+          hours: data.hours,
+          courts: data.courts,
+          price_per_hour: data.price_per_hour,
+          fame_total: data.fame_total ?? null,
           players: data.players.map((pe: any) => pe.players),
         }
       : null;
@@ -596,10 +638,10 @@ export const eventOperations = {
     date: string,
     playerIds: string[],
   ): Promise<void> {
-    // Update event name
+    const courts = getCourtsFromPlayersCount(playerIds.length);
     const { error: updateError } = await supabase
       .from("events")
-      .update({ name, date })
+      .update({ name, date, courts })
       .eq("id", eventId);
 
     if (updateError) throw updateError;
@@ -627,6 +669,23 @@ export const eventOperations = {
 
       if (insertError) throw insertError;
     }
+  },
+
+  async updateEventPricing(
+    eventId: string,
+    payload: {
+      courts: number;
+      hours: number;
+      price_per_hour: number;
+      fame_total: number | null;
+    },
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("events")
+      .update(payload)
+      .eq("id", eventId);
+
+    if (error) throw error;
   },
 
   async getEventPayments(eventId: string): Promise<Record<string, boolean>> {
@@ -676,6 +735,23 @@ export const eventOperations = {
 
     if (error) throw error;
   },
+
+  /**
+ * Оновлює суму для одного гравця після зміни його cardUsage.
+ */
+async updatePlayerPaymentAmountForPlayer(
+  eventId: string,
+  playerId: string,
+  newAmount: number
+): Promise<void> {
+  const { error } = await supabase
+    .from("player_events")
+    .update({ amount: newAmount })
+    .eq("event_id", eventId)
+    .eq("player_id", playerId);
+
+  if (error) throw new Error(`Failed to update amount for player ${playerId}: ${error.message}`);
+},
 
   async getPlayerPaymentAmount(eventId: string): Promise<Record<string, number>> {
   try {
@@ -758,6 +834,31 @@ export const eventOperations = {
               );
           });
       },
+    );
+    await Promise.all(updates);
+  },
+
+  /**
+   * Update payment amounts per player (player_id -> amount). Updates all players
+   * in the event with their corresponding amounts.
+   */
+  async updatePlayerPaymentAmountsByPlayerIds(
+    eventId: string,
+    playerIdToAmount: Record<string, number>,
+  ): Promise<void> {
+    const updates = Object.entries(playerIdToAmount).map(
+      ([playerId, amount]) =>
+        supabase
+          .from("player_events")
+          .update({ amount })
+          .eq("event_id", eventId)
+          .eq("player_id", playerId)
+          .then(({ error }) => {
+            if (error)
+              throw new Error(
+                `Error updating player amount for ${playerId}: ${error.message}`,
+              );
+          }),
     );
     await Promise.all(updates);
   },

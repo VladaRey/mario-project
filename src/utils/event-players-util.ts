@@ -31,30 +31,3 @@ export function getSortedPlayers(event: Event | null): Player[] {
     (a, b) => (order[a.cardType] ?? 99) - (order[b.cardType] ?? 99),
   );
 }
-
-/** Build map of cardType -> player ids for batch payment updates (avoids N GETs per card type). */
-export function getPlayerIdsByCardType(event: Event | null): Record<string, string[]> {
-  if (!event) return {};
-  return event.players.reduce<Record<string, string[]>>((acc, p) => {
-    const t = p.cardType;
-    (acc[t] = acc[t] ?? []).push(p.id);
-    return acc;
-  }, {});
-}
-
-/**
- * Build playerId -> amount from card-type updates (avoids GET after PATCH when we just wrote these amounts).
- */
-export function buildPlayerPaymentAmountFromCardTypes(
-  playerIdsByCardType: Record<string, string[]>,
-  paymentUpdates: Record<string, number>,
-): Record<string, number> {
-  const result: Record<string, number> = {};
-  for (const [cardType, playerIds] of Object.entries(playerIdsByCardType)) {
-    const amount = paymentUpdates[cardType] ?? 0;
-    for (const playerId of playerIds) {
-      result[playerId] = amount;
-    }
-  }
-  return result;
-}
