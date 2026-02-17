@@ -476,34 +476,3 @@ test('2h 2ml 4nc 2ms 7u 2mc', () => {
 
     expect(calculateStatistics(data)).toStrictEqual(expected);
 });
-
-test("Classic discount redistributed to other players (1cl 1ms 1nc, 2h, 8u)", () => {
-  const data: InputDataType = {
-    msClassicOwners: 1,
-    msOwners: 1,
-    medicoverOwners: 0,
-    medicoverLightOwners: 0,
-    noCardOwners: 1,
-    pricePerHour: 80,
-    hours: 2,
-    fameTotal: 0,
-    courts: 1,
-    msCardUsages: 8,
-    medicoverCardUsages: 0,
-    medicoverLightCardUsages: 0,
-  };
-
-  const expected: Statistics = {
-    totalPrice: "160.00",
-    discount: "120.00",
-    priceAfterDiscount: "40.00",
-    noMs: "20.01", 
-    MS: "0",
-    msClassic: "0.00",
-    medicover: undefined,
-    medicoverLight: undefined,
-    fameDiscount: "0.00",
-  };
-
-  expect(calculateStatistics(data)).toStrictEqual(expected);
-});

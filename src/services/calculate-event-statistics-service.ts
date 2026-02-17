@@ -1,6 +1,6 @@
-import { DISCOUNT_PER_USAGE } from "~/constants/event-pricing-defaults";
-import type { Event } from "~/lib/db";
-import type { AutoParams } from "~/utils/auto-pricing-util";
+import { DISCOUNT_PER_USAGE } from "../constants/event-pricing-defaults";
+import type { Event } from "../lib/db";
+import type { AutoParams } from "../utils/auto-pricing-util";
 
 export interface Statistics {
   totalPrice: string; 
@@ -42,66 +42,45 @@ export function calculateEventStatistics(
     price: 0,
   }));
 
-  // Base share per player with usage discount
+  // base share per player
   const baseShare = baseTotal / event.players.length;
-
   playerInfos.forEach((p) => {
     p.price = baseShare - p.usage * DISCOUNT_PER_USAGE;
   });
 
-  // Redistribute negative balances proportionally across ALL players
-  let needsRedistribution = true;
-
-  while (needsRedistribution) {
-    const negativePlayers = playerInfos.filter((p) => p.price < 0);
-    if (!negativePlayers.length) break;
-
-    let totalNegative = 0;
-    negativePlayers.forEach((p) => {
-      totalNegative += -p.price;
-      p.price = 0;
-    });
+  // one-time redistribution of negative balances
+  const negativePlayers = playerInfos.filter((p) => p.price < 0);
+  if (negativePlayers.length > 0) {
+    let totalNegative = negativePlayers.reduce((acc, p) => acc - p.price, 0);
+    negativePlayers.forEach((p) => (p.price = 0));
 
     const positivePlayers = playerInfos.filter((p) => p.price > 0);
-    if (!positivePlayers.length) break;
-
-    const totalPositive = positivePlayers.reduce((acc, p) => acc + p.price, 0);
-
-    positivePlayers.forEach((p) => {
-      const proportion = p.price / totalPositive;
-      p.price = Math.max(0, p.price - totalNegative * proportion);
-    });
+    if (positivePlayers.length > 0) {
+      const split = totalNegative / positivePlayers.length;
+      positivePlayers.forEach((p) => (p.price = Math.max(0, p.price - split)));
+    }
   }
 
-  // Total AFTER usage economy
+  // total after usage
   let totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
 
-  // Fame override
+  // fame discount (proportional)
   let fameDiscount = 0;
-
   if (params.fameTotal != null && params.fameTotal > 0) {
-    // fame compares to the REAL total after usage
     fameDiscount = Math.max(0, totalFromPlayers - params.fameTotal);
-
     if (totalFromPlayers > 0) {
       const ratio = params.fameTotal / totalFromPlayers;
-
-      // scale everyone proportionally
-      playerInfos.forEach((p) => {
-        p.price = p.price * ratio;
-      });
-
+      playerInfos.forEach((p) => (p.price *= ratio));
       totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
     }
   }
 
-  // Final rounded amounts
+  // final rounded amounts
   const amounts: Record<string, number> = {};
   playerInfos.forEach((p) => {
     amounts[p.playerId] = roundAmount(p.price);
   });
 
-  // informational usage discount (unchanged)
   const totalUsageDiscount = playerInfos.reduce(
     (acc, p) => acc + p.usage * DISCOUNT_PER_USAGE,
     0,
