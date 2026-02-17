@@ -28,7 +28,7 @@ export function calculateEventStatistics(
 ) {
   if (!event.players.length) return { amounts: {}, statistics: null };
 
-  const baseTotal = params.courts * params.pricePerHour * params.hours;
+  const rawTotal = params.courts * params.pricePerHour * params.hours;
 
   type PlayerInfo = {
     playerId: string;
@@ -36,48 +36,57 @@ export function calculateEventStatistics(
     price: number;
   };
 
+  const baseShare = rawTotal / event.players.length;
   const playerInfos: PlayerInfo[] = event.players.map((p) => ({
     playerId: p.id,
     usage: playerUsages[p.id] ?? 0,
-    price: 0,
+    price: baseShare,
   }));
 
-  // base share per player
-  const baseShare = baseTotal / event.players.length;
+  // застосовуємо знижку за usage
+  let totalUsageDiscount = 0;
   playerInfos.forEach((p) => {
-    p.price = baseShare - p.usage * DISCOUNT_PER_USAGE;
+    const discount = p.usage * DISCOUNT_PER_USAGE;
+    p.price -= discount;
+    totalUsageDiscount += discount;
   });
 
-  // one-time redistribution of negative balances
+  // one-time redistribution negative balances
   const negativePlayers = playerInfos.filter((p) => p.price < 0);
   if (negativePlayers.length > 0) {
-    let totalNegative = negativePlayers.reduce((acc, p) => acc - p.price, 0);
+    const debt = negativePlayers.reduce((acc, p) => acc - p.price, 0);
     negativePlayers.forEach((p) => (p.price = 0));
 
     const positivePlayers = playerInfos.filter((p) => p.price > 0);
     if (positivePlayers.length > 0) {
-      const split = totalNegative / positivePlayers.length;
-      positivePlayers.forEach((p) => (p.price = Math.max(0, p.price - split)));
+      const split = debt / positivePlayers.length;
+      positivePlayers.forEach((p) => (p.price -= split));
     }
   }
 
-  // total after usage
+  // total after usage redistrib
   let totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
 
-  // fame discount (evenly distributed among all players)
+  // fame discount (evenly among paying players)
   let fameDiscount = 0;
   if (params.fameTotal != null && params.fameTotal > 0) {
-    fameDiscount = Math.max(0, totalFromPlayers - params.fameTotal);
+    let remainingDiscount = Math.max(0, totalFromPlayers - params.fameTotal);
 
-    if (playerInfos.length > 0) {
-      const split = fameDiscount / playerInfos.length;
-      playerInfos.forEach((p) => {
+    // розподіляємо поки є що віднімати і є гравці з ціною > 0
+    while (remainingDiscount > 0) {
+      const positivePlayers = playerInfos.filter((p) => p.price > 0);
+      if (positivePlayers.length === 0) break;
+
+      const split = remainingDiscount / positivePlayers.length;
+      positivePlayers.forEach((p) => {
         p.price = Math.max(0, p.price - split);
       });
+
+      totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
+      remainingDiscount = Math.max(0, totalFromPlayers - params.fameTotal);
     }
 
-    // update total after fame
-    totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
+    fameDiscount = rawTotal - totalFromPlayers - totalUsageDiscount;
   }
 
   // final rounded amounts
@@ -86,13 +95,8 @@ export function calculateEventStatistics(
     amounts[p.playerId] = roundAmount(p.price);
   });
 
-  const totalUsageDiscount = playerInfos.reduce(
-    (acc, p) => acc + p.usage * DISCOUNT_PER_USAGE,
-    0,
-  );
-
   const statistics: Statistics = {
-    totalPrice: roundUp(baseTotal),
+    totalPrice: roundUp(rawTotal),
     priceAfterDiscount: roundUp(totalFromPlayers),
     totalFromPlayers: roundUp(totalFromPlayers),
     discount: roundUp(totalUsageDiscount),
