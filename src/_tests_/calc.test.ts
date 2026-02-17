@@ -475,4 +475,4 @@ test('2h 2ml 4nc 2ms 7u 2mc', () => {
     }
 
     expect(calculateStatistics(data)).toStrictEqual(expected);
-})
+});

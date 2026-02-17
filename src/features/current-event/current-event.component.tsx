@@ -1,41 +1,35 @@
 import { Users } from "lucide-react";
-import { FfpSheet } from "~/components/ffp-sheet.component";
-import { useEffect, useState } from "react";
-import { type CardType, eventOperations, type Event } from "~/lib/db";
+import { toast } from "sonner";
+import {
+  AutoPricingSheet,
+  AutoPricingSheetTrigger,
+} from "~/components/auto-pricing-sheet";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { eventOperations, type Event } from "~/lib/db";
 import { PlayerPaymentCard } from "./player-payment-card";
+import { PlayersByCardTypeDropdown } from "./players-by-card-type-dropdown";
 import FullSizeLoader from "~/components/full-size-loader";
 import { Breadcrumbs } from "~/components/breadcrumbs.component";
-
-const cardTypeOrder: CardType[] = [
-  "Medicover",
-  "Medicover Light",
-  "Multisport",
-  "Classic",
-  "No card",
-];
+import { paramsFromEvent, type AutoParams } from "~/utils/auto-pricing-util";
+import {
+  DEFAULT_HOURS,
+  DEFAULT_PRICE_PER_HOUR,
+} from "~/constants/event-pricing-defaults";
+import { calculateEventStatistics } from "~/services/calculate-event-statistics-service";
+import { ConfirmDialog } from "~/components/confirmation-dialog";
+import { CardTypeCounts } from "~/components/card-type-counts";
+import { getCardTypeColor } from "~/utils/getCardTypeColor";
+import { useUsageChange } from "../../hooks/use-usage-change";
+import {
+  getSortedCardTypeCounts,
+  getSortedPlayers,
+} from "~/utils/event-players-util";
 
 interface CurrentEventProps {
   id: string;
 }
 
 export function CurrentEvent({ id }: CurrentEventProps) {
-  function getCardTypeColor(cardType: CardType) {
-    switch (cardType) {
-      case "Medicover":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900";
-      case "Medicover Light":
-        return "bg-purple-100 text-purple-800 hover:bg-purple-200 hover:text-purple-900";
-      case "Multisport":
-        return "bg-green-100 text-green-800 hover:bg-green-200 hover:text-green-900";
-      case "Classic":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 hover:text-yellow-900";
-      case "No card":
-        return "bg-orange-100 text-slate-800 hover:bg-orange-200 hover:text-orange-900";
-      default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900";
-    }
-  }
-
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
@@ -44,41 +38,144 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   const [playerPaymentAmount, setPlayerPaymentAmount] = useState<
     Record<string, number>
   >({});
+  const [draftPricingParams, setDraftPricingParams] = useState<AutoParams>(
+    () => ({
+      courts: 1,
+      hours: DEFAULT_HOURS,
+      pricePerHour: DEFAULT_PRICE_PER_HOUR,
+      fameTotal: null,
+    }),
+  );
+  const [playerUsages, setPlayerUsages] = useState<Record<string, number>>({});
+  const appliedPricingParams = useMemo(
+    () => (event ? paramsFromEvent(event, playerUsages) : null),
+    [event, playerUsages],
+  );
+  const [autoPricingSheetOpen, setAutoPricingSheetOpen] = useState(false);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [savingPricing, setSavingPricing] = useState(false);
+
+  const loadingEventIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (loadingEventIdRef.current === id) return;
+    loadingEventIdRef.current = id;
+
     const loadInitialEvent = async () => {
       try {
         const currentEvent = await eventOperations.getEvent(id);
+        if (!currentEvent) return;
+
         setEvent(currentEvent);
 
-        if (currentEvent) {
-          const payments = Object.fromEntries(
-            currentEvent.players.map((player) => [player.id, player.paid]),
-          );
-          setPaymentStatus(payments);
+        // payment status
+        setPaymentStatus(
+          Object.fromEntries(currentEvent.players.map((p) => [p.id, p.paid])),
+        );
 
-          const playerPayments = Object.fromEntries(
-            currentEvent.players.map((player) => [player.id, player.amount]),
-          );
-          setPlayerPaymentAmount(playerPayments);
-        }
-      } catch (error) {
-        console.error("Failed to load event:", error);
+        // card usage
+        const initialUsages = Object.fromEntries(
+          currentEvent.players.map((p) => [p.id, p.cardUsage ?? 0]),
+        );
+        setPlayerUsages(initialUsages);
+
+        const initialParams = paramsFromEvent(currentEvent, initialUsages);
+
+        // Always recalc amounts from event's current params (courts, hours, price_per_hour, fame_total)
+        // so we never show stale amounts that were computed with default/old params (e.g. without fame_total).
+        const { amounts: initialAmounts } = calculateEventStatistics(
+          currentEvent,
+          initialParams,
+          initialUsages,
+        );
+        await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
+          currentEvent.id,
+          initialAmounts,
+        );
+        setPlayerPaymentAmount(initialAmounts);
+        setDraftPricingParams(initialParams);
       } finally {
+        if (loadingEventIdRef.current === id) {
+          loadingEventIdRef.current = null;
+        }
         setIsLoading(false);
       }
     };
-    loadInitialEvent();
-  }, []);
 
-  const refreshPaymentAmounts = async () => {
-    if (event) {
-      const playerPayments = await eventOperations.getPlayerPaymentAmount(
-        event.id,
+    loadInitialEvent();
+  }, [id]);
+
+  const isAutoPricingDirty = useMemo(
+    () =>
+      appliedPricingParams != null &&
+      JSON.stringify(draftPricingParams) !==
+        JSON.stringify(appliedPricingParams),
+    [draftPricingParams, appliedPricingParams],
+  );
+
+  const handleApplyAutoPricing = useCallback(async () => {
+    if (!event) return;
+    setSavingPricing(true);
+    try {
+      const { amounts } = calculateEventStatistics(
+        event,
+        draftPricingParams,
+        playerUsages,
       );
-      setPlayerPaymentAmount(playerPayments);
+      await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
+        event.id,
+        amounts,
+      );
+      setPlayerPaymentAmount(amounts);
+
+      await eventOperations.updateEventPricing(event.id, {
+        courts: draftPricingParams.courts,
+        hours: draftPricingParams.hours,
+        price_per_hour: draftPricingParams.pricePerHour,
+        fame_total: draftPricingParams.fameTotal ?? null,
+      });
+      setEvent((prev) =>
+        prev
+          ? {
+              ...prev,
+              courts: draftPricingParams.courts,
+              hours: draftPricingParams.hours,
+              price_per_hour: draftPricingParams.pricePerHour,
+              fame_total: draftPricingParams.fameTotal ?? null,
+            }
+          : null,
+      );
+      toast.success("Player payment amounts updated successfully!");
+    } catch (error) {
+      console.error("Error updating player payment amounts:", error);
+      toast.error("Failed to update player payment amounts.");
+    } finally {
+      setSavingPricing(false);
     }
-  };
+  }, [event, draftPricingParams, playerUsages]);
+
+  const handleAutoPricingSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) {
+        setAutoPricingSheetOpen(true);
+        return;
+      }
+      if (isAutoPricingDirty) {
+        setDiscardDialogOpen(true);
+        return;
+      }
+      setAutoPricingSheetOpen(false);
+    },
+    [isAutoPricingDirty],
+  );
+
+  const handleDiscardAutoPricing = useCallback(() => {
+    if (appliedPricingParams != null) {
+      setDraftPricingParams(appliedPricingParams);
+    }
+    setAutoPricingSheetOpen(false);
+    setDiscardDialogOpen(false);
+  }, [appliedPricingParams]);
 
   const handlePaymentChange = async (playerId: string, paid: boolean) => {
     if (!event) return;
@@ -95,6 +192,26 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     }
   };
 
+  const handleUsageChange = useUsageChange(
+    event,
+    playerUsages,
+    draftPricingParams,
+    setPlayerUsages,
+    setPlayerPaymentAmount,
+    setDraftPricingParams,
+    setEvent,
+  );
+
+  const pricingStatistics = useMemo(() => {
+    if (!event) return null;
+    const { statistics } = calculateEventStatistics(
+      event,
+      draftPricingParams,
+      playerUsages,
+    );
+    return statistics;
+  }, [event, draftPricingParams, playerUsages]);
+
   if (isLoading) {
     return <FullSizeLoader />;
   }
@@ -103,72 +220,62 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     return <div>No event found</div>;
   }
 
-  const cardTypeCounts = event.players.reduce(
-    (acc, player) => {
-      acc[player.cardType] = (acc[player.cardType] || 0) + 1;
-      return acc;
-    },
-    {} as Record<CardType, number>,
-  );
-
-  const sortedCardTypeCounts = cardTypeOrder.map((type) => ({
-    type,
-    count: cardTypeCounts[type] || 0,
-  }));
-
-  const sortedPlayers = [...event.players].sort(
-    (a, b) =>
-      cardTypeOrder.indexOf(a.cardType) - cardTypeOrder.indexOf(b.cardType),
-  );
-
-  const mc = cardTypeCounts["Medicover"] || 0;
-  const ml = cardTypeCounts["Medicover Light"] || 0;
-  const ms = cardTypeCounts["Multisport"] || 0;
-  const msc = cardTypeCounts["Classic"] || 0;
-  const nc = cardTypeCounts["No card"] || 0;
+  const sortedCardTypeCounts = getSortedCardTypeCounts(event);
+  const sortedPlayers = getSortedPlayers(event);
 
   return (
     <div className="space-y-4">
       <Breadcrumbs
-        items={[
-          { label: event?.name || "", href: `/event/${event?.id}` },
-        ]}
+        items={[{ label: event?.name || "", href: `/event/${event?.id}` }]}
       />
       <div className="space-y-4">
-        <div className="space-y-1 flex flex-col gap-6 md:gap-4 md:flex-row md:justify-between md:items-end">
-          <div>
-            <h2 className="text-2xl font-bold">Event: {event.name}</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
-                <Users className="h-4 w-4" />
-                <span>{event.players.length} Players</span>
+        <div className="flex flex-row justify-between gap-2 space-y-1 md:gap-4">
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center justify-between">
+              <h2 className="mb-1 text-2xl font-bold">Event: {event.name}</h2>
+              <div className="flex gap-2 md:hidden">
+                <AutoPricingSheetTrigger
+                  onOpen={() => handleAutoPricingSheetOpenChange(true)}
+                />
               </div>
-              <div className="h-6 w-px bg-gray-300" />
-              {sortedCardTypeCounts.map(({ type, count }) => (
-                <div
-                  key={type}
-                  className={`${getCardTypeColor(type)} flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium`}
-                >
-                  <span>{type}:</span>
-                  <span className="font-bold">{count}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="mt-3 flex flex-1 sm:max-w-[312px] md:hidden">
+                <PlayersByCardTypeDropdown event={event} />
+              </div>
+              {/* md and desktop: players count + card type counts */}
+              <div className="hidden md:flex md:flex-wrap md:items-center md:gap-3">
+                <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
+                  <Users className="h-4 w-4" />
+                  <span>{event.players.length} Players</span>
                 </div>
-              ))}
+                <div className="h-6 w-px bg-gray-300" />
+                <CardTypeCounts items={sortedCardTypeCounts} />
+              </div>
             </div>
           </div>
-          <div>
-            <FfpSheet
-              ml={ml}
-              mc={mc}
-              ms={ms}
-              msc={msc}
-              nc={nc}
-              onRefresh={refreshPaymentAmounts}
-              eventId={event.id}
+          <div className="hidden gap-2 md:flex md:items-end">
+            <AutoPricingSheetTrigger
+              onOpen={() => handleAutoPricingSheetOpenChange(true)}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Single sheet instance (opened by mobile or desktop trigger) */}
+        <AutoPricingSheet
+          open={autoPricingSheetOpen}
+          onOpenChange={handleAutoPricingSheetOpenChange}
+          params={draftPricingParams}
+          onParamsChange={setDraftPricingParams}
+          isDirty={isAutoPricingDirty}
+          onSave={handleApplyAutoPricing}
+          saving={savingPricing}
+          showTrigger={false}
+          fameDiscount={pricingStatistics?.fameDiscount}
+          priceAfterDiscount={pricingStatistics?.priceAfterDiscount}
+        />
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {(sortedPlayers || []).map((player) => {
             return player ? (
               <PlayerPaymentCard
@@ -176,13 +283,29 @@ export function CurrentEvent({ id }: CurrentEventProps) {
                 player={player}
                 paymentStatus={paymentStatus}
                 handlePaymentChange={handlePaymentChange}
-                playerPaymentAmount={playerPaymentAmount}
                 getCardTypeColor={getCardTypeColor}
+                displayAmount={
+                  playerPaymentAmount[player.id] != null
+                    ? String(playerPaymentAmount[player.id])
+                    : undefined
+                }
+                usage={playerUsages[player.id] ?? 0}
+                onUsageChange={handleUsageChange}
               />
             ) : null;
           })}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={discardDialogOpen}
+        onOpenChange={setDiscardDialogOpen}
+        title="Discard changes?"
+        description="You have unsaved changes to the pricing parameters. Are you sure you want to discard them?"
+        confirmLabel="Discard"
+        confirmVariant="destructive"
+        onConfirm={handleDiscardAutoPricing}
+      />
     </div>
   );
 }
