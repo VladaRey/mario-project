@@ -43,3 +43,50 @@ test("Event statistics: Medicover / Medicover Light with 2h, 1 court, 2 No Card"
     no2: 38.33,
   });
 });
+
+
+describe("calculateEventStatistics - fame evenly distributed", () => {
+  it("should correctly apply fame discount with card usage", () => {
+    const event = {
+      players: [
+        { id: "player1" },
+        { id: "player2" },
+        { id: "player3" },
+        { id: "player4" },
+      ],
+    } as any;
+
+    const params = {
+      courts: 1,
+      pricePerHour: 80,
+      hours: 2,
+      fameTotal: 120,
+    } as any;
+
+    const playerUsages = {
+      player1: 1, 
+      player2: 0,
+      player3: 0,
+      player4: 0,
+    };
+
+    const { amounts, statistics } = calculateEventStatistics(
+      event,
+      params,
+      playerUsages,
+    );
+
+    // expect total price = 160
+    expect(statistics?.totalPrice).toBe("160.00");
+
+    // expect fame discount = 25
+    expect(statistics?.fameDiscount).toBe("25.00");
+
+    expect(amounts).toBeDefined();
+    expect((amounts as Record<string, number>)["player1"]).toBeCloseTo(18.75, 2);
+    expect((amounts as Record<string, number>)["player2"]).toBeCloseTo(33.75, 2);
+    expect((amounts as Record<string, number>)["player3"]).toBeCloseTo(33.75, 2);
+    expect((amounts as Record<string, number>)["player4"]).toBeCloseTo(33.75, 2);
+  });
+});
+

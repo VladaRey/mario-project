@@ -64,15 +64,20 @@ export function calculateEventStatistics(
   // total after usage
   let totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
 
-  // fame discount (proportional)
+  // fame discount (evenly distributed among all players)
   let fameDiscount = 0;
   if (params.fameTotal != null && params.fameTotal > 0) {
     fameDiscount = Math.max(0, totalFromPlayers - params.fameTotal);
-    if (totalFromPlayers > 0) {
-      const ratio = params.fameTotal / totalFromPlayers;
-      playerInfos.forEach((p) => (p.price *= ratio));
-      totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
+
+    if (playerInfos.length > 0) {
+      const split = fameDiscount / playerInfos.length;
+      playerInfos.forEach((p) => {
+        p.price = Math.max(0, p.price - split);
+      });
     }
+
+    // update total after fame
+    totalFromPlayers = playerInfos.reduce((acc, p) => acc + p.price, 0);
   }
 
   // final rounded amounts
