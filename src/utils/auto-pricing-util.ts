@@ -1,5 +1,5 @@
 import type { Event } from "~/lib/db";
-import { getCourtsFromPlayersCount, DEFAULT_HOURS, DEFAULT_PRICE_PER_HOUR } from "~/constants/event-pricing-defaults";
+import { getCourtsFromPlayersCount } from "~/constants/event-pricing-defaults";
 
 export interface AutoParams {
   courts: number;
@@ -16,17 +16,27 @@ export interface AutoParams {
 }
 
 
+interface DefaultPricingParams {
+  hours: number;
+  pricePerHour: number;
+}
+
 /**
  * Build AutoParams from event. fame_total is the stored input; when null, selector shows no value.
  */
 export function paramsFromEvent(
   event: Event,
+  defaults: DefaultPricingParams,
   _playerUsages: Record<string, number> = {},
 ): AutoParams {
-  const courts = event.courts ?? getCourtsFromPlayersCount(event.players.length);
-  const hours = event.hours ?? DEFAULT_HOURS;
-  const pricePerHour = event.price_per_hour ?? DEFAULT_PRICE_PER_HOUR;
-  const fameTotal = event.fame_total !== undefined && event.fame_total !== null ? event.fame_total : null;
+  const courts =
+    event.courts ?? getCourtsFromPlayersCount(event.players.length);
+  const hours = event.hours ?? defaults.hours;
+  const pricePerHour = event.price_per_hour ?? defaults.pricePerHour;
+  const fameTotal =
+    event.fame_total !== undefined && event.fame_total !== null
+      ? event.fame_total
+      : null;
 
   return {
     courts,

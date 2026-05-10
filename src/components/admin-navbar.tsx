@@ -2,9 +2,12 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Menu } from "lucide-react";
+import { DefaultValuesAdminSheet } from "./default-values-admin-sheet.component";
 
 export function AdminNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDefaultValuesSheetOpen, setIsDefaultValuesSheetOpen] =
+    useState(false);
 
   return (
     <nav className="mb-2 py-4">
@@ -20,6 +23,9 @@ export function AdminNavbar() {
           <Menu className="h-6 w-6" />
         </Button>
         <div className="hidden space-x-4 sm:flex">
+          <Button variant="ghost" onClick={() => setIsDefaultValuesSheetOpen(true)}>
+            Default values
+          </Button>
           <Button asChild variant="ghost">
             <Link href="/admin/players">Players</Link>
           </Button>
@@ -44,6 +50,10 @@ export function AdminNavbar() {
           </Button>
         </div>
       )}
+      <DefaultValuesAdminSheet
+        open={isDefaultValuesSheetOpen}
+        onOpenChange={() => setIsDefaultValuesSheetOpen(false)}
+      />
     </nav>
   );
 }

@@ -19,6 +19,7 @@ export function useUsageChange(
   >,
   setDraftPricingParams: React.Dispatch<React.SetStateAction<AutoParams>>,
   setEvent: React.Dispatch<React.SetStateAction<Event | null>>,
+  discountPerUsage: number,
 ) {
   return useCallback(
     async (playerId: string, usage: number) => {
@@ -33,6 +34,7 @@ export function useUsageChange(
         event,
         paramsWithNoFame,
         newUsages,
+        discountPerUsage,
       );
       setPlayerUsages(newUsages);
       setPlayerPaymentAmount(amounts);
@@ -66,6 +68,7 @@ export function useUsageChange(
             event,
             autoParams,
             { ...playerUsages, [playerId]: previousUsage },
+            discountPerUsage,
           );
           return reverted;
         });
