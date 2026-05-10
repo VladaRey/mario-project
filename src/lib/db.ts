@@ -293,9 +293,15 @@ export const eventOperations = {
     date: string,
     playerIds: string[],
   ): Promise<Event> {
+    const { data: adminValues, error: adminValuesError } = await supabase
+      .from("default_admin_values")
+      .select("hours, price_per_hour")
+      .single();
+
+    if (adminValuesError) throw adminValuesError;
     const courts = getCourtsFromPlayersCount(playerIds.length);
-    const hours = DEFAULT_HOURS;
-    const price_per_hour = DEFAULT_PRICE_PER_HOUR;
+    const hours = adminValues.hours;
+    const price_per_hour = adminValues.price_per_hour;
     const fame_total: number | null = null;
 
     const { data: event, error: eventError } = await supabase
