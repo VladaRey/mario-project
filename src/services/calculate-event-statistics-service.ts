@@ -25,6 +25,7 @@ export function calculateEventStatistics(
   event: Event,
   params: AutoParams,
   playerUsages: Record<string, number>,
+  discountPerUsage: number,
 ) {
   if (!event.players.length) return { amounts: {}, statistics: null };
 
@@ -46,7 +47,7 @@ export function calculateEventStatistics(
   // застосовуємо знижку за usage
   let totalUsageDiscount = 0;
   playerInfos.forEach((p) => {
-    const discount = p.usage * DISCOUNT_PER_USAGE;
+    const discount = p.usage * discountPerUsage;
     p.price -= discount;
     totalUsageDiscount += discount;
   });

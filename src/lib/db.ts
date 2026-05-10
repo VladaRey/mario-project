@@ -71,6 +71,15 @@ export type PlayerPayment = {
   paid: boolean;
 };
 
+export type DefaultAdminValues = {
+  id: number;
+  players_per_court: number;
+  hours: number;
+  price_per_hour: number;
+  fame_discount: number;
+  discount_per_usage: number;
+};
+
 // Player operations
 export const playerOperations = {
   async getAllPlayers(): Promise<Player[]> {
@@ -130,6 +139,31 @@ export const playerOperations = {
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime()); // sorting by time
 
     return sortedDates;
+  }
+};
+
+export const DefaultAdminValuesOperations = {
+  async getDefaultAdminValues(): Promise<DefaultAdminValues> {
+    const { data, error } = await supabase
+      .from("default_admin_values")
+      .select("*")
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  },
+
+  async updateDefaultAdminValues(
+    id: number,
+    values: Partial<Omit<DefaultAdminValues, "id">>,
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("default_admin_values")
+      .update(values)
+      .eq("id", id);
+
+    if (error) throw error;
   }
 };
 

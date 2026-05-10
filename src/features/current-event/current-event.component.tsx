@@ -5,7 +5,11 @@ import {
   AutoPricingSheetTrigger,
 } from "~/components/auto-pricing-sheet";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { eventOperations, type Event } from "~/lib/db";
+import {
+  eventOperations,
+  DefaultAdminValuesOperations,
+  type Event,
+} from "~/lib/db";
 import { PlayerPaymentCard } from "./player-payment-card";
 import { PlayersByCardTypeDropdown } from "./players-by-card-type-dropdown";
 import FullSizeLoader from "~/components/full-size-loader";
@@ -14,6 +18,7 @@ import { paramsFromEvent, type AutoParams } from "~/utils/auto-pricing-util";
 import {
   DEFAULT_HOURS,
   DEFAULT_PRICE_PER_HOUR,
+  DISCOUNT_PER_USAGE
 } from "~/constants/event-pricing-defaults";
 import { calculateEventStatistics } from "~/services/calculate-event-statistics-service";
 import { ConfirmDialog } from "~/components/confirmation-dialog";
@@ -38,6 +43,11 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   const [playerPaymentAmount, setPlayerPaymentAmount] = useState<
     Record<string, number>
   >({});
+  const [defaultPricingValues, setDefaultPricingValues] = useState({
+    hours: DEFAULT_HOURS,
+    pricePerHour: DEFAULT_PRICE_PER_HOUR,
+  });
+  const [discountPerUsage, setDiscountPerUsage] = useState<number>(DISCOUNT_PER_USAGE);
   const [draftPricingParams, setDraftPricingParams] = useState<AutoParams>(
     () => ({
       courts: 1,
@@ -48,8 +58,9 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   );
   const [playerUsages, setPlayerUsages] = useState<Record<string, number>>({});
   const appliedPricingParams = useMemo(
-    () => (event ? paramsFromEvent(event, playerUsages) : null),
-    [event, playerUsages],
+    () =>
+      event ? paramsFromEvent(event, defaultPricingValues, playerUsages) : null,
+    [event, playerUsages, defaultPricingValues],
   );
   const [autoPricingSheetOpen, setAutoPricingSheetOpen] = useState(false);
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
@@ -79,7 +90,23 @@ export function CurrentEvent({ id }: CurrentEventProps) {
         );
         setPlayerUsages(initialUsages);
 
-        const initialParams = paramsFromEvent(currentEvent, initialUsages);
+        const defaultValues =
+          await DefaultAdminValuesOperations.getDefaultAdminValues();
+
+        const defaults = {
+          hours: defaultValues.hours,
+          pricePerHour: defaultValues.price_per_hour,
+        };
+
+        setDiscountPerUsage(defaultValues.discount_per_usage);
+
+        setDefaultPricingValues(defaults);
+
+        const initialParams = paramsFromEvent(
+          currentEvent,
+          defaults,
+          initialUsages,
+        );
 
         // Always recalc amounts from event's current params (courts, hours, price_per_hour, fame_total)
         // so we never show stale amounts that were computed with default/old params (e.g. without fame_total).
@@ -87,13 +114,19 @@ export function CurrentEvent({ id }: CurrentEventProps) {
           currentEvent,
           initialParams,
           initialUsages,
+          discountPerUsage
         );
         await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
           currentEvent.id,
           initialAmounts,
         );
         setPlayerPaymentAmount(initialAmounts);
-        setDraftPricingParams(initialParams);
+
+        setDraftPricingParams({
+          ...initialParams,
+          hours: defaultValues.hours,
+          pricePerHour: defaultValues.price_per_hour,
+        });
       } finally {
         if (loadingEventIdRef.current === id) {
           loadingEventIdRef.current = null;
@@ -121,6 +154,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
         event,
         draftPricingParams,
         playerUsages,
+        discountPerUsage,
       );
       await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
         event.id,
@@ -208,6 +242,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
       event,
       draftPricingParams,
       playerUsages,
+      discountPerUsage
     );
     return statistics;
   }, [event, draftPricingParams, playerUsages]);
