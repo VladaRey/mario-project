@@ -98,7 +98,9 @@ export function CurrentEvent({ id }: CurrentEventProps) {
           pricePerHour: defaultValues.price_per_hour,
         };
 
-        setDiscountPerUsage(defaultValues.discount_per_usage);
+        const currentDiscountPerUsage = defaultValues.discount_per_usage;
+
+        setDiscountPerUsage(currentDiscountPerUsage);
 
         setDefaultPricingValues(defaults);
 
@@ -114,7 +116,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
           currentEvent,
           initialParams,
           initialUsages,
-          discountPerUsage
+          currentDiscountPerUsage,
         );
         await eventOperations.updatePlayerPaymentAmountsByPlayerIds(
           currentEvent.id,
@@ -234,6 +236,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     setPlayerPaymentAmount,
     setDraftPricingParams,
     setEvent,
+    discountPerUsage,
   );
 
   const pricingStatistics = useMemo(() => {
