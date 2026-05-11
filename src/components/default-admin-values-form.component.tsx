@@ -17,27 +17,7 @@ export function DefaultAdminValuesForm({ value, onChange }: Props) {
   };
 
   return (
-    <div className="space-y-4 pt-6">
-      <div className="flex gap-2">
-        <div>
-          <h2 className="text-sm font-medium">Players per court</h2>
-          <Input
-            value={value.players_per_court}
-            onChange={(e) => updateField("players_per_court", e.target.value)}
-            className="border-[#241e2f]"
-          />
-        </div>
-
-        <div>
-          <h2 className="text-sm font-medium">Default hours</h2>
-          <Input
-            value={value.hours}
-            onChange={(e) => updateField("hours", e.target.value)}
-            className="border-[#241e2f]"
-          />
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-y-4 pt-6">
       <div className="flex gap-2">
         <div>
           <h2 className="text-sm font-medium">Default price per hour</h2>
@@ -47,19 +27,17 @@ export function DefaultAdminValuesForm({ value, onChange }: Props) {
             className="border-[#241e2f]"
           />
         </div>
-
         <div>
-          <h2 className="text-sm font-medium">Default fame discount</h2>
+          <h2 className="text-sm font-medium">Default hours</h2>
           <Input
-            value={value.fame_discount}
-            onChange={(e) => updateField("fame_discount", e.target.value)}
+            value={value.hours}
+            onChange={(e) => updateField("hours", e.target.value)}
             className="border-[#241e2f]"
           />
         </div>
       </div>
-
       <div>
-        <h2 className="text-sm font-medium">Discount per usage</h2>
+        <h2 className="text-sm font-medium">Discount per card usage</h2>
         <Input
           value={value.discount_per_usage}
           onChange={(e) => updateField("discount_per_usage", e.target.value)}
