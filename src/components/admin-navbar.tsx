@@ -39,6 +39,9 @@ export function AdminNavbar() {
       </div>
       {isMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 sm:hidden">
+          <Button variant="ghost" onClick={() => setIsDefaultValuesSheetOpen(true)}>
+            Default values
+          </Button>
           <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
             <Link href="/admin/players">Players</Link>
           </Button>

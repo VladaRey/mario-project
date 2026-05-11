@@ -73,10 +73,8 @@ export type PlayerPayment = {
 
 export type DefaultAdminValues = {
   id: number;
-  players_per_court: number;
   hours: number;
   price_per_hour: number;
-  fame_discount: number;
   discount_per_usage: number;
 };
 
