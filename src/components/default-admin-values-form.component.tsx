@@ -20,7 +20,7 @@ export function DefaultAdminValuesForm({ value, onChange }: Props) {
     <div className="flex flex-col gap-y-4 pt-6">
       <div className="flex gap-2">
         <div>
-          <h2 className="text-sm font-medium">Default price per hour</h2>
+          <h2 className="text-sm font-medium">Price per hour</h2>
           <Input
             value={value.price_per_hour}
             onChange={(e) => updateField("price_per_hour", e.target.value)}
@@ -28,7 +28,7 @@ export function DefaultAdminValuesForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <h2 className="text-sm font-medium">Default hours</h2>
+          <h2 className="text-sm font-medium">Hours</h2>
           <Input
             value={value.hours}
             onChange={(e) => updateField("hours", e.target.value)}
