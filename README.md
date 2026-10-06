@@ -27,3 +27,22 @@ You can check out the [create-t3-app GitHub repository](https://github.com/t3-os
 ## How do I deploy this?
 
 Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+
+## Mock mode (local testing without Supabase)
+
+Create `.env.local` (git-ignored):
+
+```
+NEXT_PUBLIC_USE_MOCK_DB=1
+NEXT_PUBLIC_ADMIN_PASSWORD=admin
+NEXT_PUBLIC_FAME_PASSWORD=fame
+```
+
+Then `pnpm install && pnpm dev` and open http://localhost:3000. Log in with any login and the admin password above.
+
+- All data access goes through `src/lib/db.ts`. With the flag set, it uses `src/lib/db.mock.ts`, which keeps data in the browser's `localStorage`. Nothing is sent to Supabase.
+- The seed includes 25 players and reservations "Tuesday" (16 players) and "Thursday". It also has a past event with lottery results. Two players are already penalized: one in "Tuesday" and one on the past event's waiting list.
+- The amber "MOCK DATA" badge in the bottom-left corner has **Reset**, which restores the seed.
+- The flag is never set on Netlify, so production always uses Supabase.
+
+Database changes that production needs are in `scripts/db/`.

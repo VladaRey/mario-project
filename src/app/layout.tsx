@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import "~/styles/globals.css";
 import { type Metadata } from "next";
+import { MockDbBanner } from "~/components/mock-db-banner";
 
 export const metadata: Metadata = {
   title: "Player Reservation App",
@@ -17,7 +18,10 @@ export default function RootLayout({
       <head>
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        {process.env.NEXT_PUBLIC_USE_MOCK_DB === "1" && <MockDbBanner />}
+      </body>
     </html>
   );
 }

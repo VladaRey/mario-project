@@ -1,14 +1,23 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   getCourtsFromPlayersCount,
   DEFAULT_HOURS,
   DEFAULT_PRICE_PER_HOUR,
 } from "~/constants/event-pricing-defaults";
+import {
+  mockDefaultAdminValuesOperations,
+  mockEventOperations,
+  mockPlayerOperations,
+  mockReservationOperations,
+} from "./db.mock";
+
+/** Local testing without Supabase: data lives in the browser (see src/lib/db.mock.ts). */
+export const USE_MOCK_DB = process.env.NEXT_PUBLIC_USE_MOCK_DB === "1";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!USE_MOCK_DB && (!supabaseUrl || !supabaseAnonKey)) {
   throw new Error("Missing Supabase environment variables");
 }
 
@@ -21,7 +30,9 @@ const options = {
   },
 };
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey, options);
+const supabase: SupabaseClient = USE_MOCK_DB
+  ? (null as unknown as SupabaseClient)
+  : createClient(supabaseUrl!, supabaseAnonKey!, options);
 
 export type CardType = "Medicover" | "Medicover Light" | "Multisport" | "Classic" | "No card";
 
@@ -81,7 +92,7 @@ export type DefaultAdminValues = {
 };
 
 // Player operations
-export const playerOperations = {
+const supabasePlayerOperations = {
   async getAllPlayers(): Promise<Player[]> {
     const { data, error } = await supabase
       .from("players")
@@ -160,7 +171,7 @@ export const playerOperations = {
   }
 };
 
-export const DefaultAdminValuesOperations = {
+const supabaseDefaultAdminValuesOperations = {
   async getDefaultAdminValues(): Promise<DefaultAdminValues> {
     const { data, error } = await supabase
       .from("default_admin_values")
@@ -186,7 +197,7 @@ export const DefaultAdminValuesOperations = {
 };
 
 // Reservation List operations
-export const reservationOperations = {
+const supabaseReservationOperations = {
   async getAllReservationLists(): Promise<ReservationList[]> {
     const { data, error } = await supabase
       .from("reservation_lists")
@@ -305,7 +316,7 @@ export const reservationOperations = {
 };
 
 // Event operations
-export const eventOperations = {
+const supabaseEventOperations = {
   async addEvent(
     name: string,
     date: string,
@@ -921,3 +932,15 @@ async updatePlayerPaymentAmountForPlayer(
     await Promise.all(updates);
   },
 }; 
+// Mock objects are typed against the real ones, so a signature drift fails typecheck.
+export const playerOperations: typeof supabasePlayerOperations = USE_MOCK_DB
+  ? mockPlayerOperations
+  : supabasePlayerOperations;
+export const DefaultAdminValuesOperations: typeof supabaseDefaultAdminValuesOperations =
+  USE_MOCK_DB ? mockDefaultAdminValuesOperations : supabaseDefaultAdminValuesOperations;
+export const reservationOperations: typeof supabaseReservationOperations = USE_MOCK_DB
+  ? mockReservationOperations
+  : supabaseReservationOperations;
+export const eventOperations: typeof supabaseEventOperations = USE_MOCK_DB
+  ? mockEventOperations
+  : supabaseEventOperations;
