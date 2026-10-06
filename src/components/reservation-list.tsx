@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { Edit, Trash2, PlusCircle } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AddReservationSheet } from "./add-reservation-sheet";
 import { cn } from "../lib/utils";
-import { reservationOperations, type ReservationList } from "../lib/db";
-import { PlayerCard } from "./player-card"
+import { reservationOperations, type ReservationList as ReservationListType } from "../lib/db";
 import { ConfirmDialog } from "./confirmation-dialog";
+import { ListRow } from "~/components/ds/list";
+import { PlayerAvatar } from "~/components/ds/player-avatar";
+import { EmptyState } from "~/components/ds/empty-state";
+import { PenaltyBadge } from "~/components/penalty-badge";
+import { useT } from "~/i18n/i18n-provider";
 
 export interface SaveReservationData {
   name: string;
@@ -19,8 +22,19 @@ export interface ReservationListProps {
   refreshTrigger?: number;
 }
 
+export async function saveReservationEdit(
+  ops: { renameReservationList(id: string, name: string): Promise<void>; updateReservationPlayers(id: string, ids: string[]): Promise<void> },
+  current: { id: string; name: string },
+  data: { name: string; players: string[] },
+) {
+  const name = data.name.trim();
+  if (name && name !== current.name) await ops.renameReservationList(current.id, name);
+  await ops.updateReservationPlayers(current.id, data.players);
+}
+
 export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
-  const [reservations, setReservations] = useState<ReservationList[]>([]);
+  const t = useT();
+  const [reservations, setReservations] = useState<ReservationListType[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
 
   const refreshReservations = async () => {
@@ -28,7 +42,6 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
       const dbReservations =
         await reservationOperations.getAllReservationLists();
 
-      console.log("dbReservations", dbReservations);
       setReservations(dbReservations);
       if (!activeTab && dbReservations.length > 0) {
         setActiveTab(dbReservations[0]?.id || "");
@@ -44,7 +57,6 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
 
   const handleSave = async (data: SaveReservationData) => {
     try {
-      console.log("Handling save in ReservationList:", data);
       const newReservation = await reservationOperations.addReservationList(
         data.name,
         data.players,
@@ -57,11 +69,10 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
   };
 
   const handleEdit = async (data: SaveReservationData) => {
+    const current = reservations.find((r) => r.id === activeTab);
+    if (!current) return;
     try {
-      await reservationOperations.updateReservationPlayers(
-        activeTab,
-        data.players,
-      );
+      await saveReservationEdit(reservationOperations, current, data);
       await refreshReservations();
     } catch (error) {
       console.error("Failed to update reservation:", error);
@@ -103,82 +114,129 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
     }
   };
 
-  return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <TabsList className="h-auto bg-muted/20 p-1">
-          {reservations.map((reservation) => (
-            <TabsTrigger
-              key={reservation.id}
-              value={reservation.id}
-              className={cn(
-                "cursor-pointer data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm",
-                "data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground",
-                "px-3 py-2 text-sm font-medium transition-all",
-              )}
-            >
-              {reservation.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <div className="flex gap-2">
+  if (reservations.length === 0) {
+    return (
+      <EmptyState
+        title={t("res.empty")}
+        action={
           <AddReservationSheet
             onSave={handleSave}
-            trigger={
-              <Button size="sm" variant="outline">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add New
-              </Button>
-            }
+            trigger={<Button size="sm"><Plus />{t("res.newReservation")}</Button>}
           />
-          {activeTab && (
+        }
+      />
+    );
+  }
+
+  const active = reservations.find((r) => r.id === activeTab) ?? reservations[0]!;
+
+  return (
+    <div className="md:grid md:grid-cols-[300px_minmax(0,1fr)] md:items-start md:gap-6">
+      {/* mobile pills */}
+      <div role="tablist" aria-label={t("res.tabs")} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:hidden">
+        {reservations.map((r) => {
+          const on = r.id === active.id;
+          return (
+            <button
+              key={r.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => setActiveTab(r.id)}
+              className={cn(
+                "flex-none whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] font-extrabold",
+                on ? "bg-brand-900 text-white" : "border border-line bg-white text-ink",
+              )}
+            >
+              {r.name} · {r.players.length}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* desktop left column */}
+      <div className="hidden flex-col gap-3 md:flex">
+        <p className="text-[13px] text-muted-foreground">{t("res.intro")}</p>
+        <div role="tablist" aria-label={t("res.tabs")} aria-orientation="vertical" className="flex flex-col gap-2">
+          {reservations.map((r) => {
+            const on = r.id === active.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setActiveTab(r.id)}
+                className={cn(
+                  "flex min-h-12 items-center justify-between gap-2 rounded-xl border px-3.5 text-left text-sm font-extrabold",
+                  on ? "border-[#D9CCF0] bg-brand-50 text-brand-900" : "border-line bg-white text-ink",
+                )}
+              >
+                <span className="min-w-0 truncate">{r.name}</span>
+                <span className="flex-none text-xs font-bold text-muted-foreground">{r.players.length}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* active reservation card */}
+      <div role="tabpanel" className="mt-3 min-w-0 rounded-2xl border border-line bg-white md:mt-0">
+        <div className="flex items-center justify-between gap-2 border-b border-[#F0ECF7] px-4 py-2.5 md:px-5">
+          <div className="min-w-0 truncate text-[15px] font-extrabold">
+            {t("res.header", { name: active.name, players: t("common.players", { count: active.players.length }) })}
+          </div>
+          <div className="flex flex-none items-center gap-1">
             <AddReservationSheet
-              reservation={reservations.find((r) => r.id === activeTab)}
+              reservation={active}
               onSave={handleEdit}
               trigger={
-                <Button size="sm" variant="outline">
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
+                <Button size="icon" variant="ghost" aria-label={`${t("common.edit")} ${active.name}`}>
+                  <Pencil className="h-4 w-4" />
                 </Button>
               }
             />
-          )}
-          {activeTab && (
             <ConfirmDialog
-              trigger={<Button size="sm" variant="outline">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>}
-              onConfirm={() => handleDelete(activeTab)}
-              description="This action cannot be undone. This will permanently delete this reservation."
-              confirmLabel="Delete"
+              trigger={
+                <Button size="icon" variant="ghost" aria-label={`${t("common.delete")} ${active.name}`}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              }
+              onConfirm={() => handleDelete(active.id)}
+              description={t("res.deleteText")}
+              confirmLabel={t("common.delete")}
+              confirmVariant="destructive"
             />
-          )}
+          </div>
+        </div>
+        <div className="divide-y divide-[#F0ECF7] px-3 md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0 md:px-5">
+          {active.players.map((player) => (
+            <ListRow
+              key={player.id}
+              className="md:border-b md:border-[#F0ECF7]"
+              leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
+              title={player.name}
+              meta={t(`cardType.${player.cardType}`)}
+              trailing={
+                <span className="flex flex-none items-center gap-1">
+                  <PenaltyBadge player={player} />
+                  <ConfirmDialog
+                    trigger={
+                      <Button size="icon" variant="ghost" aria-label={`${t("common.remove")} ${player.name}`}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    }
+                    onConfirm={() => handleRemovePlayer(active.id, player.id)}
+                    description={t("res.removePlayerText", { name: player.name })}
+                    confirmLabel={t("common.remove")}
+                    confirmVariant="destructive"
+                  />
+                </span>
+              }
+            />
+          ))}
         </div>
       </div>
-      {reservations.map((reservation) => (
-        <TabsContent
-          key={reservation.id}
-          value={reservation.id}
-          className="mt-0"
-        >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {reservation.players.map((player) => (
-              <PlayerCard key={player.id} player={player}>
-                <ConfirmDialog
-                      trigger={<Button size="sm" variant="ghost">
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remove player</span>
-                      </Button>}
-                      onConfirm={() => handleRemovePlayer(reservation.id, player.id)}
-                      description="This action cannot be undone. This will remove the player from this reservation."
-                      confirmLabel="Remove"
-                    />
-              </PlayerCard>
-            ))}
-          </div>
-        </TabsContent>
-      ))}
-    </Tabs>
+    </div>
   );
 }

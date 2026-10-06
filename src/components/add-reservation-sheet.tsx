@@ -1,27 +1,21 @@
 "use client";
 
 import { useState, useEffect, type FC } from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
-import { PlusCircle } from "lucide-react";
 import { MultiSelect } from "./multi-select";
+import { ResponsiveSheet } from "~/components/ds/responsive-sheet";
+import { Notice } from "~/components/ds/notice";
+import { useT } from "~/i18n/i18n-provider";
+import { isPenalized } from "~/utils/penalty-util";
 import { playerOperations, type Player, type ReservationList } from "../lib/db";
-import { SaveReservationData } from "./reservation-list";
+import type { SaveReservationData } from "./reservation-list";
 
 interface AddReservationSheetProps {
   reservation?: ReservationList;
   onSave: (data: SaveReservationData) => Promise<void>;
-  trigger?: React.ReactNode;
+  trigger: React.ReactElement;
 }
 
 export const AddReservationSheet: FC<AddReservationSheetProps> = ({
@@ -29,6 +23,7 @@ export const AddReservationSheet: FC<AddReservationSheetProps> = ({
   onSave,
   trigger,
 }) => {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [reservationName, setReservationName] = useState("");
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
@@ -59,24 +54,21 @@ export const AddReservationSheet: FC<AddReservationSheetProps> = ({
     }
   }, [reservation]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async () => {
     if (!reservationName.trim()) {
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const data = {
+      await onSave({
         name: reservationName.trim(),
         players: selectedPlayers,
-      };
-      console.log("Submitting reservation:", data);
-
-      await onSave(data);
-
-      console.log("Reservation saved successfully");
-      setReservationName("");
-      setSelectedPlayers([]);
+      });
+      if (!reservation) {
+        setReservationName("");
+        setSelectedPlayers([]);
+      }
       setOpen(false);
     } catch (error) {
       console.error("Failed to save reservation:", error);
@@ -85,69 +77,52 @@ export const AddReservationSheet: FC<AddReservationSheetProps> = ({
     }
   };
 
+  // Penalized players stay selectable (business rule): only a hint chip.
   const playerOptions = availablePlayers.map((player) => ({
     value: player.id,
     label: player.name,
+    cardType: player.cardType,
+    ...(isPenalized(player) ? { hint: t("penalty.chip") } : {}),
   }));
 
+  const penalizedNames = availablePlayers
+    .filter((p) => selectedPlayers.includes(p.id) && isPenalized(p))
+    .map((p) => p.name)
+    .join(", ");
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        {trigger || (
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Reservation
+    <>
+      <Slot onClick={() => setOpen(true)}>{trigger}</Slot>
+      <ResponsiveSheet
+        open={open}
+        onOpenChange={setOpen}
+        title={t(reservation ? "res.editTitle" : "res.addTitle")}
+        footer={
+          <Button className="w-full" disabled={isSubmitting || !reservationName.trim()} onClick={handleSubmit}>
+            {t("res.save")}
           </Button>
-        )}
-      </SheetTrigger>
-      <SheetContent>
-        <form className="space-y-4">
-          <SheetHeader>
-            <SheetTitle>
-              {reservation ? "Edit Reservation" : "Add New Reservation"}
-            </SheetTitle>
-            <SheetDescription>
-              {reservation
-                ? "Edit the reservation details."
-                : "Create a new reservation and add players to it."}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Reservation Name</Label>
-              <Input
-                id="name"
-                value={reservationName}
-                onChange={(e) => setReservationName(e.target.value)}
-                placeholder="Enter reservation name"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="players">Select Players</Label>
-              <MultiSelect
-                options={playerOptions}
-                selected={selectedPlayers}
-                onChange={setSelectedPlayers}
-                placeholder="Select players"
-              />
-            </div>
-          </div>
-          <SheetFooter>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting || !reservationName.trim()}
-            >
-              {isSubmitting
-                ? "Saving..."
-                : reservation
-                  ? "Save Changes"
-                  : "Create Reservation"}
-            </Button>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1.5 text-[13px] font-bold text-[#4A4361]">
+            {t("res.name")}
+            <Input
+              value={reservationName}
+              onChange={(e) => setReservationName(e.target.value)}
+              placeholder={t("res.namePlaceholder")}
+              className="h-12 rounded-xl text-[15px] font-bold"
+            />
+          </label>
+          <MultiSelect
+            options={playerOptions}
+            selected={selectedPlayers}
+            onChange={setSelectedPlayers}
+            placeholder={t("res.addPlayers")}
+            title={t("res.players", { count: selectedPlayers.length })}
+          />
+          {penalizedNames ? <Notice>{t("res.penaltyNote", { names: penalizedNames })}</Notice> : null}
+        </div>
+      </ResponsiveSheet>
+    </>
   );
 };

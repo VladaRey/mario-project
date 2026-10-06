@@ -262,6 +262,23 @@ export const en = {
   "adminPlayers.deleteText": "This action cannot be undone. This will permanently delete the player from the system.",
   "adminPlayers.edit": "Edit {name}",
   "adminPlayers.delete": "Delete {name}",
+  "res.title": "Reservations",
+  "res.intro": "Regular line-ups. Pick one when creating an event to add everyone at once.",
+  "res.new": "New",
+  "res.newReservation": "New reservation",
+  "res.addTitle": "New reservation",
+  "res.editTitle": "Edit reservation",
+  "res.name": "Reservation name",
+  "res.namePlaceholder": "Enter reservation name",
+  "res.players": "Players · {count}",
+  "res.addPlayers": "Add players…",
+  "res.penaltyNote": "{names} on the penalty list: kept in the reservation, but skipped when it is added to an event.",
+  "res.save": "Save reservation",
+  "res.header": "{name} · {players}",
+  "res.deleteText": "This action cannot be undone. This will permanently delete this reservation.",
+  "res.removePlayerText": "Remove {name} from this reservation?",
+  "res.empty": "No reservations yet",
+  "res.tabs": "Reservations",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;
