@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
+import { SkeletonRows } from "~/components/ds/skeleton-rows";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
@@ -18,7 +19,7 @@ export function withAuth<P extends object>(WrappedComponent: ComponentType<P>) {
     }, [router]);
 
     if (!isAuthenticated) {
-      return <div>Authenticating...</div>;
+      return <div className="mx-auto max-w-[1200px] p-4 md:p-8"><SkeletonRows count={4} /></div>;
     }
 
     return <WrappedComponent {...props} />;
