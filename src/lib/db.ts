@@ -313,6 +313,11 @@ const supabaseReservationOperations = {
       if (insertError) throw insertError;
     }
   },
+
+  async renameReservationList(id: string, name: string): Promise<void> {
+    const { error } = await supabase.from("reservation_lists").update({ name }).eq("id", id);
+    if (error) throw error;
+  },
 };
 
 // Event operations
@@ -582,7 +587,7 @@ const supabaseEventOperations = {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(player:players(id, name, created_at, cardType, penalty_since))`,
+      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(paid, player:players(id, name, created_at, cardType, penalty_since))`,
     )
     .eq("is_deleted", false)
     .order("created_at", { ascending: false });
@@ -591,7 +596,7 @@ const supabaseEventOperations = {
 
   const groupedEvents = data.reduce(
     (acc, event) => {
-      const eventDate = event.date; 
+      const eventDate = event.date;
       if (!acc[eventDate]) {
         acc[eventDate] = [];
       }
@@ -604,7 +609,7 @@ const supabaseEventOperations = {
         courts: event.courts,
         price_per_hour: event.price_per_hour,
         fame_total: event.fame_total ?? null,
-        players: event.players.flatMap((pe: any) => pe.player),
+        players: event.players.map((pe: any) => ({ ...pe.player, paid: pe.paid ?? false })),
       });
       return acc;
     },

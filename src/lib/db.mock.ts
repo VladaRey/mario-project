@@ -324,6 +324,14 @@ export const mockReservationOperations = {
       row.playerIds = [...playerIds];
     });
   },
+
+  async renameReservationList(id: string, name: string): Promise<void> {
+    write((db) => {
+      const row = db.reservations.find((r) => r.id === id);
+      if (!row) throw fail(`reservation ${id} not found`);
+      row.name = name;
+    });
+  },
 };
 
 function setEventPlayers(db: MockDb, eventId: string, playerIds: string[]) {
@@ -441,7 +449,14 @@ export const mockEventOperations = {
       .filter((e) => !e.is_deleted)
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
     const grouped: Record<string, Event[]> = {};
-    for (const e of events) (grouped[e.date] ??= []).push(toEvent(db, e));
+    for (const e of events) {
+      const ev = toEvent(db, e);
+      ev.players = ev.players.map((p) => ({
+        ...p,
+        paid: db.playerEvents.find((x) => x.event_id === e.id && x.player_id === p.id)?.paid ?? false,
+      }));
+      (grouped[e.date] ??= []).push(ev);
+    }
     return clone(grouped);
   },
 
