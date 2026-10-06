@@ -15,12 +15,20 @@ import { useLotteryService } from "~/services/lottery-service";
 import { toast, Toaster } from "sonner";
 import FullSizeLoader from "~/components/full-size-loader";
 import { Navbar } from "~/components/navbar";
+import {
+  getPenalizedIds,
+  partitionNewIds,
+  withFreshPenalty,
+} from "~/utils/penalty-util";
 
 export default function LotteryPage() {
   const params = useParams();
   const id = params.id as string;
 
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
+  // Fresh players: lottery_results holds stale JSON snapshots without current penalties.
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const penalizedIds = getPenalizedIds(allPlayers);
 
   const [winnersList, setWinnersList] = useState<Player[]>([]);
   const [waitingList, setWaitingList] = useState<Player[]>([]);
@@ -49,6 +57,7 @@ export default function LotteryPage() {
           ]);
 
         setEvent(currentEvent);
+        setAllPlayers(players);
         setWinnersList(winnersList);
         setWaitingList(waitingList);
 
@@ -68,7 +77,16 @@ export default function LotteryPage() {
     loadData();
   }, []);
 
-  const addPlayersToEvent = async (players: Player[]) => {
+  const addPlayersToEvent = async (winners: Player[]) => {
+    const { added, skipped } = partitionNewIds(
+      winners.map((p) => p.id),
+      event?.players.map((p) => p.id) || [],
+      penalizedIds,
+    );
+    if (skipped.length > 0) {
+      toast.warning(`${skipped.length} player(s) skipped (penalty)`);
+    }
+    const players = winners.filter((p) => added.includes(p.id));
     if (players.length === 0) return;
 
     try {
@@ -89,6 +107,10 @@ export default function LotteryPage() {
   };
 
   const handleAddPlayer = async (player: Player) => {
+    if (penalizedIds.has(player.id)) {
+      toast.error(`${player.name} has an unpaid penalty.`);
+      return;
+    }
     try {
       await eventOperations.addToWinnersList(event?.id || "", player);
       setWinnersList((prev) => [...prev, player]);
@@ -164,8 +186,8 @@ export default function LotteryPage() {
           </div>
 
           <LotteryResults
-            winnersList={winnersList}
-            waitingList={waitingList}
+            winnersList={withFreshPenalty(winnersList, allPlayers)}
+            waitingList={withFreshPenalty(waitingList, allPlayers)}
             addPlayersToEvent={addPlayersToEvent}
             handleAddPlayer={handleAddPlayer}
             handleRemoveWinner={handleRemoveWinner}

@@ -2,6 +2,8 @@ import {
   isPenalized,
   getPenalizedIds,
   partitionNewIds,
+  withFreshPenalty,
+  settleEach,
 } from "../utils/penalty-util";
 
 describe("isPenalized", () => {
@@ -67,5 +69,37 @@ describe("partitionNewIds", () => {
       added: ["b"],
       skipped: [],
     });
+  });
+});
+
+describe("withFreshPenalty", () => {
+  test("overrides snapshot penalty with fresh player data", () => {
+    const snapshots = [
+      { id: "a", name: "A", penalty_since: null },
+      { id: "b", name: "B" },
+    ];
+    const fresh = [
+      { id: "a", penalty_since: "2026-10-06T10:00:00Z" },
+      { id: "b", penalty_since: null },
+    ];
+    expect(withFreshPenalty(snapshots, fresh)).toEqual([
+      { id: "a", name: "A", penalty_since: "2026-10-06T10:00:00Z" },
+      { id: "b", name: "B", penalty_since: null },
+    ]);
+  });
+
+  test("player missing from fresh data → not penalized", () => {
+    expect(
+      withFreshPenalty([{ id: "x", penalty_since: "2026-01-01" }], []),
+    ).toEqual([{ id: "x", penalty_since: null }]);
+  });
+});
+
+describe("settleEach", () => {
+  test("reports succeeded and failed ids without throwing", async () => {
+    const result = await settleEach(["a", "b", "c"], async (id) => {
+      if (id === "b") throw new Error("boom");
+    });
+    expect(result).toEqual({ succeeded: ["a", "c"], failed: ["b"] });
   });
 });

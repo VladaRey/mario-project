@@ -4,6 +4,7 @@ import { PlayerCard } from "~/components/player-card";
 import { Button } from "~/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useGetRole } from "~/hooks/use-get-role";
+import { isPenalized } from "~/utils/penalty-util";
 
 
 interface LotteryResultsProps {
@@ -87,6 +88,7 @@ export function LotteryResults({
                             <Button
                               size="sm"
                               variant="outline"
+                              disabled={isPenalized(player)}
                               onClick={() => handleAddPlayer(player)}
                             >
                               Add

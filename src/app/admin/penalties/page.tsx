@@ -11,7 +11,7 @@ import { ConfirmDialog } from "~/components/confirmation-dialog";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { playerOperations, type Player } from "~/lib/db";
-import { isPenalized } from "~/utils/penalty-util";
+import { isPenalized, settleEach } from "~/utils/penalty-util";
 
 function PenaltiesPage() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -38,17 +38,19 @@ function PenaltiesPage() {
 
   const handleAdd = async () => {
     setIsSaving(true);
-    try {
-      await Promise.all(selected.map((id) => playerOperations.addPenalty(id)));
-      toast.success(`Added ${selected.length} player(s) to the penalty list`);
-      setSelected([]);
-      await refresh();
-    } catch (error) {
-      console.error("Failed to add penalty:", error);
-      toast.error("Failed to add penalty.");
-    } finally {
-      setIsSaving(false);
+    const { succeeded, failed } = await settleEach(selected, (id) =>
+      playerOperations.addPenalty(id),
+    );
+    if (failed.length > 0) {
+      toast.error(
+        `Added ${succeeded.length} of ${selected.length}; ${failed.length} failed, try again.`,
+      );
+    } else {
+      toast.success(`Added ${succeeded.length} player(s) to the penalty list`);
     }
+    setSelected(failed);
+    await refresh();
+    setIsSaving(false);
   };
 
   const handleRemove = async (player: Player) => {
