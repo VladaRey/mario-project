@@ -191,4 +191,5 @@ export const pl: Messages = {
   "profile.tooltip": "Wydarzenia: {count}, {date}",
   "profile.less": "Brak wydarzeń",
   "profile.more": "Więcej wydarzeń",
+  "profile.totalCount": "{{count}} wydarzeń w {{year}}",
 };

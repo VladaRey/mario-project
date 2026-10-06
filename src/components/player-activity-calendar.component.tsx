@@ -21,8 +21,8 @@ export default function PlayerActivityCalendarComponent({
   // Show empty state if no data (library requires non-empty data)
   if (!data.length) {
     return (
-      <div className="flex h-32 w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex h-32 w-full items-center justify-center rounded-lg border border-dashed border-line bg-white">
+        <p className="text-sm text-muted-foreground">
           {t("profile.noActivity")}
         </p>
       </div>
@@ -34,11 +34,13 @@ export default function PlayerActivityCalendarComponent({
       <div className="relative [&_[role='tooltip']]:rounded [&_[role='tooltip']]:bg-[#3B1F6E] [&_[role='tooltip']]:px-2 [&_[role='tooltip']]:py-1 [&_[role='tooltip']]:text-sm [&_[role='tooltip']]:text-white">
         <ActivityCalendar
           data={data}
+          colorScheme="light"
           theme={{
             light: ["#ECE7F6", "#C9B3EA", "#8A5CC4", "#5B2D8C", "#3B1F6E"],
-            dark: ["#161b22", "#B78DC1", "#9C65AA", "#854B8D", "#6B3075"],
+            dark: ["#ECE7F6", "#C9B3EA", "#8A5CC4", "#5B2D8C", "#3B1F6E"],
           }}
           labels={{
+            totalCount: t("profile.totalCount"),
             legend: {
               less: t("profile.less"),
               more: t("profile.more"),

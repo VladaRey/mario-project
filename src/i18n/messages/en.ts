@@ -191,6 +191,7 @@ export const en = {
   "profile.tooltip": "{count} event(s) on {date}",
   "profile.less": "No events",
   "profile.more": "More events",
+  "profile.totalCount": "{{count}} events in {{year}}",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;
