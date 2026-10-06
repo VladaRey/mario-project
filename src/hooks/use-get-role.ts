@@ -1,39 +1,60 @@
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { Role } from "~/lib/roles";
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-const FAME_PASSWORD = process.env.NEXT_PUBLIC_FAME_PASSWORD;
+export const ROLE_CHANGE_EVENT = "mg:role-change";
+const ADMIN_KEY = "admin-password";
+const FAME_KEY = "fame-password";
+
+export function roleFromStorage(
+  adminPw: string | null,
+  famePw: string | null,
+  envAdmin: string | undefined = process.env.NEXT_PUBLIC_ADMIN_PASSWORD,
+  envFame: string | undefined = process.env.NEXT_PUBLIC_FAME_PASSWORD,
+): Role {
+  if (envAdmin && adminPw === envAdmin) return Role.Admin;
+  if (envFame && famePw === envFame) return Role.Fame;
+  return Role.Guest;
+}
+
+function read(): Role {
+  try {
+    return roleFromStorage(localStorage.getItem(ADMIN_KEY), localStorage.getItem(FAME_KEY));
+  } catch {
+    return Role.Guest;
+  }
+}
+
+function subscribe(onChange: () => void) {
+  window.addEventListener(ROLE_CHANGE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(ROLE_CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+const notify = () => window.dispatchEvent(new Event(ROLE_CHANGE_EVENT));
 
 export function useGetRole() {
-  const [role, setRole] = useState<Role>(Role.Guest);
+  const role = useSyncExternalStore(subscribe, read, () => Role.Guest);
 
-  useEffect(() => {
-    const adminPassword = localStorage.getItem("admin-password");
-    const famePassword = localStorage.getItem("fame-password");
-
-    if (adminPassword === ADMIN_PASSWORD) {
-      setRole(Role.Admin);
-    } else if (famePassword === FAME_PASSWORD) {
-      setRole(Role.Fame);
-    } else {
-      setRole(Role.Guest);
-    }
+  const login = useCallback((password: string): Role => {
+    const next = roleFromStorage(password, password);
+    try {
+      if (next === Role.Admin) localStorage.setItem(ADMIN_KEY, password);
+      if (next === Role.Fame) localStorage.setItem(FAME_KEY, password);
+    } catch { /* storage blocked */ }
+    notify();
+    return next;
   }, []);
 
-  const login = (password: string) => {
-    if (password === ADMIN_PASSWORD) {
-      localStorage.setItem("admin-password", password);
-      setRole(Role.Admin);
-      return Role.Admin;
-    } else if (password === FAME_PASSWORD) {
-      localStorage.setItem("fame-password", password);
-      setRole(Role.Fame);
-      return Role.Fame;
-    } else {
-      setRole(Role.Guest);
-      return Role.Guest;
-    }
-  };
+  const logout = useCallback(() => {
+    try {
+      localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem(FAME_KEY);
+    } catch { /* storage blocked */ }
+    notify();
+  }, []);
 
-  return { role, login };
+  return { role, login, logout };
 }
