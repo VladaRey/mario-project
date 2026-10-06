@@ -1,159 +1,59 @@
 "use client";
+import { Stepper } from "~/components/ds/stepper";
+import { useT } from "~/i18n/i18n-provider";
 
-import { type FC } from "react";
-import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+export interface PricingParamsFormValue { courts: number; hours: number; pricePerHour: number; fameTotal: number | null; }
 
-export interface PricingParamsFormValue {
-  courts: number;
-  hours: number;
-  pricePerHour: number;
-  /** null = no value (selector shows empty). */
-  fameTotal: number | null;
-}
+type Props = {
+  value: PricingParamsFormValue; onChange: (value: PricingParamsFormValue) => void;
+  fameDiscount?: string; priceAfterDiscount?: string;
+  hints: { courtsAuto: boolean; hoursFromDefaults: boolean; priceFromDefaults: boolean };
+  fameCleared: boolean; playersCount: number; discountPerUsage: number;
+};
 
-interface PricingParamsFormProps {
-  value: PricingParamsFormValue;
-  onChange: (value: PricingParamsFormValue) => void;
-  /** Display-only: Fame discount from calculation (e.g. from Statistics) */
-  fameDiscount?: string;
-  /** Display-only: To be paid from calculation (e.g. from Statistics) */
-  priceAfterDiscount?: string;
-}
+const input = "w-24 rounded-[10px] border border-line px-2.5 py-2 text-right text-[15px] font-extrabold";
 
-const Row: FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="mb-4 flex gap-x-4">{children}</div>
-);
-
-const Label: FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 className="text-sm font-medium">{children}</h2>
-);
-
-const Column: FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="flex flex-1 flex-col justify-between gap-y-2">{children}</div>
-);
-
-const ResultRow = ({
-  title,
-  value,
-}: {
-  title: string;
-  value: undefined | string;
-}) => (
-  <div className="mb-3 flex flex-row justify-between">
-    <p className="text-xs font-semibold text-[#241e2f]">{title}</p>
-    <p className="text-xs font-semibold text-[#241e2f]">
-      {value ? value + " PLN" : "—"}
-    </p>
-  </div>
-);
-
-export function PricingParamsForm({
-  value,
-  onChange,
-  fameDiscount,
-  priceAfterDiscount,
-}: PricingParamsFormProps) {
-  const courtsStr = String(value.courts);
-  const hoursStr = String(value.hours);
-  const pricePerHourStr = String(value.pricePerHour);
-  const fameTotalStr =
-    value.fameTotal === null || value.fameTotal === undefined
-      ? ""
-      : String(value.fameTotal);
-
+function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div>
-      <Row>
-        <Column>
-          <Label>Courts</Label>
-          <Select
-            value={courtsStr}
-            onValueChange={(v) =>
-              onChange({ ...value, courts: Number(v) || 0 })
-            }
-          >
-            <SelectTrigger className="w-full border-[#241e2f]">
-              <SelectValue defaultValue="1" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="1">1</SelectItem>
-                <SelectItem value="2">2</SelectItem>
-                <SelectItem value="3">3</SelectItem>
-                <SelectItem value="4">4</SelectItem>
-                <SelectItem value="5">5</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Column>
-        <Column>
-          <Label>Hours</Label>
-          <Select
-            value={hoursStr}
-            onValueChange={(v) => onChange({ ...value, hours: Number(v) || 0 })}
-          >
-            <SelectTrigger className="min-w-full border-[#241e2f]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="1">1</SelectItem>
-                <SelectItem value="1.5">1.5</SelectItem>
-                <SelectItem value="2">2</SelectItem>
-                <SelectItem value="2.5">2.5</SelectItem>
-                <SelectItem value="3">3</SelectItem>
-                <SelectItem value="3.5">3.5</SelectItem>
-                <SelectItem value="4">4</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Column>
-      </Row>
+    <div className="flex items-center justify-between gap-3 border-b border-[#F0ECF7] py-2.5 last:border-0">
+      <div><div className="text-sm font-extrabold">{label}</div>{hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}</div>
+      {children}
+    </div>
+  );
+}
 
-      <Row>
-        <Column>
-          <Label>Price per 1h</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={pricePerHourStr}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                pricePerHour: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </Column>
-        <Column>
-          <Label>FAME total</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={fameTotalStr}
-            onChange={(e) => {
-              const raw = e.target.value.trim();
-              onChange({
-                ...value,
-                fameTotal: raw === "" ? null : Number(raw) || 0,
-              });
-            }}
-          />
-        </Column>
-      </Row>
-
-      {(fameDiscount != null || priceAfterDiscount != null) && (
-        <div className="mt-4">
-          <ResultRow title="Fame discount:" value={fameDiscount} />
-          <ResultRow title="To be paid:" value={priceAfterDiscount} />
+export function PricingParamsForm({ value, onChange, fameDiscount, priceAfterDiscount, hints, fameCleared, playersCount, discountPerUsage }: Props) {
+  const t = useT();
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="rounded-2xl border border-line bg-white px-3.5 py-1">
+        <Row label={t("pricing.courts")} hint={hints.courtsAuto ? t("pricing.courtsAuto", { count: playersCount }) : undefined}>
+          <Stepper value={value.courts} min={1} max={5} onChange={(v) => onChange({ ...value, courts: v })} label={t("pricing.courts")} />
+        </Row>
+        <Row label={t("pricing.hours")} hint={hints.hoursFromDefaults ? t("pricing.fromDefaults") : undefined}>
+          <Stepper value={value.hours} min={1} max={4} step={0.5} onChange={(v) => onChange({ ...value, hours: v })} label={t("pricing.hours")} />
+        </Row>
+        <Row label={t("pricing.pricePerHour")} hint={`${t("pricing.pln")}${hints.priceFromDefaults ? ` · ${t("pricing.fromDefaults")}` : ""}`}>
+          <input inputMode="decimal" aria-label={t("pricing.pricePerHour")} className={input} value={String(value.pricePerHour)}
+            onChange={(e) => onChange({ ...value, pricePerHour: Number(e.target.value) || 0 })} />
+        </Row>
+        <div className="flex flex-col gap-1.5 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <div><div className="text-sm font-extrabold">{t("pricing.fameTotal")}</div><div className="text-xs text-muted-foreground">{t("pricing.optional")}</div></div>
+            <input inputMode="decimal" aria-label={t("pricing.fameTotal")} placeholder="—" className={input}
+              value={value.fameTotal === null || value.fameTotal === undefined ? "" : String(value.fameTotal)}
+              onChange={(e) => { const raw = e.target.value.trim(); onChange({ ...value, fameTotal: raw === "" ? null : Number(raw) || 0 }); }} />
+          </div>
+          {fameCleared && value.fameTotal == null ? <div className="text-xs font-bold text-[#9A3412]">{t("pricing.fameCleared")}</div> : null}
         </div>
-      )}
+      </div>
+      <div className="px-1 text-xs text-muted-foreground">{t("pricing.cardUseInfo", { amount: discountPerUsage })}</div>
+      {(fameDiscount != null || priceAfterDiscount != null) ? (
+        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-brand-900 p-3.5 text-white">
+          <div><div className="text-[11px] font-bold text-[#D9CCF0]">{t("pricing.fameDiscount")}</div><div className="text-base font-extrabold">{fameDiscount ? t("common.pln", { value: fameDiscount }) : "—"}</div></div>
+          <div><div className="text-[11px] font-bold text-[#D9CCF0]">{t("pricing.toBePaid")}</div><div className="text-base font-extrabold">{priceAfterDiscount ? t("common.pln", { value: priceAfterDiscount }) : "—"}</div></div>
+        </div>
+      ) : null}
     </div>
   );
 }

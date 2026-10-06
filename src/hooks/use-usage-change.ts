@@ -20,6 +20,7 @@ export function useUsageChange(
   setDraftPricingParams: React.Dispatch<React.SetStateAction<AutoParams>>,
   setEvent: React.Dispatch<React.SetStateAction<Event | null>>,
   discountPerUsage: number,
+  messages: { success: string; error: string },
 ) {
   return useCallback(
     async (playerId: string, usage: number) => {
@@ -59,7 +60,7 @@ export function useUsageChange(
             ),
           ),
         );
-        toast.success("Card usage updated successfully");
+        toast.success(messages.success);
       } catch (error) {
         console.error("Failed to update card usage:", error);
         setPlayerUsages((prev) => ({ ...prev, [playerId]: previousUsage }));
@@ -76,7 +77,7 @@ export function useUsageChange(
         setEvent((prev) =>
           prev ? { ...prev, fame_total: event.fame_total ?? null } : null,
         );
-        toast.error("Failed to update card usage");
+        toast.error(messages.error);
       }
     },
     [
@@ -87,6 +88,7 @@ export function useUsageChange(
       setPlayerPaymentAmount,
       setDraftPricingParams,
       setEvent,
+      messages,
     ],
   );
 }

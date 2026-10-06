@@ -1,19 +1,25 @@
-import { Users } from "lucide-react";
+import { Dices, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import {
-  AutoPricingSheet,
-  AutoPricingSheetTrigger,
-} from "~/components/auto-pricing-sheet";
+import { AutoPricingSheet } from "~/components/auto-pricing-sheet";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   eventOperations,
   DefaultAdminValuesOperations,
   type Event,
 } from "~/lib/db";
-import { PlayerPaymentCard } from "./player-payment-card";
-import { PlayersByCardTypeDropdown } from "./players-by-card-type-dropdown";
-import FullSizeLoader from "~/components/full-size-loader";
-import { Breadcrumbs } from "~/components/breadcrumbs.component";
+import { useGetRole } from "~/hooks/use-get-role";
+import { Role } from "~/lib/roles";
+import { useI18n } from "~/i18n/i18n-provider";
+import { ScreenHeader } from "~/components/shell/screen-header";
+import { GuardedLink } from "~/components/shell/navigation-guard";
+import { PageBody } from "~/components/ds/page-body";
+import { StatTile } from "~/components/ds/stat-tile";
+import { Segmented } from "~/components/ds/segmented";
+import { SkeletonRows } from "~/components/ds/skeleton-rows";
+import { EmptyState } from "~/components/ds/empty-state";
+import { Button } from "~/components/ui/button";
+import { PlayerPaymentRow } from "./player-payment-row";
+import { averageAmount, filterByPaid, paidSummary, pricingHints, type PaidFilter } from "~/utils/event-view";
 import { paramsFromEvent, type AutoParams } from "~/utils/auto-pricing-util";
 import {
   DEFAULT_HOURS,
@@ -23,7 +29,6 @@ import {
 import { calculateEventStatistics } from "~/services/calculate-event-statistics-service";
 import { ConfirmDialog } from "~/components/confirmation-dialog";
 import { CardTypeCounts } from "~/components/card-type-counts";
-import { getCardTypeColor } from "~/utils/getCardTypeColor";
 import { useUsageChange } from "../../hooks/use-usage-change";
 import {
   getSortedCardTypeCounts,
@@ -35,6 +40,11 @@ interface CurrentEventProps {
 }
 
 export function CurrentEvent({ id }: CurrentEventProps) {
+  const { t, fmt } = useI18n();
+  const { role } = useGetRole();
+  const canEdit = role === Role.Admin || role === Role.Fame;
+  const [filter, setFilter] = useState<PaidFilter>("all");
+  const [fameCleared, setFameCleared] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<Event | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<Record<string, boolean>>(
@@ -181,14 +191,15 @@ export function CurrentEvent({ id }: CurrentEventProps) {
             }
           : null,
       );
-      toast.success("Player payment amounts updated successfully!");
+      setFameCleared(false);
+      toast.success(t("event.amountsUpdated"));
     } catch (error) {
       console.error("Error updating player payment amounts:", error);
-      toast.error("Failed to update player payment amounts.");
+      toast.error(t("event.amountsFailed"));
     } finally {
       setSavingPricing(false);
     }
-  }, [event, draftPricingParams, playerUsages]);
+  }, [event, draftPricingParams, playerUsages, t]);
 
   const handleAutoPricingSheetOpenChange = useCallback(
     (open: boolean) => {
@@ -237,7 +248,13 @@ export function CurrentEvent({ id }: CurrentEventProps) {
     setDraftPricingParams,
     setEvent,
     discountPerUsage,
+    { success: t("event.usageUpdated"), error: t("event.usageFailed") },
   );
+
+  const onUsageChange = (playerId: string, usage: number) => {
+    if (event?.fame_total != null) setFameCleared(true);
+    void handleUsageChange(playerId, usage);
+  };
 
   const pricingStatistics = useMemo(() => {
     if (!event) return null;
@@ -251,99 +268,108 @@ export function CurrentEvent({ id }: CurrentEventProps) {
   }, [event, draftPricingParams, playerUsages]);
 
   if (isLoading) {
-    return <FullSizeLoader />;
+    return <PageBody><SkeletonRows count={8} /></PageBody>;
   }
 
   if (!event) {
-    return <div>No event found</div>;
+    return <PageBody><EmptyState title={t("event.notFound")} /></PageBody>;
   }
 
   const sortedCardTypeCounts = getSortedCardTypeCounts(event);
   const sortedPlayers = getSortedPlayers(event);
+  const summary = paidSummary(event.players.map((p) => ({ paid: paymentStatus[p.id] })));
+  const avg = averageAmount(playerPaymentAmount, event.players.map((p) => p.id));
+  const visiblePlayers = filterByPaid(sortedPlayers, paymentStatus, filter);
+  const hints = pricingHints({ eventCourts: event.courts, playersCount: event.players.length, draft: draftPricingParams, defaults: defaultPricingValues });
+  const openPricing = () => handleAutoPricingSheetOpenChange(true);
+  const dateLabel = fmt(event.date, "EEE d MMM yyyy");
+
+  const pricingButton = (
+    <Button variant="outline" onClick={openPricing}><SlidersHorizontal />{t("event.pricing")}</Button>
+  );
+  const lotteryButton = (
+    <Button asChild variant="outline"><GuardedLink href={`/event/${event.id}/lottery`}><Dices />{t("event.lottery")}</GuardedLink></Button>
+  );
 
   return (
-    <div className="space-y-4">
-      <Breadcrumbs
-        items={[{ label: event?.name || "", href: `/event/${event?.id}` }]}
+    <>
+      <ScreenHeader
+        title={event.name}
+        back={{ href: "/", label: t("nav.events") }}
+        crumbs={[{ label: t("nav.events"), href: "/" }, { label: event.name }]}
+        meta={dateLabel}
+        actions={<>{lotteryButton}{pricingButton}</>}
+        mobileBarAction={
+          <button type="button" onClick={openPricing} className="flex items-center gap-1.5 rounded-[10px] bg-white/[0.12] px-2.5 py-2 text-[13px] font-bold">
+            <SlidersHorizontal className="h-4 w-4" />{t("event.pricing")}
+          </button>
+        }
+        mobileHero={
+          <section className="flex flex-col gap-2.5 bg-brand-900 px-4 pb-[18px] pt-1 text-white">
+            <div className="text-xs font-bold text-[#D9CCF0]">{dateLabel}</div>
+            <h1 className="text-[26px] font-extrabold tracking-tight">{event.name}</h1>
+            <div className="grid grid-cols-3 gap-2">
+              <StatTile tone="onDark" label={t("event.playersShort")} value={summary.total} />
+              <StatTile tone="onDark" label={t("event.paidShort")} value={`${summary.paid}/${summary.total}`} />
+              <StatTile tone="onDark" label={t("event.avgShort")} value={avg ?? "—"} />
+            </div>
+          </section>
+        }
       />
-      <div className="space-y-4">
-        <div className="flex flex-row justify-between gap-2 space-y-1 md:gap-4">
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center justify-between">
-              <h2 className="mb-1 text-2xl font-bold">Event: {event.name}</h2>
-              <div className="flex gap-2 md:hidden">
-                <AutoPricingSheetTrigger
-                  onOpen={() => handleAutoPricingSheetOpenChange(true)}
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="mt-3 flex flex-1 sm:max-w-[312px] md:hidden">
-                <PlayersByCardTypeDropdown event={event} />
-              </div>
-              {/* md and desktop: players count + card type counts */}
-              <div className="hidden md:flex md:flex-wrap md:items-center md:gap-3">
-                <div className="flex items-center gap-2 rounded-lg bg-[#2E2A5D] px-3 py-2 font-semibold text-white shadow-sm">
-                  <Users className="h-4 w-4" />
-                  <span>{event.players.length} Players</span>
-                </div>
-                <div className="h-6 w-px bg-gray-300" />
-                <CardTypeCounts items={sortedCardTypeCounts} />
-              </div>
-            </div>
-          </div>
-          <div className="hidden gap-2 md:flex md:items-end">
-            <AutoPricingSheetTrigger
-              onOpen={() => handleAutoPricingSheetOpenChange(true)}
-            />
-          </div>
+      <PageBody>
+        <div className="hidden grid-cols-4 gap-3 md:grid">
+          <StatTile label={t("event.players")} value={summary.total} />
+          <StatTile label={t("event.paid")} value={summary.paid} sub={`/ ${summary.total}`} progress={summary.total ? (summary.paid / summary.total) * 100 : 0} />
+          <StatTile label={t("event.unpaid")} value={summary.unpaid} valueClassName="text-[#9A3412]" />
+          <StatTile label={t("event.avgPrice")} value={avg ?? "—"} sub={avg != null ? t("pricing.pln") : undefined} />
         </div>
+        <section className="overflow-hidden rounded-2xl border-line md:border md:bg-white">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:border-b md:border-line md:px-[18px] md:py-3.5">
+            <CardTypeCounts items={sortedCardTypeCounts} />
+            <Segmented<PaidFilter> ariaLabel={t("event.filter")} value={filter} onChange={setFilter} className="md:ml-auto md:w-[300px]"
+              options={[
+                { value: "all", label: t("event.filterAll", { count: summary.total }) },
+                { value: "unpaid", label: t("event.filterUnpaid", { count: summary.unpaid }) },
+                { value: "paid", label: t("event.filterPaid", { count: summary.paid }) },
+              ]} />
+          </div>
+          <div className="mt-2 grid grid-cols-1 divide-y divide-[#F0ECF7] rounded-2xl border border-line bg-white px-3 md:mt-0 md:grid-cols-2 md:gap-x-7 md:divide-y-0 md:rounded-none md:border-0 md:px-[18px] md:py-1.5 lg:grid-cols-3 [&>*]:border-[#F0ECF7] md:[&>*]:border-b">
+            {visiblePlayers.map((player) => (
+              <PlayerPaymentRow key={player.id} player={player} paid={!!paymentStatus[player.id]} canEdit={canEdit}
+                onPaidChange={handlePaymentChange} amount={playerPaymentAmount[player.id]}
+                usage={playerUsages[player.id] ?? 0} onUsageChange={onUsageChange} />
+            ))}
+          </div>
+        </section>
+      </PageBody>
 
-        {/* Single sheet instance (opened by mobile or desktop trigger) */}
-        <AutoPricingSheet
-          open={autoPricingSheetOpen}
-          onOpenChange={handleAutoPricingSheetOpenChange}
-          params={draftPricingParams}
-          onParamsChange={setDraftPricingParams}
-          isDirty={isAutoPricingDirty}
-          onSave={handleApplyAutoPricing}
-          saving={savingPricing}
-          showTrigger={false}
-          fameDiscount={pricingStatistics?.fameDiscount}
-          priceAfterDiscount={pricingStatistics?.priceAfterDiscount}
-        />
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {(sortedPlayers || []).map((player) => {
-            return player ? (
-              <PlayerPaymentCard
-                key={player.id}
-                player={player}
-                paymentStatus={paymentStatus}
-                handlePaymentChange={handlePaymentChange}
-                getCardTypeColor={getCardTypeColor}
-                displayAmount={
-                  playerPaymentAmount[player.id] != null
-                    ? String(playerPaymentAmount[player.id])
-                    : undefined
-                }
-                usage={playerUsages[player.id] ?? 0}
-                onUsageChange={handleUsageChange}
-              />
-            ) : null;
-          })}
-        </div>
-      </div>
+      <AutoPricingSheet
+        open={autoPricingSheetOpen}
+        onOpenChange={handleAutoPricingSheetOpenChange}
+        params={draftPricingParams}
+        onParamsChange={setDraftPricingParams}
+        isDirty={isAutoPricingDirty}
+        onSave={handleApplyAutoPricing}
+        saving={savingPricing}
+        showTrigger={false}
+        fameDiscount={pricingStatistics?.fameDiscount}
+        priceAfterDiscount={pricingStatistics?.priceAfterDiscount}
+        eventName={event.name}
+        hints={hints}
+        fameCleared={fameCleared}
+        playersCount={event.players.length}
+        discountPerUsage={discountPerUsage}
+      />
 
       <ConfirmDialog
         open={discardDialogOpen}
         onOpenChange={setDiscardDialogOpen}
-        title="Discard changes?"
-        description="You have unsaved changes to the pricing parameters. Are you sure you want to discard them?"
-        confirmLabel="Discard"
+        title={t("event.discardTitle")}
+        description={t("event.discardText")}
+        confirmLabel={t("event.discard")}
         confirmVariant="destructive"
         onConfirm={handleDiscardAutoPricing}
       />
-    </div>
+    </>
   );
 }

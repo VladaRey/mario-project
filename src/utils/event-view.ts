@@ -1,3 +1,4 @@
+import { getCourtsFromPlayersCount } from "~/constants/event-pricing-defaults";
 import type { Event } from "~/lib/db";
 
 export function paidSummary(players: { paid?: boolean }[]) {
@@ -22,4 +23,16 @@ export function averageAmount(amounts: Record<string, number>, ids: string[]): n
   const vals = ids.map((id) => amounts[id]).filter((v): v is number => typeof v === "number");
   if (!vals.length) return null;
   return Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100;
+}
+
+export function pricingHints(a: {
+  eventCourts: number | null | undefined; playersCount: number;
+  draft: { courts: number; hours: number; pricePerHour: number };
+  defaults: { hours: number; pricePerHour: number };
+}) {
+  return {
+    courtsAuto: a.eventCourts == null && a.draft.courts === getCourtsFromPlayersCount(a.playersCount),
+    hoursFromDefaults: a.draft.hours === a.defaults.hours,
+    priceFromDefaults: a.draft.pricePerHour === a.defaults.pricePerHour,
+  };
 }
