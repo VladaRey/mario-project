@@ -1,19 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { withAdminLayout } from "~/components/with-admin-layout";
-import { PlayerCard } from "~/components/player-card";
 import { MultiSelect } from "~/components/multi-select";
 import { ConfirmDialog } from "~/components/confirmation-dialog";
+import { ScreenHeader } from "~/components/shell/screen-header";
+import { GuardedLink } from "~/components/shell/navigation-guard";
+import { PageBody } from "~/components/ds/page-body";
+import { ListCard, ListRow } from "~/components/ds/list";
+import { PlayerAvatar } from "~/components/ds/player-avatar";
+import { SectionLabel } from "~/components/ds/section-label";
+import { EmptyState } from "~/components/ds/empty-state";
 import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
 import { playerOperations, type Player } from "~/lib/db";
 import { isPenalized, settleEach } from "~/utils/penalty-util";
+import { daysSince } from "~/i18n/translate";
+import { useI18n } from "~/i18n/i18n-provider";
 
 function PenaltiesPage() {
+  const { t, fmt } = useI18n();
   const [players, setPlayers] = useState<Player[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -23,18 +30,19 @@ function PenaltiesPage() {
       setPlayers(await playerOperations.getAllPlayers());
     } catch (error) {
       console.error("Failed to load players:", error);
-      toast.error("Failed to load players.");
+      toast.error(t("adminPen.loadFailed"));
     }
   };
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const penalized = players.filter(isPenalized);
   const options = players
     .filter((p) => !isPenalized(p))
-    .map((p) => ({ value: p.id, label: p.name }));
+    .map((p) => ({ value: p.id, label: p.name, cardType: p.cardType }));
 
   const handleAdd = async () => {
     setIsSaving(true);
@@ -43,10 +51,14 @@ function PenaltiesPage() {
     );
     if (failed.length > 0) {
       toast.error(
-        `Added ${succeeded.length} of ${selected.length}; ${failed.length} failed, try again.`,
+        t("adminPen.addedSome", {
+          ok: succeeded.length,
+          total: selected.length,
+          failed: failed.length,
+        }),
       );
     } else {
-      toast.success(`Added ${succeeded.length} player(s) to the penalty list`);
+      toast.success(t("adminPen.addedAll", { count: succeeded.length }));
     }
     setSelected(failed);
     await refresh();
@@ -56,62 +68,47 @@ function PenaltiesPage() {
   const handleRemove = async (player: Player) => {
     try {
       await playerOperations.removePenalty(player.id);
-      toast.success(`${player.name} removed from the penalty list`);
+      toast.success(t("adminPen.removed", { name: player.name }));
       await refresh();
     } catch (error) {
       console.error("Failed to remove penalty:", error);
-      toast.error("Failed to remove penalty.");
+      toast.error(t("adminPen.removeFailed"));
     }
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Penalties</h2>
-
-      <div className="flex flex-col gap-2 md:flex-row md:items-end">
-        <div className="flex-1 space-y-1">
-          <Label>Add players to the penalty list</Label>
-          <MultiSelect
-            options={options}
-            selected={selected}
-            onChange={setSelected}
-            placeholder="Select players"
-          />
-        </div>
-        <Button onClick={handleAdd} disabled={selected.length === 0 || isSaving}>
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Add to penalty list
-        </Button>
-      </div>
-
-      {penalized.length === 0 ? (
-        <p className="py-8 text-center text-gray-500">
-          No players with unpaid penalties
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {penalized.map((player) => (
-            <PlayerCard key={player.id} player={player}>
-              <div className="flex flex-col items-end gap-2">
-                <span className="text-xs text-gray-500">
-                  since {format(new Date(player.penalty_since!), "dd.MM.yyyy")}
-                </span>
-                <ConfirmDialog
-                  trigger={
-                    <Button size="sm" variant="outline">
-                      Remove penalty
-                    </Button>
-                  }
-                  onConfirm={() => handleRemove(player)}
-                  description={`Confirm that ${player.name} has paid the penalty. They will be able to join events and lotteries again.`}
-                  confirmLabel="Remove penalty"
-                />
-              </div>
-            </PlayerCard>
-          ))}
-        </div>
-      )}
-    </div>
+    <>
+      <ScreenHeader title={t("adminPen.title")} adminSection="penalties"
+        meta={<GuardedLink href="/penalties" className="font-bold text-brand-700 underline">{t("adminPen.public")}</GuardedLink>} />
+      <PageBody>
+        <section className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-3.5 md:flex-row md:items-end md:p-[18px]">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <SectionLabel>{t("adminPen.add")}</SectionLabel>
+            <MultiSelect options={options} selected={selected} onChange={setSelected} placeholder={t("picker.placeholder")} />
+          </div>
+          <Button onClick={handleAdd} disabled={selected.length === 0 || isSaving}>{isSaving ? <Loader2 className="animate-spin" /> : null}{t("adminPen.addButton")}</Button>
+        </section>
+        {penalized.length === 0 ? <EmptyState title={t("adminPen.empty")} /> : (
+          <>
+            <SectionLabel>{t("adminPen.onList", { count: penalized.length })}</SectionLabel>
+            <ListCard className="md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0">
+              {penalized.map((player) => (
+                <ListRow key={player.id} className="md:border-b md:border-[#F0ECF7]"
+                  leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
+                  title={player.name}
+                  meta={t("adminPen.since", { date: fmt(player.penalty_since!, "dd.MM.yyyy"), days: t("penalties.days", { count: daysSince(player.penalty_since!) }) })}
+                  trailing={
+                    <ConfirmDialog
+                      trigger={<Button size="sm" variant="outline" className="border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]"><Check />{t("adminPen.paid")}</Button>}
+                      title={t("adminPen.paidTitle", { name: player.name })} description={t("adminPen.paidText")}
+                      confirmLabel={t("adminPen.paidConfirm")} onConfirm={() => void handleRemove(player)} />
+                  } />
+              ))}
+            </ListCard>
+          </>
+        )}
+      </PageBody>
+    </>
   );
 }
 
