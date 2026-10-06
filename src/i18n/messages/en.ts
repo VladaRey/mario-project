@@ -250,6 +250,18 @@ export const en = {
   "eventForm.updated": "Event updated successfully",
   "eventForm.deleted": "Event deleted successfully",
   "eventForm.notFound": "Event not found",
+  "adminPlayers.title": "Players",
+  "adminPlayers.add": "Add player",
+  "adminPlayers.addTitle": "Add player",
+  "adminPlayers.editTitle": "Edit player",
+  "adminPlayers.name": "Player name",
+  "adminPlayers.namePlaceholder": "Enter player name",
+  "adminPlayers.cardType": "Card type",
+  "adminPlayers.cardHint": "The card type sets how card-usage discounts apply in events and in the FFP calculator.",
+  "adminPlayers.save": "Save player",
+  "adminPlayers.deleteText": "This action cannot be undone. This will permanently delete the player from the system.",
+  "adminPlayers.edit": "Edit {name}",
+  "adminPlayers.delete": "Delete {name}",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;

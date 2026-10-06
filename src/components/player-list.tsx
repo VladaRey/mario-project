@@ -1,19 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { Edit, Trash2 } from "lucide-react";
 import { PlayerSheet } from "./add-player-sheet";
 import { playerOperations, type Player } from "../lib/db";
-import { PlayerCard } from "./player-card";
 import { ConfirmDialog } from "./confirmation-dialog";
+import { ListCard, ListRow } from "~/components/ds/list";
+import { PlayerAvatar } from "~/components/ds/player-avatar";
+import { CardTypeChip } from "~/components/ds/chip";
+import { EmptyState } from "~/components/ds/empty-state";
+import { PenaltyBadge } from "~/components/penalty-badge";
+import { useT } from "~/i18n/i18n-provider";
+import { matchesQuery } from "~/utils/search";
 
 type PlayersListProps = {
   refreshTrigger?: number;
 };
 
 export function PlayersList({ refreshTrigger = 0 }: PlayersListProps) {
+  const t = useT();
   const [players, setPlayers] = useState<Player[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const refreshPlayers = async () => {
     const dbPlayers = await playerOperations.getAllPlayers();
@@ -46,29 +54,65 @@ export function PlayersList({ refreshTrigger = 0 }: PlayersListProps) {
     }
   };
 
+  const visible = useMemo(
+    () => players.filter((p) => matchesQuery(p.name, searchTerm)),
+    [players, searchTerm],
+  );
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {players.map((player) => (
-        <PlayerCard key={player.id} player={player}>
-          <div className="flex">
-            <PlayerSheet
-              player={player}
-              onSave={handleSavePlayer}
-              trigger={<Button size="icon" variant="ghost">
-                <Edit className="h-4 w-4" />
-                <span className="sr-only">Edit player</span>
-              </Button>}
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <input
+          type="search"
+          aria-label={t("players.search")}
+          placeholder={t("players.search")}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="h-11 w-full rounded-xl border border-line bg-white pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+        />
+      </div>
+      {visible.length === 0 && searchTerm ? (
+        <EmptyState title={t("common.noResults")} />
+      ) : (
+        <ListCard className="md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0">
+          {visible.map((player) => (
+            <ListRow
+              key={player.id}
+              className="md:border-b md:border-[#F0ECF7]"
+              leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
+              title={player.name}
+              trailing={
+                <span className="flex flex-none items-center gap-1">
+                  <PenaltyBadge player={player} />
+                  <CardTypeChip cardType={player.cardType} short />
+                  <PlayerSheet
+                    mode="edit"
+                    player={player}
+                    onSave={handleSavePlayer}
+                    trigger={
+                      <Button size="icon" variant="ghost" aria-label={t("adminPlayers.edit", { name: player.name })}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                  <ConfirmDialog
+                    trigger={
+                      <Button size="icon" variant="ghost" aria-label={t("adminPlayers.delete", { name: player.name })}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    }
+                    onConfirm={() => handleDeletePlayer(player.id)}
+                    description={t("adminPlayers.deleteText")}
+                    confirmLabel={t("common.delete")}
+                    confirmVariant="destructive"
+                  />
+                </span>
+              }
             />
-            <ConfirmDialog trigger={<Button size="icon" variant="ghost">
-              <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Delete player</span>
-              </Button>} 
-            onConfirm={() => handleDeletePlayer(player.id)}
-            description="This action cannot be undone. This will permanently delete the player from the system." 
-            confirmLabel="Delete" />
-          </div>
-        </PlayerCard>
-      ))}
+          ))}
+        </ListCard>
+      )}
     </div>
   );
 }
