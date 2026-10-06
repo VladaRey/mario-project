@@ -15,7 +15,7 @@ export default function PlayerInfoCards({
   playerEventDates,
   lotteryResults,
 }: PlayerInfoCardsProps) {
-  const { infoCards } = getPlayerCards(player, playerEventDates, lotteryResults.wins, lotteryResults.played);
+  const { infoCards } = getPlayerCards(player, playerEventDates, lotteryResults.wins.length, lotteryResults.played.length);
 
   return (
     <div className="space-y-2">

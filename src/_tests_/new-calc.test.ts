@@ -1,3 +1,4 @@
+import { DISCOUNT_PER_USAGE } from "../constants/event-pricing-defaults";
 import { calculateEventStatistics } from "../services/calculate-event-statistics-service";
 
 test("Event statistics: Medicover / Medicover Light with 2h, 1 court, 2 No Card", () => {
@@ -24,7 +25,7 @@ test("Event statistics: Medicover / Medicover Light with 2h, 1 court, 2 No Card"
     no2: 0,
   };
 
-  const result = calculateEventStatistics(event, params, playerUsages);
+  const result = calculateEventStatistics(event, params, playerUsages, DISCOUNT_PER_USAGE);
 
   const expectedStatistics = {
     totalPrice: "160.00",
@@ -74,6 +75,7 @@ describe("calculateEventStatistics - fame evenly distributed", () => {
       event,
       params,
       playerUsages,
+      DISCOUNT_PER_USAGE,
     );
 
     // expect total price = 160

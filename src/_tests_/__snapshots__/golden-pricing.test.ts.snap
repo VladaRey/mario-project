@@ -1,0 +1,203 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Event pricing golden values (must not change during the redesign) Anna uses card once (spec 0.2) 1`] = `
+{
+  "amounts": {
+    "p1": 23.5,
+    "p10": 38.5,
+    "p11": 38.5,
+    "p12": 38.5,
+    "p2": 38.5,
+    "p3": 38.5,
+    "p4": 38.5,
+    "p5": 38.5,
+    "p6": 38.5,
+    "p7": 38.5,
+    "p8": 38.5,
+    "p9": 38.5,
+  },
+  "statistics": {
+    "discount": "15.00",
+    "fameDiscount": "0.00",
+    "priceAfterDiscount": "447.00",
+    "totalFromPlayers": "447.00",
+    "totalPrice": "462.00",
+  },
+}
+`;
+
+exports[`Event pricing golden values (must not change during the redesign) fame total 100 with usage 1`] = `
+{
+  "amounts": {
+    "p1": 0,
+    "p10": 9.09,
+    "p11": 9.09,
+    "p12": 9.09,
+    "p2": 9.09,
+    "p3": 9.09,
+    "p4": 9.09,
+    "p5": 9.09,
+    "p6": 9.09,
+    "p7": 9.09,
+    "p8": 9.09,
+    "p9": 9.09,
+  },
+  "statistics": {
+    "discount": "15.00",
+    "fameDiscount": "347.00",
+    "priceAfterDiscount": "100.00",
+    "totalFromPlayers": "100.00",
+    "totalPrice": "462.00",
+  },
+}
+`;
+
+exports[`Event pricing golden values (must not change during the redesign) heavy usage redistributes negatives 1`] = `
+{
+  "amounts": {
+    "p1": 0,
+    "p10": 0,
+    "p11": 0,
+    "p12": 0,
+    "p2": 0,
+    "p3": 0,
+    "p4": 0,
+    "p5": 0,
+    "p6": 0,
+    "p7": 0,
+    "p8": 0,
+    "p9": 0,
+  },
+  "statistics": {
+    "discount": "90.00",
+    "fameDiscount": "0.00",
+    "priceAfterDiscount": "0",
+    "totalFromPlayers": "0",
+    "totalPrice": "40.00",
+  },
+}
+`;
+
+exports[`Event pricing golden values (must not change during the redesign) no usage, no fame 1`] = `
+{
+  "amounts": {
+    "p1": 38.5,
+    "p10": 38.5,
+    "p11": 38.5,
+    "p12": 38.5,
+    "p2": 38.5,
+    "p3": 38.5,
+    "p4": 38.5,
+    "p5": 38.5,
+    "p6": 38.5,
+    "p7": 38.5,
+    "p8": 38.5,
+    "p9": 38.5,
+  },
+  "statistics": {
+    "discount": "0.00",
+    "fameDiscount": "0.00",
+    "priceAfterDiscount": "462.00",
+    "totalFromPlayers": "462.00",
+    "totalPrice": "462.00",
+  },
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) 1 hour 1`] = `
+{
+  "MS": "10.50",
+  "discount": "75.00",
+  "fameDiscount": "0.00",
+  "medicover": "6.50",
+  "medicoverLight": "9.00",
+  "msClassic": "10.50",
+  "noMs": "16.50",
+  "priceAfterDiscount": "156.00",
+  "totalPrice": "231.00",
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) 3 hours (MS Classic 1/3) 1`] = `
+{
+  "MS": "41.31",
+  "discount": "75.00",
+  "fameDiscount": "0.00",
+  "medicover": "39.50",
+  "medicoverLight": "42.00",
+  "msClassic": "46.80",
+  "noMs": "49.50",
+  "priceAfterDiscount": "618.00",
+  "totalPrice": "693.00",
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) 4 hours (MS Classic 1/4) 1`] = `
+{
+  "MS": "57.43",
+  "discount": "75.00",
+  "fameDiscount": "0.00",
+  "medicover": "56.00",
+  "medicoverLight": "58.50",
+  "msClassic": "63.86",
+  "noMs": "66.00",
+  "priceAfterDiscount": "849.00",
+  "totalPrice": "924.00",
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) discount larger than total 1`] = `
+{
+  "MS": "0",
+  "discount": "135.00",
+  "fameDiscount": "0.00",
+  "medicover": "0",
+  "medicoverLight": "0",
+  "msClassic": "0",
+  "noMs": "0",
+  "priceAfterDiscount": "0",
+  "totalPrice": "20.00",
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) only no-card players 1`] = `
+{
+  "MS": undefined,
+  "discount": "0.00",
+  "fameDiscount": "0.00",
+  "medicover": undefined,
+  "medicoverLight": undefined,
+  "msClassic": undefined,
+  "noMs": "57.75",
+  "priceAfterDiscount": "462.00",
+  "totalPrice": "462.00",
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) spec 5.1 input 1`] = `
+{
+  "MS": "25.50",
+  "discount": "75.00",
+  "fameDiscount": "0.00",
+  "medicover": "23.00",
+  "medicoverLight": "25.50",
+  "msClassic": "29.25",
+  "noMs": "33.00",
+  "priceAfterDiscount": "387.00",
+  "totalPrice": "462.00",
+}
+`;
+
+exports[`FFP calculator golden values (must not change during the redesign) with FAME total 300 1`] = `
+{
+  "MS": "19.29",
+  "discount": "75.00",
+  "fameDiscount": "87.00",
+  "medicover": "16.79",
+  "medicoverLight": "19.29",
+  "msClassic": "23.04",
+  "noMs": "26.79",
+  "priceAfterDiscount": "300.00",
+  "totalPrice": "462.00",
+}
+`;
