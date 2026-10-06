@@ -192,6 +192,15 @@ export const en = {
   "profile.less": "No events",
   "profile.more": "More events",
   "profile.totalCount": "{{count}} events in {{year}}",
+  "penalties.title": "Penalty list",
+  "penalties.manage": "Manage",
+  "penalties.whatTitle": "What does it mean?",
+  "penalties.what1": "Cancelling after 12:00 on the day of the draw counts as a no-show and comes with a mandatory administrative fee.",
+  "penalties.what2": "Until the fee is paid, you can't sign up for group events or take part in lotteries. Once you've paid the organizer, you'll be removed from the list.",
+  "penalties.count": { one: "{count} player", other: "{count} players" },
+  "penalties.since": "Since {date}",
+  "penalties.emptyTitle": "No one is on the penalty list",
+  "penalties.emptyText": "Everyone can play!",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;

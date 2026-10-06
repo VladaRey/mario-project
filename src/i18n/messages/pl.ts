@@ -192,4 +192,13 @@ export const pl: Messages = {
   "profile.less": "Brak wydarzeń",
   "profile.more": "Więcej wydarzeń",
   "profile.totalCount": "{{count}} wydarzeń w {{year}}",
+  "penalties.title": "Lista kar",
+  "penalties.manage": "Zarządzaj",
+  "penalties.whatTitle": "Co to oznacza?",
+  "penalties.what1": "Rezygnacja po godzinie 12:00 w dniu losowania jest traktowana jak nieobecność i wiąże się z obowiązkową opłatą administracyjną.",
+  "penalties.what2": "Dopóki opłata nie zostanie uregulowana, nie możesz zapisywać się na wydarzenia grupy ani brać udziału w losowaniach. Po uregulowaniu opłaty u organizatora zostaniesz usunięty z listy.",
+  "penalties.count": { one: "{count} gracz", few: "{count} gracze", many: "{count} graczy", other: "{count} gracza" },
+  "penalties.since": "Od {date}",
+  "penalties.emptyTitle": "Nikt nie jest na liście kar",
+  "penalties.emptyText": "Wszyscy mogą grać!",
 };
