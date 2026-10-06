@@ -18,6 +18,7 @@ import { PlayerCard } from "./player-card";
 import { format } from "date-fns";
 import { EventDatePicker } from "./event-date-picker.component";
 import { useRouter } from "next/navigation";
+import { getPenalizedIds, partitionNewIds } from "~/utils/penalty-util";
 
 type EventFormProps = {
   initialEvent?: Event;
@@ -54,6 +55,12 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const [eventName, setEventName] = useState(initialEvent?.name || formatDate(new Date()));
 
   const [waitingListPlayers, setWaitingListPlayers] = useState<Player[]>([]);
+
+  const [skippedPlayers, setSkippedPlayers] = useState<string[]>([]);
+  // Fresh data from getAllPlayers: waiting-list entries are JSON snapshots without penalty_since.
+  const penalizedIds = getPenalizedIds(availablePlayers);
+  const penaltyOption = (id: string) =>
+    penalizedIds.has(id) ? { disabled: true, hint: "penalty" } : {};
 
   const handleSetDate = (date: Date | undefined) => {
     setDate(date);
@@ -97,6 +104,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
       date: format(date!, "yyyy-MM-dd"),
       players: selectedPlayers,
     });
+    setSkippedPlayers([]);
     toast.success(mode === "create" ? "Event created successfully" : "Event updated successfully");
     setLoading(false);
     setTimeout(() => {
@@ -132,11 +140,13 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const playerOptions = availablePlayers.map((player) => ({
     value: player.id,
     label: player.name,
+    ...penaltyOption(player.id),
   }));
 
   const waitingListOptions = waitingListPlayers.map((player) => ({
     label: player.name,
     value: player.id,
+    ...penaltyOption(player.id),
   }));
 
   if (isLoading) {
@@ -163,12 +173,21 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
             options={reservationOptions}
             selected={[]}
             onChange={(selectedReservations) => {
-              const newPlayers = reservations
+              const reservationIds = reservations
                 .filter((r) => selectedReservations.includes(r.id))
                 .flatMap((r) => r.players.map((p) => p.id));
-              setSelectedPlayers((prevPlayers) => [
-                ...new Set([...prevPlayers, ...newPlayers]),
-              ]);
+              const { added, skipped } = partitionNewIds(
+                reservationIds,
+                selectedPlayers,
+                penalizedIds,
+              );
+              setSelectedPlayers((prev) => [...prev, ...added]);
+              setSkippedPlayers(skipped);
+              if (skipped.length > 0) {
+                toast.warning(
+                  `Added ${added.length} of ${added.length + skipped.length}, ${skipped.length} skipped (penalty)`,
+                );
+              }
             }}
             placeholder="Select reservations"
           />
@@ -205,6 +224,14 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
           placeholder="Select players"
         />
       </div>
+      {skippedPlayers.length > 0 && (
+        <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-900">
+          Not added — unpaid penalty:{" "}
+          {skippedPlayers
+            .map((id) => availablePlayers.find((p) => p.id === id)?.name ?? id)
+            .join(", ")}
+        </div>
+      )}
       <div className="space-y-2">
         {selectedPlayers.length > 0 ? (
           <Label>Current Players</Label>
