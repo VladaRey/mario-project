@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import { useI18n } from "~/i18n/i18n-provider";
 
 interface PasswordInputProps {
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -12,27 +13,30 @@ interface PasswordInputProps {
 }
 
 export function PasswordInput({ handleChange, error, formData }: PasswordInputProps) {
+    const { t } = useI18n();
     const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div>
-      <Label htmlFor="password" className="text-gray-700">
-        Password
+      <Label htmlFor="password" className="text-[13px] font-bold text-[#4A4361]">
+        {t("login.password")}
       </Label>
-      <div className="mt-1">
+      <div className="mt-1.5">
         <div className="relative">
           <Input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
             required
-            className="block w-full border-gray-300 pr-10 focus:border-[#2E2A5D] focus:ring-[#352961]"
-            placeholder="Enter your password"
+            autoComplete="current-password"
+            className="block h-12 w-full rounded-xl border-line pr-11 text-[15px]"
+            placeholder={t("login.passwordPlaceholder")}
             value={formData.password}
             onChange={handleChange}
           />
           <button
             type="button"
+            aria-label={showPassword ? t("login.hide") : t("login.show")}
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
             onClick={() => setShowPassword(!showPassword)}
           >
@@ -44,7 +48,7 @@ export function PasswordInput({ handleChange, error, formData }: PasswordInputPr
           </button>
         </div>
         {error && (
-          <p className="pt-2 text-sm text-red-500">*Invalid password</p>
+          <p className="pt-2 text-sm text-red-500">{t("login.error")}</p>
         )}
       </div>
     </div>

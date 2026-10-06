@@ -201,6 +201,16 @@ export const en = {
   "penalties.since": "Since {date}",
   "penalties.emptyTitle": "No one is on the penalty list",
   "penalties.emptyText": "Everyone can play!",
+  "login.title": "Log in",
+  "login.login": "Login",
+  "login.loginPlaceholder": "Enter your login",
+  "login.password": "Password",
+  "login.passwordPlaceholder": "Enter your password",
+  "login.error": "Wrong password",
+  "login.submit": "Log in",
+  "login.guest": "Continue as guest",
+  "login.show": "Show password",
+  "login.hide": "Hide password",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;

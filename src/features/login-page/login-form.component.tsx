@@ -6,9 +6,12 @@ import { PasswordInput } from "~/features/login-page/password-input.component";
 import { LoginInput } from "~/features/login-page/login-input.component";
 import { useGetRole } from "~/hooks/use-get-role";
 import { Role } from "~/lib/roles";
+import { useI18n } from "~/i18n/i18n-provider";
+import Link from "next/link";
 
 
 export function LoginForm() {
+    const { t } = useI18n();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -44,30 +47,17 @@ export function LoginForm() {
     const isDisabled = !formData.login || !formData.password;
 
   return (
-    <div className="w-full max-w-md overflow-hidden rounded-lg bg-white p-8 shadow-lg">
-      <div className="text-center">
-        <div className="mb-4 flex justify-center">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2E2A5D]">
-            <span className="text-2xl font-bold text-white">MG</span>
-          </div>
-        </div>
-        <h2 className="text-3xl font-extrabold text-[#2E2A5D]">Mario Group</h2>
-        <p className="mt-2 text-gray-600">Sign in</p>
+    <div className="flex w-full max-w-[400px] flex-col gap-6">
+      <div className="flex flex-col items-center gap-3 text-white">
+        <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-coral text-3xl font-extrabold text-ink">M</div>
+        <div className="text-[28px] font-extrabold tracking-tight">Mario Group</div>
       </div>
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          <LoginInput formData={formData} handleChange={handleChange}/>
-          <PasswordInput handleChange={handleChange} error={error} formData={formData}/>
-        </div>
-        <Button
-          type="submit"
-          className="flex w-full justify-center rounded-md border border-transparent bg-[#2E2A5D] px-4 py-2 text-sm font-medium 
-          text-white shadow-sm hover:bg-[#7B3C7D] focus:outline-none focus:ring-2 focus:ring-[#352961] focus:ring-offset-2"
-          disabled={isDisabled}
-        >
-          <LogIn className="mr-2 h-5 w-5" />
-          Sign in
-        </Button>
+      <form className="flex flex-col gap-3 rounded-[22px] bg-white p-5" onSubmit={handleSubmit}>
+        <h1 className="mb-1 text-xl font-extrabold">{t("login.title")}</h1>
+        <LoginInput formData={formData} handleChange={handleChange} />
+        <PasswordInput handleChange={handleChange} error={error} formData={formData} />
+        <Button type="submit" size="lg" disabled={isDisabled} className="mt-1"><LogIn />{t("login.submit")}</Button>
+        <Link href="/" className="py-1.5 text-center text-[13px] font-bold text-brand-700">{t("login.guest")}</Link>
       </form>
     </div>
   );
