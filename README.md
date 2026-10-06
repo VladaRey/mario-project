@@ -46,3 +46,7 @@ Then `pnpm install && pnpm dev` and open http://localhost:3000. Log in with any 
 - The flag is never set on Netlify, so production always uses Supabase.
 
 Database changes that production needs are in `scripts/db/`.
+
+## Languages
+
+The UI is available in English and Polish. The switch is in the top bar; the choice is stored in `localStorage` (`locale`). Strings live in `src/i18n/messages/en.ts` and `pl.ts` — `pl.ts` must have every key of `en.ts` (TypeScript enforces it).
