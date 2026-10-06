@@ -42,6 +42,8 @@ export type Player = {
   amount: number;
   /** Card usage count for this player in the event (from player_events.card_usage). */
   cardUsage?: number;
+  /** Set when the player has an unpaid penalty; null/undefined otherwise. */
+  penalty_since?: string | null;
 };
 
 export type ReservationList = {
@@ -123,6 +125,24 @@ export const playerOperations = {
     if (error) throw error;
   },
 
+  async addPenalty(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("players")
+      .update({ penalty_since: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) throw error;
+  },
+
+  async removePenalty(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("players")
+      .update({ penalty_since: null })
+      .eq("id", id);
+
+    if (error) throw error;
+  },
+
   async getPlayerEventDates(playerId: string): Promise<string[]> {
     const { data, error } = await supabase
       .from("player_events")
@@ -176,7 +196,7 @@ export const reservationOperations = {
         name,
         created_at,
         players:player_reservations(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -230,7 +250,7 @@ export const reservationOperations = {
         name,
         created_at,
         players:player_reservations(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -340,7 +360,7 @@ export const eventOperations = {
         price_per_hour,
         fame_total,
         players:player_events(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -551,7 +571,7 @@ export const eventOperations = {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(player:players(id, name, created_at, cardType))`,
+      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(player:players(id, name, created_at, cardType, penalty_since))`,
     )
     .eq("is_deleted", false)
     .order("created_at", { ascending: false });
@@ -645,7 +665,7 @@ export const eventOperations = {
         price_per_hour,
         fame_total,
         players:player_events(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
