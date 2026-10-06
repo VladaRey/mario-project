@@ -211,6 +211,16 @@ export const en = {
   "login.guest": "Continue as guest",
   "login.show": "Show password",
   "login.hide": "Hide password",
+  "hub.title": "Admin",
+  "hub.newEvent": "New event",
+  "hub.eventsMeta": "Latest: {date}",
+  "hub.noEvents": "No events yet",
+  "hub.playersMeta": { one: "{count} player", other: "{count} players" },
+  "hub.penaltiesMeta": { one: "{count} on the list", other: "{count} on the list" },
+  "hub.noPenalties": "Nobody on the list",
+  "hub.defaults": "Default pricing",
+  "hub.defaultsMeta": "{price} PLN / h · {hours} h · −{discount} PLN per card use",
+  "adminEvents.title": "Events",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;

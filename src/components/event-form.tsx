@@ -108,7 +108,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     toast.success(mode === "create" ? "Event created successfully" : "Event updated successfully");
     setLoading(false);
     setTimeout(() => {
-      router.push("/admin");
+      router.push("/admin/events");
     }, 1000);
   };
 
@@ -128,7 +128,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     toast.success("Event deleted successfully");
     setIsDeleting(false);
     setTimeout(() => {
-      router.push("/admin");
+      router.push("/admin/events");
     }, 1000);
   };
 
