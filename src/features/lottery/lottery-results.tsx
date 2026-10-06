@@ -1,9 +1,13 @@
+import { Clock, Plus, Trophy, X } from "lucide-react";
 import { Player } from "~/lib/db";
-import { Separator } from "~/components/ui/separator";
-import { PlayerCard } from "~/components/player-card";
 import { Button } from "~/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { ListRow } from "~/components/ds/list";
+import { PlayerAvatar } from "~/components/ds/player-avatar";
+import { SectionLabel } from "~/components/ds/section-label";
+import { PenaltyBadge } from "~/components/penalty-badge";
 import { useGetRole } from "~/hooks/use-get-role";
+import { useT } from "~/i18n/i18n-provider";
+import { cn } from "~/lib/utils";
 import { isPenalized } from "~/utils/penalty-util";
 
 
@@ -19,105 +23,46 @@ interface LotteryResultsProps {
 export function LotteryResults({
   winnersList,
   waitingList,
-  addPlayersToEvent,
   handleAddPlayer,
   handleRemoveWinner,
   handleRemoveFromWaitingList
 }: LotteryResultsProps) {
 
   const { role } = useGetRole();
+  const t = useT();
+  const isAdmin = role === "admin";
 
+  const num = (i: number, muted = false) => (
+    <span className={cn("flex h-6 w-6 flex-none items-center justify-center rounded-lg text-xs font-extrabold",
+      muted ? "bg-[#F4F2F8] text-muted-foreground" : "bg-brand-50 text-brand-700")}>{i + 1}</span>
+  );
   return (
     <>
-      <div className="mb-10">
-        <div>
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Winners</h2>
-            {role === "admin" && winnersList.length > 0 && (
-              <Button
-                size="sm"
-                className="rounded-md bg-green-500 text-white hover:bg-green-600 hover:text-white"
-                variant="outline"
-                onClick={() => addPlayersToEvent(winnersList)}
-              >
-                Add to event
-              </Button>
-            )}
-          </div>
-          <Separator className="my-4 bg-green-500" />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-            {winnersList.length > 0 ? (
-              <>
-                {winnersList.map((player) => {
-                  return (
-                    <PlayerCard key={player.id} player={player}>
-                      {role === "admin" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleRemoveWinner(player)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">
-                                Remove {player.name}
-                              </span>
-                            </Button>
-                          )}
-                    </PlayerCard>
-                  );
-                })}
-              </>
-            ) : (
-              <p className="text-sm text-gray-500">No winners yet.</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-xl font-bold">Waiting List</h2>
-        <Separator className="my-4 bg-yellow-500" />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-          {waitingList.length > 0 ? (
-            <>
-              {waitingList.map((player) => {
-                return (
-                  <PlayerCard key={player.id} player={player}>
-                    {role === "admin" && (
-                          <div className="flex items-center gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={isPenalized(player)}
-                              onClick={() => handleAddPlayer(player)}
-                            >
-                              Add
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() =>
-                                handleRemoveFromWaitingList(player)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">
-                                Remove {player.name}
-                              </span>
-                            </Button>
-                          </div>
-                        )}
-                  </PlayerCard>
-                );
-              })}
-            </>
-          ) : (
-            <p className="text-sm text-gray-500">
-              No players in the waiting list.
-            </p>
-          )}
-        </div>
-      </div>
+      <section className="rounded-2xl border border-line bg-white px-3.5 py-3 md:px-[18px]">
+        <div className="mb-1 flex items-center gap-2 text-brand-700"><Trophy className="h-[18px] w-[18px]" /><SectionLabel className="text-brand-700">{t("lottery.winners", { count: winnersList.length })}</SectionLabel></div>
+        {winnersList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">{t("lottery.noWinners")}</p> : null}
+        {winnersList.map((player, i) => (
+          <ListRow key={player.id} leading={<>{num(i)}<PlayerAvatar name={player.name} cardType={player.cardType} size="sm" /></>}
+            title={player.name} meta={t(`cardType.${player.cardType}`)}
+            trailing={isAdmin ? <Button size="icon" variant="ghost" aria-label={`${t("common.remove")} ${player.name}`} onClick={() => handleRemoveWinner(player)}><X /></Button> : null} />
+        ))}
+      </section>
+      <section className="rounded-2xl border border-line bg-white px-3.5 py-3 md:px-[18px]">
+        <div className="mb-1 flex items-center gap-2 text-muted-foreground"><Clock className="h-[18px] w-[18px]" /><SectionLabel>{t("lottery.waiting", { count: waitingList.length })}</SectionLabel></div>
+        {waitingList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">{t("lottery.noWaiting")}</p> : null}
+        {waitingList.map((player, i) => (
+          <ListRow key={player.id} muted={isPenalized(player)}
+            leading={<>{num(i, true)}<PlayerAvatar name={player.name} cardType={player.cardType} size="sm" /></>}
+            title={player.name} meta={t(`cardType.${player.cardType}`)}
+            trailing={<>
+              <PenaltyBadge player={player} />
+              {isAdmin ? <>
+                <Button size="sm" variant="outline" disabled={isPenalized(player)} onClick={() => handleAddPlayer(player)}><Plus />{t("common.add")}</Button>
+                <Button size="icon" variant="ghost" aria-label={`${t("common.remove")} ${player.name}`} onClick={() => handleRemoveFromWaitingList(player)}><X /></Button>
+              </> : null}
+            </>} />
+        ))}
+      </section>
     </>
   );
 }

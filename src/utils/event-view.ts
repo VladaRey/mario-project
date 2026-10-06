@@ -1,4 +1,4 @@
-import { getCourtsFromPlayersCount } from "~/constants/event-pricing-defaults";
+import { getCourtsFromPlayersCount, PLAYERS_PER_COURT } from "~/constants/event-pricing-defaults";
 import type { Event } from "~/lib/db";
 
 export function paidSummary(players: { paid?: boolean }[]) {
@@ -35,4 +35,9 @@ export function pricingHints(a: {
     hoursFromDefaults: a.draft.hours === a.defaults.hours,
     priceFromDefaults: a.draft.pricePerHour === a.defaults.pricePerHour,
   };
+}
+
+export function freeSpots(courts: number | null | undefined, playersInEvent: number): number | null {
+  if (courts == null) return null;
+  return Math.max(0, courts * PLAYERS_PER_COURT - playersInEvent);
 }

@@ -1,5 +1,6 @@
-import { Label } from "~/components/ui/label";
 import { MultiSelect } from "~/components/multi-select";
+import { SectionLabel } from "~/components/ds/section-label";
+import { useT } from "~/i18n/i18n-provider";
 import { Player } from "~/lib/db";
 import { isPenalized } from "~/utils/penalty-util";
 
@@ -12,15 +13,15 @@ interface LotteryAddPlayersInputProps {
 
 
 export function LotteryAddPlayersInput({availablePlayers, selectedPlayers, onAddPlayers}: LotteryAddPlayersInputProps) {
-    const playerOptions = availablePlayers.map((player) => ({
-      value: player.id,
-      label: player.name,
-      ...(isPenalized(player) ? { disabled: true, hint: "penalty" } : {}),
-    }));
+  const t = useT();
+  const playerOptions = availablePlayers.map((player) => ({
+    value: player.id, label: player.name, cardType: player.cardType,
+    ...(isPenalized(player) ? { disabled: true, hint: t("penalty.chip") } : {}),
+  }));
 
   return (
-    <div>
-      <Label className="text-sm mb-1 block">Add Players</Label>
+    <div className="flex flex-col gap-1.5">
+      <SectionLabel>{t("lottery.participants", { count: selectedPlayers.length })}</SectionLabel>
       <div className="flex gap-2">
         <MultiSelect
           options={playerOptions.filter(
@@ -30,10 +31,9 @@ export function LotteryAddPlayersInput({availablePlayers, selectedPlayers, onAdd
           onChange={(newPlayers) => {
             onAddPlayers([...selectedPlayers, ...newPlayers]);
           }}
-          placeholder="Select players"
+          placeholder={t("lottery.addPlayers")}
         />
       </div>
     </div>
   );
 }
-
