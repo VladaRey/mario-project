@@ -1,19 +1,13 @@
 "use client";
 
-import { useState, useEffect, PropsWithChildren, FC } from "react";
+import { useState, useEffect } from "react";
 import { calculateStatistics } from "~/services/calculation-service";
 import { transformState } from "~/utils/util";
-import { Input } from "~/components/ui/input";
 import { ResultsPanel } from "./ResultsPanel.component";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { type Statistics } from "~/services/calculation-service";
+import { Stepper } from "~/components/ds/stepper";
+import { SectionLabel } from "~/components/ds/section-label";
+import { useT } from "~/i18n/i18n-provider";
 
 interface FfpFormProps {
   ml?: number;
@@ -25,6 +19,7 @@ interface FfpFormProps {
 }
 
 export function FfpForm({ ml = 0, mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFormProps) {
+  const t = useT();
   const playersCount = ml + mc + ms + msc + nc;
   const courtCount = Math.ceil(playersCount / 4);
 
@@ -74,156 +69,53 @@ export function FfpForm({ ml = 0, mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }
     statistics.medicoverLight,
   ]);
 
+  const num = "w-full rounded-[10px] border border-line px-2.5 py-2 text-center text-[15px] font-extrabold";
+  const field = (label: string, value: string, set: (v: string) => void) => (
+    <label className="flex flex-col gap-1 text-xs font-bold text-[#4A4361]">
+      {label}
+      <input inputMode="decimal" aria-label={label} className={num} value={value} onChange={(e) => set(e.target.value)} />
+    </label>
+  );
+  const cardRow = (dot: string, label: string, owners: [string, string, (v: string) => void], usage?: [string, string, (v: string) => void]) => (
+    <>
+      <span className="flex items-center gap-1.5 text-[13px] font-bold"><span className={`h-2 w-2 rounded-full ${dot}`} />{label}</span>
+      <input inputMode="numeric" aria-label={owners[0]} className={num} value={owners[1]} onChange={(e) => owners[2](e.target.value)} />
+      {usage ? <input inputMode="numeric" aria-label={usage[0]} className={num} value={usage[1]} onChange={(e) => usage[2](e.target.value)} /> : <span />}
+    </>
+  );
+
   return (
-    <div>
-      <Row>
-        <Column>
-          <Label>Courts</Label>
-          <Select value={courts} onValueChange={setCourts}>
-            <SelectTrigger className="w-full border-[#241e2f]">
-              <SelectValue defaultValue={"1"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={"1"}>1</SelectItem>
-                <SelectItem value={"2"}>2</SelectItem>
-                <SelectItem value={"3"}>3</SelectItem>
-                <SelectItem value={"4"}>4</SelectItem>
-                <SelectItem value={"5"}>5</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Column>
-        <Column>
-          <Label>Hours</Label>
-          <Select value={hours} onValueChange={setHours}>
-            <SelectTrigger className="min-w-full border-[#241e2f]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={"1"}>1</SelectItem>
-                <SelectItem value={"1.5"}>1.5</SelectItem>
-                <SelectItem value={"2"}>2</SelectItem>
-                <SelectItem value={"2.5"}>2.5</SelectItem>
-                <SelectItem value={"3"}>3</SelectItem>
-                <SelectItem value={"3.5"}>3.5</SelectItem>
-                <SelectItem value={"4"}>4</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Column>
-      </Row>
-
-      <Row>
-        <Column>
-          <Label>Price per 1h</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={pricePerHour}
-            onChange={(e) => setPricePerHour(e.target.value)}
-          />
-        </Column>
-        <Column>
-          <Label>FAME total</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={fameTotal}
-            onChange={(e) => setFameTotal(e.target.value)}
-          />
-        </Column>
-      </Row>
-      <Row>
-        <Column>
-          <Label>Medicover owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={mCoverOwners}
-            onChange={(e) => setMCoverOwners(e.target.value)}
-          />
-        </Column>
-        <Column>
-          <Label>Medicover usage</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={mCoverUsage}
-            onChange={(e) => setMCoverUsage(e.target.value)}
-          />
-        </Column>
-      </Row>
-
-      <Row>
-        <Column>
-          <Label>Medicover Light owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={medicoverLightOwners}
-            onChange={(e) => setMedicoverLightOwners(e.target.value)}
-          />
-        </Column>
-        <Column>
-          <Label>Medicover Light usage</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={medicoverLightUsage}
-            onChange={(e) => setMedicoverLightUsage(e.target.value)}
-          />
-        </Column>
-      </Row>
-
-      <Row>
-        <Column>
-          <Label>MS+ owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={msOwners}
-            onChange={(e) => setMSOwners(e.target.value)}
-          />
-        </Column>
-        <Column>
-          <Label>Multisport usage</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={msUsage}
-            onChange={(e) => setMSUsage(e.target.value)}
-          />
-        </Column>
-      </Row>
-
-      <Row>
-        <Column>
-          <Label>MS Classic owners</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={msClassicOwners}
-            onChange={(e) => setMSClassicOwners(e.target.value)}
-          />
-        </Column>
-        <Column>
-          <Label>No card</Label>
-          <Input
-            className="border-[#241e2f]"
-            value={noCard}
-            onChange={(e) => setNoCard(e.target.value)}
-          />
-        </Column>
-      </Row>
-
-      <img className={"mb-4 mt-2"} src="/divider.png" alt="divider" />
-
-      <ResultsPanel statistics={statistics} />
+    <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-[18px]">
+      <div className="flex flex-col gap-3 md:flex-[1_1_420px]">
+        <section className="rounded-2xl border border-line bg-white p-3.5">
+          <SectionLabel className="mb-2">{t("ffp.court")}</SectionLabel>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="flex flex-col gap-1 text-xs font-bold text-[#4A4361]">{t("ffp.courts")}
+              <Stepper value={Number(courts) || 0} min={1} max={5} onChange={(v) => setCourts(String(v))} label={t("ffp.courts")} />
+            </div>
+            <div className="flex flex-col gap-1 text-xs font-bold text-[#4A4361]">{t("ffp.hours")}
+              <Stepper value={Number(hours) || 0} min={1} max={4} step={0.5} onChange={(v) => setHours(String(v))} label={t("ffp.hours")} />
+            </div>
+            {field(t("ffp.pricePerHour"), pricePerHour, setPricePerHour)}
+            {field(t("ffp.fameTotal"), fameTotal, setFameTotal)}
+          </div>
+        </section>
+        <section className="rounded-2xl border border-line bg-white p-3.5">
+          <div className="grid grid-cols-[minmax(0,1.4fr)_repeat(2,minmax(0,1fr))] items-center gap-x-2 gap-y-1.5">
+            <SectionLabel>{t("ffp.cards")}</SectionLabel>
+            <span className="text-center text-xs font-bold text-muted-foreground">{t("ffp.owners")}</span>
+            <span className="text-center text-xs font-bold text-muted-foreground">{t("ffp.usage")}</span>
+            {cardRow("bg-[#1D4ED8]", t("cardType.Medicover"), [t("ffp.medicoverOwners"), mCoverOwners, setMCoverOwners], [t("ffp.medicoverUsage"), mCoverUsage, setMCoverUsage])}
+            {cardRow("bg-[#6D28D9]", t("cardType.Medicover Light"), [t("ffp.mlOwners"), medicoverLightOwners, setMedicoverLightOwners], [t("ffp.mlUsage"), medicoverLightUsage, setMedicoverLightUsage])}
+            {cardRow("bg-[#15803D]", "MS+", [t("ffp.msOwners"), msOwners, setMSOwners], [t("ffp.msUsage"), msUsage, setMSUsage])}
+            {cardRow("bg-[#B45309]", "MS Classic", [t("ffp.msClassicOwners"), msClassicOwners, setMSClassicOwners])}
+            {cardRow("bg-[#475569]", t("cardType.No card"), [t("ffp.noCard"), noCard, setNoCard])}
+          </div>
+        </section>
+      </div>
+      <div className="md:sticky md:top-0 md:flex-[1_1_300px]">
+        <ResultsPanel statistics={statistics} />
+      </div>
     </div>
   );
 }
-
-const Row: FC<PropsWithChildren> = ({ children }) => {
-  return <div className={"mb-4 flex gap-x-4"}>{children}</div>;
-};
-
-const Label: FC<PropsWithChildren> = ({ children }) => {
-  return <h2 className={"text-sm font-medium"}>{children}</h2>;
-};
-
-const Column: FC<PropsWithChildren> = ({ children }) => {
-  return <div className={"flex flex-1 flex-col justify-between gap-y-2"}>{children}</div>;
-};

@@ -1,39 +1,29 @@
-import { FC } from "react";
-import { Statistics } from "~/services/calculation-service";
+"use client";
+import { type Statistics } from "~/services/calculation-service";
+import { SectionLabel } from "~/components/ds/section-label";
+import { useT } from "~/i18n/i18n-provider";
+import type { MessageKey } from "~/i18n/messages/en";
 
-interface ResultsPanelProps {
-  statistics: Statistics;
-}
+const ROWS: (keyof Statistics)[] = ["medicover", "medicoverLight", "MS", "msClassic", "noMs", "totalPrice", "discount", "fameDiscount"];
 
-export const ResultsPanel: FC<ResultsPanelProps> = ({ statistics }) => {
+export function ResultsPanel({ statistics }: { statistics: Statistics }) {
+  const t = useT();
+  const show = (v?: string) => (v ? `${v} PLN` : "—");
   return (
-    <>
-      <ResultRow title={"Medicover:"} value={statistics.medicover} />
-      <ResultRow title={"Medicover Light:"} value={statistics.medicoverLight} />
-      <ResultRow title={"MS+:"} value={statistics.MS} />
-      <ResultRow title={"MS classic:"} value={statistics.msClassic} />
-      <ResultRow title={"No card:"} value={statistics.noMs} />
-      <ResultRow title={"Total w/o discount:"} value={statistics.totalPrice} />
-      <ResultRow title={"Card discount:"} value={statistics.discount} />
-      <ResultRow title={"Fame discount:"} value={statistics.fameDiscount} />
-      <ResultRow title={"To be paid:"} value={statistics.priceAfterDiscount} />
-    </>
-  );
-};
-
-const ResultRow = ({
-  title,
-  value,
-}: {
-  title: string;
-  value: undefined | string;
-}) => {
-  return (
-    <div className={"mb-3 flex flex-row justify-between"}>
-      <p className="text-xs font-semibold text-[#241e2f]">{title}</p>
-      <p className="text-xs font-semibold text-[#241e2f]">
-        {value ? value + " PLN" : "—"}
-      </p>
+    <div className="flex flex-col gap-3">
+      <div className="rounded-2xl border border-line bg-white px-3.5 py-3">
+        <SectionLabel className="mb-1">{t("ffp.perPlayer")}</SectionLabel>
+        {ROWS.map((k) => (
+          <div key={k} className="flex justify-between border-b border-[#F0ECF7] py-1.5 text-sm last:border-0">
+            <span className="text-[#4A4361]">{t(`ffp.r.${k}` as MessageKey)}</span>
+            <span className="font-extrabold" data-testid={`ffp-${k}`}>{show(statistics[k])}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between rounded-2xl bg-coral px-4 py-3.5 text-ink">
+        <span className="text-[15px] font-extrabold">{t("ffp.r.priceAfterDiscount")}</span>
+        <span className="text-2xl font-extrabold" data-testid="ffp-priceAfterDiscount">{show(statistics.priceAfterDiscount)}</span>
+      </div>
     </div>
   );
-};
+}
