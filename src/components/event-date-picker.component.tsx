@@ -7,6 +7,7 @@ import {
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { CalendarIcon } from "lucide-react";
+import { enGB, pl } from "date-fns/locale";
 import { useI18n } from "~/i18n/i18n-provider";
 
 interface EventDatePickerProps {
@@ -18,7 +19,7 @@ export const EventDatePicker: FC<EventDatePickerProps> = ({
   date,
   setDate,
 }) => {
-  const { fmt } = useI18n();
+  const { fmt, locale } = useI18n();
 
   return (
     <Popover>
@@ -28,7 +29,7 @@ export const EventDatePicker: FC<EventDatePickerProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={setDate} />
+        <Calendar mode="single" locale={locale === "pl" ? pl : enGB} selected={date} onSelect={setDate} />
       </PopoverContent>
     </Popover>
   );

@@ -48,7 +48,7 @@ export function PasswordInput({ handleChange, error, formData }: PasswordInputPr
           </button>
         </div>
         {error && (
-          <p className="pt-2 text-sm text-red-500">{t("login.error")}</p>
+          <p role="alert" className="pt-2 text-sm text-red-500">{t("login.error")}</p>
         )}
       </div>
     </div>

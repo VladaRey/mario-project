@@ -8,7 +8,7 @@ const ROWS: (keyof Statistics)[] = ["medicover", "medicoverLight", "MS", "msClas
 
 export function ResultsPanel({ statistics }: { statistics: Statistics }) {
   const t = useT();
-  const show = (v?: string) => (v ? `${v} PLN` : "—");
+  const show = (v?: string) => (v ? t("common.pln", { value: v }) : "—");
   return (
     <div className="flex flex-col gap-3">
       <div className="rounded-2xl border border-line bg-white px-3.5 py-3">

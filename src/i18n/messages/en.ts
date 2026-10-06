@@ -275,6 +275,7 @@ export const en = {
   "res.players": "Players · {count}",
   "res.addPlayers": "Add players…",
   "res.penaltyNote": "{names} on the penalty list: kept in the reservation, but skipped when it is added to an event.",
+  "res.saveFailed": "Failed to save reservation.",
   "res.save": "Save reservation",
   "res.header": "{name} · {players}",
   "res.deleteText": "This action cannot be undone. This will permanently delete this reservation.",

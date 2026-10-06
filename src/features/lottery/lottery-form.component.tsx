@@ -95,14 +95,21 @@ export function LotteryForm({
   };
 
   const playDisabled = selectedPlayers.length === 0 || places > selectedPlayers.length || places <= 0 || isLoading;
-  const playButton = (
-    <Button className="flex-1" disabled={playDisabled} onClick={handleShuffle}>
+  const playLabel = isLoading ? t("lottery.generating") : isWinners ? t("lottery.playAgain") : t("lottery.play");
+  const renderPlay = (iconOnly: boolean) => (
+    <Button
+      className={iconOnly ? "min-w-0 flex-none" : "min-w-0 flex-1"}
+      size={iconOnly ? "icon" : undefined}
+      aria-label={iconOnly ? playLabel : undefined}
+      disabled={playDisabled}
+      onClick={handleShuffle}
+    >
       {isLoading ? <Loader2 className="animate-spin" /> : <Dices />}
-      {isLoading ? t("lottery.generating") : isWinners ? t("lottery.playAgain") : t("lottery.play")}
+      {!iconOnly && <span className="truncate">{playLabel}</span>}
     </Button>
   );
   const addButton = winnersCount > 0
-    ? <Button variant="accent" className="flex-1" onClick={onAddWinners}>{t("lottery.addToEvent", { count: winnersCount })}</Button>
+    ? <Button variant="accent" className="min-w-0 flex-1" onClick={onAddWinners}><span className="truncate">{t("lottery.addToEvent", { count: winnersCount })}</span></Button>
     : null;
   const more = (isResetting || isWinners)
     ? <MoreMenu label={t("common.more")} items={[{ label: t("lottery.reset"), destructive: true, onSelect: () => setResetOpen(true) }]} />
@@ -131,9 +138,9 @@ export function LotteryForm({
             {t("lottery.freeSpots", { courts: courts ?? 0, players: playersInEvent, free })}
           </div>
         ) : null}
-        <div className="hidden gap-2 pt-1 md:flex">{more}{playButton}{addButton}</div>
+        <div className="hidden gap-2 pt-1 md:flex">{more}{renderPlay(false)}{addButton}</div>
       </section>
-      <ActionDock>{playButton}{addButton}{more}</ActionDock>
+      <ActionDock>{renderPlay(winnersCount > 0)}{addButton}{more}</ActionDock>
       <ConfirmDialog open={resetOpen} onOpenChange={setResetOpen}
         title={t("lottery.resetTitle")} description={t("lottery.resetText", { event: event?.name ?? "" })}
         confirmLabel={t("lottery.resetConfirm")} confirmVariant="destructive" onConfirm={() => void handleReset()} />

@@ -10,6 +10,7 @@ import { SectionLabel } from "~/components/ds/section-label";
 import { filterDatesByRange } from "~/utils/playerHistory";
 import { LotteryResults } from "~/hooks/use-get-player-data";
 import { Player } from "~/lib/db";
+import { enGB, pl } from "date-fns/locale";
 import { useI18n } from "~/i18n/i18n-provider";
 
 interface PlayerHistoryProps {
@@ -19,7 +20,7 @@ interface PlayerHistoryProps {
 }
 
 export default function PlayerHistory({ playerEventDates, lotteryResults }: PlayerHistoryProps) {
-  const { t, fmt } = useI18n();
+  const { t, fmt, locale } = useI18n();
   const [range, setRange] = useState<{ from?: Date; to?: Date }>({});
 
   const filteredDates = useMemo(() => filterDatesByRange(playerEventDates, range), [playerEventDates, range]);
@@ -49,6 +50,7 @@ export default function PlayerHistory({ playerEventDates, lotteryResults }: Play
                 <PopoverContent align="end" className="w-auto p-0">
                   <Calendar
                     mode="range"
+                    locale={locale === "pl" ? pl : enGB}
                     selected={{ from: range.from, to: range.to }}
                     onSelect={(r) => setRange({ from: r?.from, to: r?.to })}
                   />

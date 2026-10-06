@@ -51,7 +51,7 @@ export function TabBarView({ role, active, penaltyCount, onFfp, onFame }: {
       {tab("penalties", "/penalties", Ban, t("nav.penalties"), penaltyCount || undefined)}
       {role === Role.Admin ? tab("admin", "/admin", Shield, t("nav.admin"))
         : role === Role.Fame ? (
-          <button type="button" onClick={onFame} className={cn(item, "text-[#B3ACC6]")}>
+          <button type="button" onClick={onFame} aria-haspopup="dialog" className={cn(item, "text-muted-foreground")}>
             <Star className="h-[22px] w-[22px]" aria-hidden="true" /><span className="max-w-full truncate">{t("nav.fame")}</span>
           </button>
         ) : tab("login", "/login", LogIn, t("nav.login"))}

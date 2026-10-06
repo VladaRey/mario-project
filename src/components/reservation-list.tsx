@@ -12,6 +12,7 @@ import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { EmptyState } from "~/components/ds/empty-state";
 import { SkeletonRows } from "~/components/ds/skeleton-rows";
 import { PenaltyBadge } from "~/components/penalty-badge";
+import { toast } from "sonner";
 import { useT } from "~/i18n/i18n-provider";
 
 export interface SaveReservationData {
@@ -87,6 +88,7 @@ export function ReservationList({ refreshTrigger = 0, selectId }: ReservationLis
       await refreshReservations();
     } catch (error) {
       console.error("Failed to update reservation:", error);
+      toast.error(t("res.saveFailed"));
     }
   };
 

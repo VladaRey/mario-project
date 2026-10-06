@@ -15,7 +15,7 @@ type Props = {
   mobileBarAction?: React.ReactNode;
   mobileHero?: React.ReactNode;
   mobileTitleAside?: React.ReactNode;
-  adminSection?: AdminSection;
+  adminSection?: AdminSection | "hub";
 };
 
 export function ScreenHeader({ title, back, crumbs, meta, actions, mobileBarAction, mobileHero, mobileTitleAside, adminSection }: Props) {
@@ -32,7 +32,7 @@ export function ScreenHeader({ title, back, crumbs, meta, actions, mobileBarActi
         <div className="flex flex-none items-center gap-2">{mobileBarAction}<LangSwitch /></div>
       </div>
 
-      {adminSection ? <AdminSubNav active={adminSection} /> : null}
+      {adminSection === "hub" ? <div className="hidden md:block"><AdminSubNav /></div> : adminSection ? <AdminSubNav active={adminSection} /> : null}
 
       {/* mobile title / hero */}
       <div className="md:hidden">

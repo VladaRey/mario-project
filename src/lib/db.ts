@@ -315,8 +315,9 @@ const supabaseReservationOperations = {
   },
 
   async renameReservationList(id: string, name: string): Promise<void> {
-    const { error } = await supabase.from("reservation_lists").update({ name }).eq("id", id);
+    const { data, error } = await supabase.from("reservation_lists").update({ name }).eq("id", id).select("id");
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error("Reservation not renamed");
   },
 };
 

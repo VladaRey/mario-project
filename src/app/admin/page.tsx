@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Ban, CalendarDays, ChevronRight, List, LogOut, Plus, Shield, SlidersHorizontal, Users } from "lucide-react";
 import { withAdminLayout } from "~/components/with-admin-layout";
 import { ScreenHeader } from "~/components/shell/screen-header";
-import { GuardedLink } from "~/components/shell/navigation-guard";
+import { GuardedLink, useNavigationGuard } from "~/components/shell/navigation-guard";
 import { PageBody } from "~/components/ds/page-body";
 import { Button } from "~/components/ui/button";
 import { DefaultAdminValuesOperations, eventOperations, playerOperations, reservationOperations, type DefaultAdminValues } from "~/lib/db";
@@ -34,6 +34,7 @@ function AdminHub() {
   const { t, fmt } = useI18n();
   const router = useRouter();
   const { logout } = useGetRole();
+  const { confirmLeave } = useNavigationGuard();
   const [s, setS] = useState<Stats>({ players: 0, reservations: [], penalties: 0 });
 
   useEffect(() => {
@@ -53,7 +54,7 @@ function AdminHub() {
 
   return (
     <>
-      <ScreenHeader title={t("hub.title")} actions={add} mobileTitleAside={add} />
+      <ScreenHeader adminSection="hub" title={t("hub.title")} actions={add} mobileTitleAside={add} />
       <PageBody>
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3">
           <Tile href="/admin/events" icon={<CalendarDays className="h-5 w-5" />} title={t("admin.events")}
@@ -71,7 +72,7 @@ function AdminHub() {
             <span><span className="block text-sm font-extrabold">{t("account.loggedInAs", { role: t("role.admin") })}</span>
               <span className="text-xs text-muted-foreground">{t("account.onThisDevice")}</span></span>
           </div>
-          <Button variant="outline" size="sm" onClick={() => { logout(); router.push("/"); }}><LogOut />{t("account.logout")}</Button>
+          <Button variant="outline" size="sm" onClick={() => { if (!confirmLeave()) return; logout(); router.push("/"); }}><LogOut />{t("account.logout")}</Button>
         </div>
       </PageBody>
     </>
