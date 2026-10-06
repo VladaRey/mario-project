@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Player } from "~/lib/db";
 import { getPlayerCards, type PlayerCard } from "~/utils/playerCards";
 import { LotteryResults } from "~/hooks/use-get-player-data";
+import { PenaltyBadge } from "~/components/penalty-badge";
 
 interface PlayerInfoCardsProps {
   player: Player;
@@ -18,8 +19,9 @@ export default function PlayerInfoCards({
 
   return (
     <div className="space-y-2">
-      <div>
+      <div className="flex items-center gap-3">
         <h2 className="text-2xl font-bold">Player details</h2>
+        <PenaltyBadge player={player} />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {infoCards.map((card: PlayerCard) => (
