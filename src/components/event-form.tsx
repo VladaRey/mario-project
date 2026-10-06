@@ -124,12 +124,19 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await onSave({
-      id: initialEvent?.id || "",
-      name: eventName,
-      date: format(date!, "yyyy-MM-dd"),
-      players: selectedPlayers,
-    });
+    try {
+      await onSave({
+        id: initialEvent?.id || "",
+        name: eventName,
+        date: format(date!, "yyyy-MM-dd"),
+        players: selectedPlayers,
+      });
+    } catch {
+      // Changes stay local until a successful save: keep baseline, leave guard and the page.
+      toast.error(t("eventForm.saveFailed"));
+      setLoading(false);
+      return;
+    }
     setBaseline(current);
     setDirty(false);
     setSkippedPlayers([]);
@@ -220,13 +227,13 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   const sourcePicker =
     source === "reservation" ? (
-      <MultiSelect options={reservationOptions} selected={[]} placeholder={t("eventForm.selectReservations")} title={t("eventForm.srcReservation")}
+      <MultiSelect options={reservationOptions} selected={[]} placeholder={t("eventForm.selectReservations")} title={t("eventForm.srcReservation")} mode="add"
         onChange={onReservationsPicked} />
     ) : source === "waiting" ? (
-      <MultiSelect options={waitingListOptions} selected={[]} placeholder={t("eventForm.selectWaiting")}
+      <MultiSelect options={waitingListOptions} selected={[]} placeholder={t("eventForm.selectWaiting")} mode="add"
         onChange={(newPlayers) => setSelectedPlayers((prev) => [...new Set([...prev, ...newPlayers])])} />
     ) : (
-      <MultiSelect options={playerOptions.filter((o) => !selectedPlayers.includes(o.value))} selected={[]} placeholder={t("eventForm.selectPlayers")}
+      <MultiSelect options={playerOptions.filter((o) => !selectedPlayers.includes(o.value))} selected={[]} placeholder={t("eventForm.selectPlayers")} mode="add"
         onChange={(newPlayers) => setSelectedPlayers((prev) => [...prev, ...newPlayers])} />
     );
 

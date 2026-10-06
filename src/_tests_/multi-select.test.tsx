@@ -28,3 +28,10 @@ test("trigger shows selected names", () => {
   renderWithI18n(<MultiSelect options={options} selected={["p1"]} onChange={() => undefined} />);
   expect(screen.getByRole("combobox")).toHaveTextContent("Anna Kowalska");
 });
+
+test('mode="add" shows a single Done button and no Clear', () => {
+  renderWithI18n(<MultiSelect options={options} selected={[]} onChange={() => undefined} mode="add" />);
+  fireEvent.click(screen.getByRole("combobox"));
+  expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
+});

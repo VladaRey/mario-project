@@ -10,6 +10,7 @@ import { ConfirmDialog } from "./confirmation-dialog";
 import { ListRow } from "~/components/ds/list";
 import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { EmptyState } from "~/components/ds/empty-state";
+import { SkeletonRows } from "~/components/ds/skeleton-rows";
 import { PenaltyBadge } from "~/components/penalty-badge";
 import { useT } from "~/i18n/i18n-provider";
 
@@ -20,6 +21,8 @@ export interface SaveReservationData {
 
 export interface ReservationListProps {
   refreshTrigger?: number;
+  /** Id of a reservation created outside the list (page header "New"); selected once it changes. */
+  selectId?: string;
 }
 
 export async function saveReservationEdit(
@@ -32,10 +35,11 @@ export async function saveReservationEdit(
   await ops.updateReservationPlayers(current.id, data.players);
 }
 
-export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
+export function ReservationList({ refreshTrigger = 0, selectId }: ReservationListProps) {
   const t = useT();
   const [reservations, setReservations] = useState<ReservationListType[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
+  const [loaded, setLoaded] = useState(false);
 
   const refreshReservations = async () => {
     try {
@@ -48,12 +52,18 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
       }
     } catch (error) {
       console.error("Failed to fetch reservations:", error);
+    } finally {
+      setLoaded(true);
     }
   };
 
   useEffect(() => {
     refreshReservations();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    if (selectId) setActiveTab(selectId);
+  }, [selectId]);
 
   const handleSave = async (data: SaveReservationData) => {
     try {
@@ -69,7 +79,8 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
   };
 
   const handleEdit = async (data: SaveReservationData) => {
-    const current = reservations.find((r) => r.id === activeTab);
+    // Same reservation the card shows: the active tab, or the first one as fallback.
+    const current = reservations.find((r) => r.id === activeTab) ?? reservations[0];
     if (!current) return;
     try {
       await saveReservationEdit(reservationOperations, current, data);
@@ -113,6 +124,8 @@ export function ReservationList({ refreshTrigger = 0 }: ReservationListProps) {
       console.error("Failed to remove player:", error);
     }
   };
+
+  if (!loaded) return <SkeletonRows />;
 
   if (reservations.length === 0) {
     return (

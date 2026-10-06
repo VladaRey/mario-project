@@ -58,6 +58,7 @@ const EditEventPage = () => {
       );
     } catch (error) {
       console.error("Failed to save event:", error);
+      throw error;
     }
   };
 

@@ -5,7 +5,7 @@ import { resetMockDb } from "~/lib/db.mock";
 /** Shown only in mock mode so nobody mistakes local fake data for production. */
 export function MockDbBanner() {
   return (
-    <div className="fixed bottom-[88px] left-3 md:bottom-3 z-50 flex items-center gap-2 rounded-md border border-amber-400 bg-amber-100 px-3 py-1.5 text-xs text-amber-900 shadow">
+    <div className="fixed bottom-auto left-auto right-3 top-[64px] md:bottom-3 md:left-3 md:right-auto md:top-auto z-50 flex items-center gap-2 rounded-md border border-amber-400 bg-amber-100 px-3 py-1.5 text-xs text-amber-900 shadow">
       <span className="font-semibold">MOCK DATA</span>
       <span className="opacity-70">not connected to Supabase</span>
       <button

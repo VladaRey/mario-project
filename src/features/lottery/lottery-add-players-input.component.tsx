@@ -28,6 +28,7 @@ export function LotteryAddPlayersInput({availablePlayers, selectedPlayers, onAdd
             (option) => !selectedPlayers.includes(option.value),
           )}
           selected={[]}
+          mode="add"
           onChange={(newPlayers) => {
             onAddPlayers([...selectedPlayers, ...newPlayers]);
           }}

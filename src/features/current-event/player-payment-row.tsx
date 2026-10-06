@@ -14,25 +14,30 @@ export function PlayerPaymentRow({ player, paid, canEdit, onPaidChange, amount, 
   const hasCard = player.cardType !== "No card";
   const meta = [t(`cardType.${player.cardType}`), amount != null ? t("common.pln", { value: amount }) : null,
     !canEdit && hasCard && usage > 0 ? t("event.cardUse", { count: usage }) : null].filter(Boolean).join(" · ");
+  // Mobile: two lines (avatar · name · paid / meta · stepper under the name). md+: one line.
   return (
-    <div className="flex min-h-[56px] items-center gap-2.5 py-2">
-      <PlayerAvatar name={player.name} cardType={player.cardType} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold">{player.name}</div>
-        <div className="truncate text-xs text-muted-foreground">{meta}</div>
+    <div className="grid min-h-[56px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-1 py-2 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-y-0">
+      <div className="col-start-1 row-start-1 md:row-end-3">
+        <PlayerAvatar name={player.name} cardType={player.cardType} />
       </div>
+      <div className="col-start-2 row-start-1 truncate text-sm font-bold md:self-end">{player.name}</div>
+      <div className="col-start-2 row-start-2 truncate text-xs text-muted-foreground md:self-start">{meta}</div>
       {canEdit && hasCard ? (
-        <Stepper value={usage} min={0} onChange={(v) => onUsageChange(player.id, v)} label={t("event.cardUsage", { name: player.name })} />
+        <div className="col-start-3 row-start-2 justify-self-end md:row-start-1 md:row-end-3">
+          <Stepper value={usage} min={0} onChange={(v) => onUsageChange(player.id, v)} label={t("event.cardUsage", { name: player.name })} />
+        </div>
       ) : null}
-      {canEdit ? (
-        <button type="button" role="switch" aria-checked={paid} aria-label={t("event.paidToggle", { name: player.name })}
-          onClick={() => onPaidChange(player.id, !paid)}
-          className={cn("relative h-[26px] w-11 flex-none rounded-full transition-colors", paid ? "bg-coral" : "bg-[#D8D2E6]")}>
-          <span className={cn("absolute top-[3px] h-5 w-5 rounded-full bg-white transition-all", paid ? "right-[3px]" : "left-[3px]")} />
-        </button>
-      ) : (
-        <Chip tone={paid ? "success" : "warning"}>{paid ? t("event.paid") : t("event.unpaid")}</Chip>
-      )}
+      <div className="col-start-3 row-start-1 flex justify-self-end md:col-start-4 md:row-end-3">
+        {canEdit ? (
+          <button type="button" role="switch" aria-checked={paid} aria-label={t("event.paidToggle", { name: player.name })}
+            onClick={() => onPaidChange(player.id, !paid)}
+            className={cn("relative h-[26px] w-11 flex-none rounded-full transition-colors", paid ? "bg-coral" : "bg-[#D8D2E6]")}>
+            <span className={cn("absolute top-[3px] h-5 w-5 rounded-full bg-white transition-all", paid ? "right-[3px]" : "left-[3px]")} />
+          </button>
+        ) : (
+          <Chip tone={paid ? "success" : "warning"}>{paid ? t("event.paid") : t("event.unpaid")}</Chip>
+        )}
+      </div>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export const ConfirmDialog = ({
       : undefined;
 
   const content = (
-    <AlertDialogContent className="w-[calc(100%-32px)] max-w-[400px] rounded-3xl">
+    <AlertDialogContent className="w-[calc(100%-32px)] max-w-[400px] rounded-3xl sm:rounded-3xl">
       <AlertDialogHeader>
         <AlertDialogTitle>{title ?? t("common.areYouSure")}</AlertDialogTitle>
         <AlertDialogDescription>{description}</AlertDialogDescription>

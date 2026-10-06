@@ -15,9 +15,11 @@ import { reservationOperations } from "~/lib/db";
 function ReservationsPage() {
   const t = useT();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [createdId, setCreatedId] = useState<string>();
 
   const handleAddReservation = async (data: SaveReservationData) => {
-    await reservationOperations.addReservationList(data.name, data.players);
+    const created = await reservationOperations.addReservationList(data.name, data.players);
+    setCreatedId(created.id);
     setRefreshTrigger((prev) => prev + 1);
   };
 
@@ -36,7 +38,7 @@ function ReservationsPage() {
         actions={addSheet(t("res.newReservation"))}
         mobileTitleAside={addSheet(t("res.new"))}
       />
-      <PageBody><ReservationList refreshTrigger={refreshTrigger} /></PageBody>
+      <PageBody><ReservationList refreshTrigger={refreshTrigger} selectId={createdId} /></PageBody>
     </>
   );
 }

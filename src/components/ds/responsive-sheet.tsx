@@ -40,7 +40,7 @@ export function ResponsiveSheet({ open, onOpenChange, title, description, deskto
   if (isDesktop && desktop === "dialog") {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[88vh] w-[860px] max-w-[calc(100%-32px)] gap-0 overflow-y-auto rounded-3xl bg-background p-0 [&>button.absolute]:hidden">
+        <DialogContent className="max-h-[88vh] w-[860px] max-w-[calc(100%-32px)] gap-0 overflow-y-auto rounded-3xl bg-background p-0 sm:rounded-3xl [&>button.absolute]:hidden">
           <DialogTitle className="sr-only">{title}</DialogTitle>
           {description ? <DialogDescription className="sr-only">{description}</DialogDescription> : null}
           {body}

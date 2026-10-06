@@ -22,9 +22,11 @@ type MultiSelectProps = {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   title?: string;
+  /** "add": the picker adds players and stays empty (selected={[]}); the footer is a single Done button. */
+  mode?: "select" | "add";
 };
 
-export function MultiSelect({ options = [], selected = [], onChange, placeholder, title }: MultiSelectProps) {
+export function MultiSelect({ options = [], selected = [], onChange, placeholder, title, mode = "select" }: MultiSelectProps) {
   const t = useT();
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
@@ -125,14 +127,18 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
       <ResponsiveSheet open={open} onOpenChange={(v) => { setOpen(v); if (!v) setQuery(""); }}
         title={title ?? t("picker.title")}
         footer={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onChange([])}>{t("picker.clear")}</Button>
-            <Button className="flex-1" onClick={() => setOpen(false)}>{t("picker.done", { count: selected.length })}</Button>
-          </div>
+          mode === "add" ? (
+            <Button className="w-full" onClick={() => setOpen(false)}>{t("picker.doneAdd")}</Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => onChange([])}>{t("picker.clear")}</Button>
+              <Button className="flex-1" onClick={() => setOpen(false)}>{t("picker.done", { count: selected.length })}</Button>
+            </div>
+          )
         }>
         <div className="flex flex-col gap-2.5">
           {searchBox}
-          {selectedOptions.length ? (
+          {mode === "select" && selectedOptions.length ? (
             <div className="flex flex-wrap gap-1.5">
               {selectedOptions.map((o) => (
                 <button key={o.value} type="button" onClick={() => toggle(o)} aria-label={`${t("common.remove")} ${o.label}`}
