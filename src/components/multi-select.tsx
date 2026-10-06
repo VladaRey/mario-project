@@ -21,6 +21,8 @@ import {
 type Option = {
   value: string;
   label: string;
+  disabled?: boolean;
+  hint?: string;
 };
 
 type MultiSelectProps = {
@@ -67,7 +69,11 @@ export function MultiSelect({
               {(options || []).map((option) => (
                 <CommandItem
                   key={option.value}
-                  onSelect={() => handleSelect(option.value)}
+                  disabled={option.disabled}
+                  onSelect={() => {
+                    if (!option.disabled) handleSelect(option.value);
+                  }}
+                  className={cn(option.disabled && "opacity-50")}
                 >
                   <Check
                     className={cn(
@@ -78,6 +84,11 @@ export function MultiSelect({
                     )}
                   />
                   {option.label}
+                  {option.hint && (
+                    <span className="ml-auto text-xs text-red-600">
+                      {option.hint}
+                    </span>
+                  )}
                 </CommandItem>
               ))}
             </CommandGroup>
