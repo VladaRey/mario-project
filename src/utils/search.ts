@@ -18,3 +18,12 @@ export function orderOptions<T extends { value: string; label: string; disabled?
   const rank = (o: T) => (selected.includes(o.value) ? 0 : o.disabled ? 2 : 1);
   return [...options].sort((a, b) => rank(a) - rank(b) || a.label.localeCompare(b.label, "pl"));
 }
+
+export function groupByLetter<T extends { name: string }>(items: T[]): { letter: string; items: T[] }[] {
+  const map = new Map<string, T[]>();
+  for (const it of [...items].sort((a, b) => a.name.localeCompare(b.name, "pl"))) {
+    const letter = (it.name.trim()[0] ?? "#").toLocaleUpperCase("pl");
+    map.set(letter, [...(map.get(letter) ?? []), it]);
+  }
+  return [...map.entries()].sort(([a], [b]) => a.localeCompare(b, "pl")).map(([letter, items]) => ({ letter, items }));
+}

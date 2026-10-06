@@ -1,43 +1,42 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+"use client";
 import { Player } from "~/lib/db";
-import { getPlayerCards, type PlayerCard } from "~/utils/playerCards";
-import { LotteryResults } from "~/hooks/use-get-player-data";
-import { PenaltyBadge } from "~/components/penalty-badge";
+import { PlayerAvatar } from "~/components/ds/player-avatar";
+import { CardTypeChip, Chip } from "~/components/ds/chip";
+import { isPenalized } from "~/utils/penalty-util";
+import { useI18n } from "~/i18n/i18n-provider";
+import { cn } from "~/lib/utils";
 
-interface PlayerInfoCardsProps {
-  player: Player;
-  playerEventDates: string[];
-  lotteryResults: LotteryResults;
-}
-
-export default function PlayerInfoCards({
-  player,
-  playerEventDates,
-  lotteryResults,
-}: PlayerInfoCardsProps) {
-  const { infoCards } = getPlayerCards(player, playerEventDates, lotteryResults.wins.length, lotteryResults.played.length);
+export function ProfileHero({ player, desktop = false }: { player: Player; desktop?: boolean }) {
+  const { t, fmt } = useI18n();
+  const penalized = isPenalized(player);
+  const member = player.created_at ? t("profile.memberSince", { date: fmt(player.created_at, "LLL yyyy") }) : null;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold">Player details</h2>
-        <PenaltyBadge player={player} />
+    <section className={cn(desktop ? "flex items-center gap-5" : "bg-brand-900 px-4 pb-6 pt-3 text-white")}>
+      <div className={cn("flex items-center gap-4", desktop && "gap-5")}>
+        <PlayerAvatar
+          name={player.name}
+          cardType={player.cardType}
+          size="lg"
+          className={cn(!desktop && "bg-white/15 text-white", desktop && "h-20 w-20 text-2xl")}
+        />
+        <div className="min-w-0">
+          {desktop ? (
+            <div className="text-[26px] font-extrabold tracking-tight">{player.name}</div>
+          ) : (
+            <h1 className="break-words text-2xl font-extrabold tracking-tight">{player.name}</h1>
+          )}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <CardTypeChip cardType={player.cardType} />
+            {penalized ? (
+              <Chip tone="danger">{t("profile.penaltySince", { date: fmt(player.penalty_since as string, "dd.MM") })}</Chip>
+            ) : null}
+          </div>
+          {member ? (
+            <div className={cn("mt-1.5 text-[13px]", desktop ? "text-muted-foreground" : "text-[#D9CCF0]")}>{member}</div>
+          ) : null}
+        </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {infoCards.map((card: PlayerCard) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {card.title}
-              </CardTitle>
-              {card.icon}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold">{card.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    </section>
   );
 }
