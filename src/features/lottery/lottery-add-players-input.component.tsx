@@ -1,6 +1,7 @@
 import { Label } from "~/components/ui/label";
 import { MultiSelect } from "~/components/multi-select";
 import { Player } from "~/lib/db";
+import { isPenalized } from "~/utils/penalty-util";
 
 
 interface LotteryAddPlayersInputProps {
@@ -14,6 +15,7 @@ export function LotteryAddPlayersInput({availablePlayers, selectedPlayers, onAdd
     const playerOptions = availablePlayers.map((player) => ({
       value: player.id,
       label: player.name,
+      ...(isPenalized(player) ? { disabled: true, hint: "penalty" } : {}),
     }));
 
   return (
