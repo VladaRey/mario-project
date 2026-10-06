@@ -33,6 +33,9 @@ export function AdminNavbar() {
             <Link href="/admin/reservations">Reservations</Link>
           </Button>
           <Button asChild variant="ghost">
+            <Link href="/admin/penalties">Penalties</Link>
+          </Button>
+          <Button asChild variant="ghost">
             <Link href="/admin/">Events</Link>
           </Button>
         </div>
@@ -47,6 +50,9 @@ export function AdminNavbar() {
           </Button>
           <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
             <Link href="/admin/reservations">Reservations</Link>
+          </Button>
+          <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
+            <Link href="/admin/penalties">Penalties</Link>
           </Button>
           <Button asChild variant="ghost" onClick={() => setIsMenuOpen(false)}>
             <Link href="/admin/">Events</Link>
