@@ -65,6 +65,16 @@ export const en = {
   "cardType.Multisport": "Multisport",
   "cardType.Classic": "Classic",
   "cardType.No card": "No card",
+  "home.title": "Events",
+  "home.latest": "Latest · {date}",
+  "home.open": "Open event",
+  "home.lottery": "Lottery",
+  "home.earlier": "Earlier",
+  "home.newEvent": "New event",
+  "home.paidOf": "{paid}/{total} paid",
+  "home.unpaid": { one: "{count} unpaid", other: "{count} unpaid" },
+  "home.emptyTitle": "No events yet",
+  "home.emptyText": "New trainings will appear here.",
 } satisfies Record<string, string | PluralMessage>;
 
 export type MessageKey = keyof typeof en;
