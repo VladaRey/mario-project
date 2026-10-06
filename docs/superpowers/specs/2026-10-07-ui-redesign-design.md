@@ -74,7 +74,7 @@ All values are on the canvas artboard "Tokens & components".
 - **Radius:** 12 (rows, inputs), 14–16 (cards), 18 (FFP button), 24 (sheets).
 - **Buttons:** primary, accent, secondary, ghost, destructive and disabled, defined as `Button` variants (CVA) in `ui/button.tsx`. Remove the ad-hoc hex classes from pages.
 - **Density:** list rows replace big cards. Avatars show initials in the card-type colour.
-- **Motion:** CSS View Transitions on route change, guarded by `prefers-reduced-motion`. Skeleton rows replace "Loading…" and the full-page loader inside content areas.
+- **Motion:** a short fade/slide-in of the page content on route change (`tailwindcss-animate`, keyed by pathname), disabled under `prefers-reduced-motion`. The cross-document View Transitions API does not apply to client-side navigation in this React 18 app, so it is not used. Skeleton rows replace "Loading…" and the full-page loader inside content areas.
 - **Light theme only** for now. Tokens stay ready for dark mode later.
 
 ## 4. App shell and navigation
@@ -115,7 +115,7 @@ Each screen keeps its route and behaviour. The canvas artboard name is in bracke
 
 | Route | Mobile | Desktop | Notes |
 |---|---|---|---|
-| `/` | Home · Events | Desktop · home | Hero with the latest event (Open event, Lottery), "Earlier" rows with a date tile; "N unpaid" pill for Admin/Fame only; "+ New event" for Admin |
+| `/` | Home · Events | Desktop · home | Hero with the latest event (date, name, player count; Open event, Lottery), "Earlier" rows with a date tile and player count; "N unpaid" pill and "paid X/N" for Admin/Fame only; "+ New event" for Admin. Needs `getAllEvents` to also read `player_events.paid` (§6a) |
 | `/event/[id]` | Event · admin / Fame, Event · guest | Desktop · event | Stats (players, paid X/N, unpaid, avg); card-type chips; filter All/Unpaid/Paid (client-side); rows with toggle and stepper for Admin/Fame, text chips for Guest |
 | Pricing sheet | Event · Pricing sheet | right-side sheet (480 px) | Same fields; source hints; FAME-cleared hint; Apply for Admin/Fame; discard dialog kept |
 | `/event/[id]/lottery` | Lottery · admin, Lottery · guest, Lottery · reset confirm | Desktop · lottery | Setup card (participants, Places stepper, free-spots hint); numbered Winners and Waiting list; dock Play / Add N to event / ⋯ Reset |
@@ -129,7 +129,7 @@ Each screen keeps its route and behaviour. The canvas artboard name is in bracke
 | `/admin/events` *(see §6)* | Admin · events | (Desktop · home with Edit) | Rows with Edit / Lottery, "+ New event" |
 | `/admin/event`, `/admin/event/[id]` | Admin · edit event | Desktop · admin edit event | Details card; "Add players from" segmented (Reservation / Waiting list / Individual); penalty notice; current players; dock Save with "Unsaved changes"; ⋯ Remove all / Delete event |
 | `/admin/players` | Admin · players, Admin · add / edit player | list in two columns; add / edit in a right-side sheet | Search, Edit/Delete per row, sheet with name and card-type radio |
-| `/admin/reservations` | Admin · reservations, Admin · add / edit reservation | Desktop · admin reservations | Tabs (mobile) or list (desktop); Edit/Delete; sheet with name and player picker |
+| `/admin/reservations` | Admin · reservations, Admin · add / edit reservation | Desktop · admin reservations | Tabs (mobile) or list (desktop); Edit/Delete; sheet with name and player picker. Renaming is saved through the new `renameReservationList` (§6a); today `handleEdit` only saves players |
 | `/admin/penalties` | Admin · manage penalties | (same layout) | Add multi-select, list with **Paid ✓** (confirm), link to public list |
 | `/admin/defaults` *(new route, was a sheet)* | Admin · defaults | (same form) | Price per hour, Hours, Discount per card usage, honest hint (§2) |
 | Player picker | Player picker · search sheet | popover | §7 |
@@ -140,6 +140,13 @@ Each screen keeps its route and behaviour. The canvas artboard name is in bracke
 - **`/admin`** becomes the **hub**. The current admin events list moves to **`/admin/events`**. Every link that pointed to `/admin` as "events" is updated (`event-form` redirects after save and delete, `AdminNavbar` links).
 - **`/admin/defaults`**: new page that reuses `DefaultAdminValuesForm`. The sheet `DefaultValuesAdminSheet` is no longer opened from the nav.
 - No other route changes. The lottery's "Add to event" still opens `/admin/event/[id]`.
+
+## 6a. Data-layer additions (approved 2026-10-07)
+
+Query changes only. There are no schema migrations, and each change is mirrored in `db.mock.ts`.
+
+- `eventOperations.getAllEvents()` also selects `paid` from `player_events` and maps it onto each player (`players:player_events(paid, player:players(...))`). Home uses it for "paid X/N" and "N unpaid", shown to Admin and Fame only.
+- `reservationOperations.renameReservationList(id: string, name: string): Promise<void>` updates `reservations.name`. The reservation sheet's edit mode calls it when the name changed, then `updateReservationPlayers` as today.
 
 ## 7. Player picker
 
@@ -185,7 +192,7 @@ Each screen keeps its route and behaviour. The canvas artboard name is in bracke
 ## 10. Out of scope
 
 - Dark theme, PWA, new data fields (time, venue, fee amount).
-- Any change to `calculation-service`, `calculate-event-statistics-service`, `lottery-service` or the db layer.
+- Any change to `calculation-service`, `calculate-event-statistics-service` or `lottery-service`, and any db-layer change beyond §6a.
 - "Select all" in pickers.
 - Real authentication (passwords stay in `NEXT_PUBLIC_*` env vars).
 
@@ -202,7 +209,7 @@ Known risks to note but leave alone:
 5. Shared components: list row, avatar, chips, stat tile, notice, segmented control, stepper, dock, sheet wrapper, skeleton, empty state, confirm dialog restyle.
 6. Player picker (replaces the `MultiSelect` internals).
 7. Screens in order: Home → Event (+ Pricing) → FFP → Lottery → Players → Profile → Penalties (public) → Login → Admin hub / events → Edit event → Admin players → Reservations → Admin penalties → Defaults.
-8. Polish: View Transitions, skeletons, responsive pass at 375 / 768 / 1280, accessibility pass.
+8. Polish: page-enter motion, skeletons, responsive pass at 375 / 768 / 1280, accessibility pass.
 9. Run the full manual test pass from the test-cases document in mock mode, on mobile and desktop, in EN and PL.
 
 Each step must keep `pnpm check` and `pnpm test` green.

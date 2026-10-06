@@ -64,7 +64,7 @@ Each section runs in **EN**. Cases marked **PL** also run in Polish.
 | 1.14 | G | M | "Continue as guest" on login | Opens `/` |
 | 1.15 | A | M | Open `/admin/players` | Admin sub-nav pills; Players active; pills switch sections |
 | 1.16 | all | M T D | Resize between 767 and 768 px | Bottom bar ↔ top nav swap; no horizontal scroll at any width ≥ 360 |
-| 1.17 | all | M D | Navigate between screens | Short transition; with OS "reduce motion" on, no animation |
+| 1.17 | all | M D | Navigate between screens | Content fades/slides in briefly; with OS "reduce motion" on, no animation |
 | 1.18 | all | M D | Change the penalty count (add one in admin) | Penalties badge updates to 3 after navigation |
 
 ## 2. Language (PL)
@@ -85,9 +85,9 @@ Each section runs in **EN**. Cases marked **PL** also run in Polish.
 
 | ID | Roles | View | Steps | Expected |
 |---|---|---|---|---|
-| 3.1 | G | M D | Open `/` | Hero shows the latest event (name, date, players). "Earlier" lists the other events with date tiles |
-| 3.2 | G | M D | Look for the "unpaid" pill | Not shown for guests |
-| 3.3 | F A | M D | Same | "N unpaid" pill on events with unpaid players |
+| 3.1 | G | M D | Open `/` | Hero shows the latest event (name, date, players). "Earlier" lists the other events with date tiles and player counts |
+| 3.2 | G | M D | Look for paid/unpaid figures on Home | Not shown for guests |
+| 3.3 | F A | M D | Same, after marking 2 players paid in "Past training" | Hero or row shows "2/12 paid" and "10 unpaid" |
 | 3.4 | G F A | M D | "Open event" and "Lottery" in the hero | Open `/event/[id]` and `/event/[id]/lottery` |
 | 3.5 | A | D | "+ New event" | Opens `/admin/event` |
 | 3.6 | all | M D | Delete all events (admin), then open `/` | Empty state "No events yet"; "+ New event" for admin only |
@@ -146,7 +146,7 @@ Reset the mock data first. Use "Past training".
 | 6.9 | A | M D | Places greater than participants, or 0 | Play disabled |
 | 6.10 | A | M D | Remove a winner with ✕ | The winner disappears; toast |
 | 6.11 | A | M D | **Add** the first waiting player | They move to the winners |
-| 6.12 | A | M D | Try to add **Ula** (penalized) from the waiting list | Not possible: error "has an unpaid penalty" |
+| 6.12 | A | M D | Try to add **Ula** (penalized) from the waiting list | Not possible: her "Add" button is disabled and she shows a Penalty chip |
 | 6.13 | A | M D | **Add N to event** | Winners added (penalized ones skipped with a warning); opens Edit event; added players are in the list |
 | 6.14 | F | M | Open the lottery | Same as guest (results only) |
 
@@ -223,7 +223,7 @@ Reset the mock data first.
 | 11.6 | A | M | Select 5, remove 1 via its chip, tap **Done · 4 selected** | Picker closes; 4 chips under the field ("+N more" if they don't fit) |
 | 11.7 | A | M | **Clear** in the picker | All deselected |
 | 11.8 | A | M D | Save "Saturday" | New tab or list item with 4 players |
-| 11.9 | A | M D | Edit "Tuesday": rename, remove a player | Saved |
+| 11.9 | A | M D | Edit "Tuesday": rename to "Wtorek", remove a player and add one, Save | Name and players saved; reload keeps both |
 | 11.10 | A | M D | Delete a reservation → confirm | Removed; the text says it can't be undone |
 | 11.11 | A | M D | Remove a player from a reservation (✕ in the list) → confirm | Removed |
 | 11.12 | A | M | Picker with the keyboard open on a phone | List stays visible above the keyboard; footer reachable |
