@@ -18,7 +18,7 @@ A player who skipped a training session without notice can be put on a penalty l
 
 ## Data
 
-Migration `supabase/migrations/20261006_add_penalty_since.sql`:
+Migration `scripts/db/001_2026-10-06_add_penalty_since.sql`:
 
 ```sql
 alter table players add column if not exists penalty_since timestamptz null;

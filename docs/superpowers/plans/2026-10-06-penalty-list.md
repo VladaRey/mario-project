@@ -35,7 +35,7 @@
 
 | File | Change | Responsibility |
 |---|---|---|
-| `supabase/migrations/20261006_add_penalty_since.sql` | create | DB column |
+| `scripts/db/001_2026-10-06_add_penalty_since.sql` | create | DB column |
 | `src/utils/penalty-util.ts` | create | Pure penalty logic |
 | `src/_tests_/penalty-util.test.ts` | create | Unit tests |
 | `src/lib/db.ts` | modify | `Player.penalty_since`, `addPenalty` / `removePenalty`, joins select `penalty_since` |
@@ -202,7 +202,7 @@ git commit -m "feat(penalty): add pure penalty helpers with tests"
 ### Task 2: Data layer and migration
 
 **Files:**
-- Create: `supabase/migrations/20261006_add_penalty_since.sql`
+- Create: `scripts/db/001_2026-10-06_add_penalty_since.sql`
 - Modify: `src/lib/db.ts`: the `Player` type (~line 36), `playerOperations` (~line 82), and every `players(id, name, created_at, cardType)` select (lines ~179, 233, 343, 554, 648)
 
 **Interfaces:**
@@ -260,7 +260,7 @@ Expected: no new errors (compare with `git stash; pnpm typecheck; git stash pop`
 - [ ] **Step 6: Commit**
 
 ```bash
-git add supabase/migrations/20261006_add_penalty_since.sql src/lib/db.ts
+git add scripts/db/001_2026-10-06_add_penalty_since.sql src/lib/db.ts
 git commit -m "feat(penalty): add penalty_since column and player operations"
 ```
 
@@ -691,5 +691,5 @@ Expected: all pass. If `build` needs env vars, export placeholder `NEXT_PUBLIC_*
   4. The same player is disabled with "penalty" in "Add Individual Players", in "Waiting List" (edit event) and in the lottery picker.
 
 - [ ] **Step 3: Deploy order** (owner does this):
-  1. Run `supabase/migrations/20261006_add_penalty_since.sql` in the Supabase SQL Editor.
+  1. Run `scripts/db/001_2026-10-06_add_penalty_since.sql` in the Supabase SQL Editor.
   2. Only then merge into `main` and let Netlify deploy.
