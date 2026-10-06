@@ -131,7 +131,8 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
         date: format(date!, "yyyy-MM-dd"),
         players: selectedPlayers,
       });
-    } catch {
+    } catch (error) {
+      console.error("Failed to save event:", error);
       // Changes stay local until a successful save: keep baseline, leave guard and the page.
       toast.error(t("eventForm.saveFailed"));
       setLoading(false);
