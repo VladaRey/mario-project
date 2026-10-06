@@ -12,9 +12,8 @@ export function NavigationGuardProvider({ children }: { children: React.ReactNod
   const setDirty = useCallback((v: boolean) => { dirty.current = v; }, []);
   const confirmLeave = useCallback(() => {
     if (!dirty.current) return true;
-    const ok = window.confirm(t("common.leaveUnsaved"));
-    if (ok) dirty.current = false;
-    return ok;
+    // Do not reset dirty here: useLeaveGuard's cleanup clears it on unmount; a still-mounted dirty page stays guarded.
+    return window.confirm(t("common.leaveUnsaved"));
   }, [t]);
 
   useEffect(() => {
