@@ -241,7 +241,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   return (
     <>
-      <form id="event-form" onSubmit={handleSubmit} className="flex flex-col gap-4 pb-24 md:flex-row md:items-start md:gap-5 md:pb-0">
+      <form id="event-form" onSubmit={handleSubmit} className="flex flex-col gap-4 pb-24 md:flex-row md:flex-wrap md:items-start md:gap-5 md:pb-0">
         <div className="flex flex-col gap-3 md:flex-[1_1_360px]">
           <section className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-3.5 md:p-[18px]">
             <label className="flex flex-col gap-1.5 text-[13px] font-bold text-[#4A4361]">{t("eventForm.name")}

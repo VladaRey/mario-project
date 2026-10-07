@@ -326,7 +326,7 @@ export function CurrentEvent({ id }: CurrentEventProps) {
         <section className="overflow-hidden rounded-2xl border-line md:border md:bg-white">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:border-b md:border-line md:px-[18px] md:py-3.5">
             <CardTypeCounts items={sortedCardTypeCounts} />
-            <Segmented<PaidFilter> ariaLabel={t("event.filter")} value={filter} onChange={setFilter} className="md:ml-auto md:w-[300px]"
+            <Segmented<PaidFilter> ariaLabel={t("event.filter")} value={filter} onChange={setFilter} className="md:ml-auto md:w-[300px] md:flex-none"
               options={[
                 { value: "all", label: t("event.filterAll", { count: summary.total }) },
                 { value: "unpaid", label: t("event.filterUnpaid", { count: summary.unpaid }) },

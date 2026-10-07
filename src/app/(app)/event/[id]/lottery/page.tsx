@@ -181,7 +181,7 @@ export default function LotteryPage() {
       />
       <PageBody className={role === "admin" ? "pb-24 md:pb-0" : undefined}>
         {role === "admin" ? (
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-5">
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:gap-5">
             <div className="md:flex-[1_1_380px]">
               <LotteryForm event={event} availablePlayers={availablePlayers} isWinners={isWinners}
                 onReset={handleReset} onLotteryGenerated={handleLotteryGenerated}

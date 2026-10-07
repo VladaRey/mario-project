@@ -48,7 +48,7 @@ export default function PenaltiesPage() {
     <>
       <ScreenHeader title={t("penalties.title")} actions={manage} mobileTitleAside={manage} />
       <PageBody>
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-5">
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-start md:gap-5">
           <div className="md:sticky md:top-24 md:flex-[1_1_360px]">{explanation}</div>
           <div className="flex flex-col gap-2 md:flex-[999_1_520px]">
             {players === null ? <SkeletonRows count={3} /> : players.length === 0 ? (

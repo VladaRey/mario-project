@@ -223,7 +223,7 @@ export function ReservationList({ refreshTrigger = 0, selectId }: ReservationLis
             />
           </div>
         </div>
-        <div className="divide-y divide-[#F0ECF7] px-3 md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0 md:px-5">
+        <div className="divide-y divide-[#F0ECF7] px-3 md:grid md:gap-x-8 md:divide-y-0 md:px-5 lg:grid-cols-2">
           {active.players.map((player) => (
             <ListRow
               key={player.id}
