@@ -8,7 +8,6 @@ import { cn } from "../lib/utils";
 import { reservationOperations, type ReservationList as ReservationListType } from "../lib/db";
 import { ConfirmDialog } from "./confirmation-dialog";
 import { ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { EmptyState } from "~/components/ds/empty-state";
 import { SkeletonRows } from "~/components/ds/skeleton-rows";
 import { PenaltyBadge } from "~/components/penalty-badge";
@@ -229,7 +228,6 @@ export function ReservationList({ refreshTrigger = 0, selectId }: ReservationLis
             <ListRow
               key={player.id}
               className="md:border-b md:border-[#F0ECF7]"
-              leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
               title={player.name}
               meta={t(`cardType.${player.cardType}`)}
               trailing={

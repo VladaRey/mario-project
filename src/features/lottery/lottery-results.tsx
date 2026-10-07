@@ -2,7 +2,6 @@ import { Clock, Plus, Trophy, X } from "lucide-react";
 import { Player } from "~/lib/db";
 import { Button } from "~/components/ui/button";
 import { ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { SectionLabel } from "~/components/ds/section-label";
 import { PenaltyBadge } from "~/components/penalty-badge";
 import { useGetRole } from "~/hooks/use-get-role";
@@ -42,7 +41,7 @@ export function LotteryResults({
         <div className="mb-1 flex items-center gap-2 text-brand-700"><Trophy className="h-[18px] w-[18px]" /><SectionLabel className="text-brand-700">{t("lottery.winners", { count: winnersList.length })}</SectionLabel></div>
         {winnersList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">{t("lottery.noWinners")}</p> : null}
         {winnersList.map((player, i) => (
-          <ListRow key={player.id} leading={<>{num(i)}<PlayerAvatar name={player.name} cardType={player.cardType} size="sm" /></>}
+          <ListRow key={player.id} leading={num(i)}
             title={player.name} meta={t(`cardType.${player.cardType}`)}
             trailing={isAdmin ? <Button size="icon" variant="ghost" aria-label={`${t("common.remove")} ${player.name}`} onClick={() => handleRemoveWinner(player)}><X /></Button> : null} />
         ))}
@@ -52,7 +51,7 @@ export function LotteryResults({
         {waitingList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">{t("lottery.noWaiting")}</p> : null}
         {waitingList.map((player, i) => (
           <ListRow key={player.id} muted={isPenalized(player)}
-            leading={<>{num(i, true)}<PlayerAvatar name={player.name} cardType={player.cardType} size="sm" /></>}
+            leading={num(i, true)}
             title={player.name}
             meta={<span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5"><span>{t(`cardType.${player.cardType}`)}</span><PenaltyBadge player={player} /></span>}
             trailing={<>

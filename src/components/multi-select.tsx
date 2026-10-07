@@ -8,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover
 import { Button } from "~/components/ui/button";
 import { ResponsiveSheet } from "~/components/ds/responsive-sheet";
 import { Chip, CardTypeChip } from "~/components/ds/chip";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { SectionLabel } from "~/components/ds/section-label";
 import { useIsDesktop } from "~/hooks/use-media-query";
 import { useT } from "~/i18n/i18n-provider";
@@ -123,7 +122,6 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
               on ? "bg-brand-900 text-white" : o.disabled ? "bg-[#F4F2F8]" : "border-2 border-[#D8D2E6]")}>
               {on ? <Check className="h-[15px] w-[15px]" strokeWidth={3} /> : null}
             </span>
-            {o.cardType ? <PlayerAvatar name={o.label} cardType={o.cardType} /> : null}
             <span className="min-w-0 flex-1 truncate text-[15px] font-bold">{o.label}</span>
             {o.hint ? <Chip tone="danger">{o.hint}</Chip> : null}
             {o.cardType ? <CardTypeChip cardType={o.cardType} short /> : null}

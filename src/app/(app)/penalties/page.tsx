@@ -12,7 +12,6 @@ import { ScreenHeader } from "~/components/shell/screen-header";
 import { GuardedLink } from "~/components/shell/navigation-guard";
 import { PageBody } from "~/components/ds/page-body";
 import { ListCard, ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { Chip } from "~/components/ds/chip";
 import { SectionLabel } from "~/components/ds/section-label";
 import { EmptyState } from "~/components/ds/empty-state";
@@ -60,7 +59,6 @@ export default function PenaltiesPage() {
                 <ListCard>
                   {players.map((p) => (
                     <ListRow key={p.id} href={`/players/player/${p.id}`}
-                      leading={<PlayerAvatar name={p.name} cardType={p.cardType} />}
                       title={p.name}
                       meta={t("penalties.since", { date: fmt(p.penalty_since!, "dd.MM.yyyy") })}
                       trailing={<Chip tone="danger" className="text-xs">{t("penalties.days", { count: daysSince(p.penalty_since!) })}</Chip>} />

@@ -10,7 +10,6 @@ import { ScreenHeader } from "~/components/shell/screen-header";
 import { GuardedLink } from "~/components/shell/navigation-guard";
 import { PageBody } from "~/components/ds/page-body";
 import { ListCard, ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { SectionLabel } from "~/components/ds/section-label";
 import { EmptyState } from "~/components/ds/empty-state";
 import { Button } from "~/components/ui/button";
@@ -94,7 +93,6 @@ function PenaltiesPage() {
             <ListCard className="md:grid md:grid-cols-2 md:gap-x-8 md:divide-y-0">
               {penalized.map((player) => (
                 <ListRow key={player.id} className="md:border-b md:border-[#F0ECF7]"
-                  leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
                   title={player.name}
                   meta={t("adminPen.since", { date: fmt(player.penalty_since!, "dd.MM.yyyy"), days: t("penalties.days", { count: daysSince(player.penalty_since!) }) })}
                   trailing={

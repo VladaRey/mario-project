@@ -7,7 +7,6 @@ import { PlayerSheet } from "./add-player-sheet";
 import { playerOperations, type Player } from "../lib/db";
 import { ConfirmDialog } from "./confirmation-dialog";
 import { ListCard, ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { CardTypeChip } from "~/components/ds/chip";
 import { EmptyState } from "~/components/ds/empty-state";
 import { PenaltyBadge } from "~/components/penalty-badge";
@@ -80,7 +79,6 @@ export function PlayersList({ refreshTrigger = 0 }: PlayersListProps) {
             <ListRow
               key={player.id}
               className="md:border-b md:border-[#F0ECF7]"
-              leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
               title={player.name}
               // Mobile: chips go under the name so the name is not truncated.
               meta={<span className="flex items-center gap-1 md:hidden"><PenaltyBadge player={player} /><CardTypeChip cardType={player.cardType} short /></span>}

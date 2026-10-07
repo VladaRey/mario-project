@@ -23,7 +23,6 @@ import { Segmented } from "~/components/ds/segmented";
 import { SectionLabel } from "~/components/ds/section-label";
 import { Notice } from "~/components/ds/notice";
 import { ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { CardTypeChip } from "~/components/ds/chip";
 import { ActionDock } from "~/components/ds/action-dock";
 import { SkeletonRows } from "~/components/ds/skeleton-rows";
@@ -282,7 +281,6 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
               const player = availablePlayers.find((p) => p.id === playerId);
               return player ? (
                 <ListRow key={player.id} className="border-b border-[#F0ECF7]"
-                  leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
                   title={player.name}
                   trailing={<><PenaltyBadge player={player} /><CardTypeChip cardType={player.cardType} short />
                     <Button type="button" size="icon" variant="ghost" aria-label={`${t("common.remove")} ${player.name}`} onClick={() => handleRemovePlayer(player.id)}><X /></Button></>} />

@@ -6,7 +6,6 @@ import { matchesQuery, groupByLetter } from "~/utils/search";
 import { useT } from "~/i18n/i18n-provider";
 import { useIsDesktop } from "~/hooks/use-media-query";
 import { ListCard, ListRow } from "~/components/ds/list";
-import { PlayerAvatar } from "~/components/ds/player-avatar";
 import { CardTypeChip } from "~/components/ds/chip";
 import { SectionLabel } from "~/components/ds/section-label";
 import { EmptyState } from "~/components/ds/empty-state";
@@ -65,7 +64,6 @@ export default function PlayerSearchList({ onLoaded }: { onLoaded?: (count: numb
                   <ListRow
                     key={p.id}
                     href={`/players/player/${p.id}`}
-                    leading={<PlayerAvatar name={p.name} cardType={p.cardType} />}
                     title={p.name}
                     trailing={
                       <span className="flex flex-none items-center gap-1.5">
