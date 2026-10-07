@@ -9,7 +9,10 @@ export function Stepper({ value, onChange, min = 0, max = Number.POSITIVE_INFINI
   const t = useT();
   const round = (n: number) => Math.round(n * 1000) / 1000;
   const btn = cn("flex items-center justify-center border border-line bg-white text-ink disabled:opacity-40",
-    size === "lg" ? "h-10 w-10 rounded-xl" : "h-8 w-8 rounded-lg");
+    size === "lg" ? "h-10 w-10 rounded-xl"
+      // 32px visual, 40×40 touch area (offsets are from the padding box inside the 1px border; it extends
+      // sideways and down so it never overlaps the row above).
+      : "relative h-8 w-8 rounded-lg after:absolute after:-inset-x-[5px] after:-bottom-[9px] after:-top-px after:content-['']");
   return (
     <div className={cn("flex items-center font-extrabold", size === "lg" ? "gap-3 text-lg" : "gap-1.5 text-[13px]")} role="group" aria-label={label}>
       <button type="button" className={btn} aria-label={`${t("common.decrease")} ${label}`} disabled={value - step < min}

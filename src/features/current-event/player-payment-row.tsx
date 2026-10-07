@@ -16,7 +16,7 @@ export function PlayerPaymentRow({ player, paid, canEdit, onPaidChange, amount, 
     !canEdit && hasCard && usage > 0 ? t("event.cardUse", { count: usage }) : null].filter(Boolean).join(" · ");
   // Mobile: two lines (avatar · name · paid / meta · stepper under the name). md+: one line.
   return (
-    <div className="grid min-h-[56px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-1 py-2 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-y-0">
+    <div className="grid min-h-[56px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-1.5 py-2 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-y-0">
       <div className="col-start-1 row-start-1 md:row-end-3">
         <PlayerAvatar name={player.name} cardType={player.cardType} />
       </div>
@@ -31,7 +31,9 @@ export function PlayerPaymentRow({ player, paid, canEdit, onPaidChange, amount, 
         {canEdit ? (
           <button type="button" role="switch" aria-checked={paid} aria-label={t("event.paidToggle", { name: player.name })}
             onClick={() => onPaidChange(player.id, !paid)}
-            className={cn("relative h-[26px] w-11 flex-none rounded-full transition-colors", paid ? "bg-coral" : "bg-[#D8D2E6]")}>
+            // 44×26 visual, 44×40 touch area: 8px up into the row padding, 6px down into the row gap.
+            className={cn("relative h-[26px] w-11 flex-none rounded-full transition-colors after:absolute after:inset-x-0 after:-bottom-1.5 after:-top-2 after:content-['']",
+              paid ? "bg-coral" : "bg-[#D8D2E6]")}>
             <span className={cn("absolute top-[3px] h-5 w-5 rounded-full bg-white transition-all", paid ? "right-[3px]" : "left-[3px]")} />
           </button>
         ) : (
