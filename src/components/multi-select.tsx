@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { cn } from "~/lib/utils";
 import type { CardType } from "~/lib/db";
@@ -31,6 +31,9 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [active, setActive] = useState<string | null>(null);
+  const idPrefix = useId();
+  const optionId = (value: string) => `${idPrefix}-opt-${value}`;
 
   const visible = useMemo(
     () => orderOptions(options.filter((o) => matchesQuery(o.label, query)), selected),
@@ -41,6 +44,27 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
   const toggle = (o: PickerOption) => {
     if (o.disabled) return;
     onChange(selected.includes(o.value) ? selected.filter((v) => v !== o.value) : [...selected, o.value]);
+  };
+
+  const changeQuery = (q: string) => { setQuery(q); setActive(null); };
+
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const enabled = visible.filter((o) => !o.disabled);
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!enabled.length) return;
+      const i = enabled.findIndex((o) => o.value === active);
+      const next = i === -1 ? (e.key === "ArrowDown" ? 0 : enabled.length - 1)
+        : e.key === "ArrowDown" ? Math.min(enabled.length - 1, i + 1) : Math.max(0, i - 1);
+      const value = enabled[next]!.value;
+      setActive(value);
+      document.getElementById(optionId(value))?.scrollIntoView?.({ block: "nearest" });
+    } else if (e.key === "Enter") {
+      const o = enabled.find((x) => x.value === active);
+      if (!o) return;
+      e.preventDefault();
+      toggle(o);
+    }
   };
 
   const onListKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -70,26 +94,28 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
   const searchBox = (
     <label className="flex h-12 items-center gap-2 rounded-xl border-2 border-brand-700 bg-white px-3">
       <Search className="h-[18px] w-[18px] text-brand-700" aria-hidden="true" />
-      <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)}
+      <input type="search" autoFocus value={query} onChange={(e) => changeQuery(e.target.value)} onKeyDown={onSearchKeyDown}
         placeholder={t("picker.search")} aria-label={t("picker.search")}
+        aria-controls={`${idPrefix}-list`} aria-activedescendant={active && visible.some((o) => o.value === active) ? optionId(active) : undefined}
         className="min-w-0 flex-1 bg-transparent text-base font-bold outline-none" />
       {query ? (
-        <button type="button" onClick={() => setQuery("")} aria-label={t("picker.clearSearch")}
+        <button type="button" onClick={() => changeQuery("")} aria-label={t("picker.clearSearch")}
           className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ECE7F6]"><X className="h-3.5 w-3.5" /></button>
       ) : null}
     </label>
   );
 
   const list = (
-    <div role="listbox" aria-multiselectable="true" aria-label={title ?? t("picker.title")} onKeyDown={onListKeyDown} className="flex flex-col">
+    <div id={`${idPrefix}-list`} role="listbox" aria-multiselectable="true" aria-label={title ?? t("picker.title")} onKeyDown={onListKeyDown} className="flex flex-col">
       <SectionLabel className="pb-1 pt-2">{t("picker.matches", { count: visible.length })}</SectionLabel>
       {visible.length === 0 ? <div className="py-6 text-center text-sm text-muted-foreground">{t("common.noResults")}</div> : null}
       {visible.map((o) => {
         const on = selected.includes(o.value);
         return (
-          <button key={o.value} type="button" role="option" aria-selected={on} aria-disabled={o.disabled || undefined}
-            onClick={() => toggle(o)}
+          <button key={o.value} id={optionId(o.value)} type="button" role="option" aria-selected={on} aria-disabled={o.disabled || undefined}
+            onClick={() => toggle(o)} onMouseMove={() => { if (!o.disabled && active !== o.value) setActive(o.value); }}
             className={cn("flex min-h-[52px] items-center gap-3 border-b border-[#F0ECF7] py-2 text-left last:border-0 focus:bg-brand-50 focus:outline-none",
+              active === o.value && "bg-brand-50",
               o.disabled && "cursor-not-allowed text-muted-foreground")}>
             <span className={cn("flex h-6 w-6 flex-none items-center justify-center rounded-lg",
               on ? "bg-brand-900 text-white" : o.disabled ? "bg-[#F4F2F8]" : "border-2 border-[#D8D2E6]")}>
@@ -107,7 +133,7 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
 
   if (isDesktop) {
     return (
-      <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setQuery(""); }}>
+      <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) changeQuery(""); }}>
         <PopoverTrigger asChild>
           <button type="button" role="combobox" aria-expanded={open} aria-haspopup="listbox" className={triggerClass}>{triggerContent}</button>
         </PopoverTrigger>
@@ -124,7 +150,7 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
       <button type="button" role="combobox" aria-expanded={open} aria-haspopup="listbox" onClick={() => setOpen(true)} className={triggerClass}>
         {triggerContent}
       </button>
-      <ResponsiveSheet open={open} onOpenChange={(v) => { setOpen(v); if (!v) setQuery(""); }}
+      <ResponsiveSheet open={open} onOpenChange={(v) => { setOpen(v); if (!v) changeQuery(""); }}
         title={title ?? t("picker.title")}
         footer={
           mode === "add" ? (

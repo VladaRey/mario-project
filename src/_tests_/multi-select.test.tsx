@@ -35,3 +35,51 @@ test('mode="add" shows a single Done button and no Clear', () => {
   expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
   expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
 });
+
+describe("desktop keyboard", () => {
+  const original = window.matchMedia;
+  beforeEach(() => {
+    window.matchMedia = ((query: string) => ({
+      matches: true, media: query, onchange: null,
+      addEventListener: () => undefined, removeEventListener: () => undefined,
+      addListener: () => undefined, removeListener: () => undefined, dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    window.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
+  });
+  afterEach(() => { window.matchMedia = original; });
+
+  test("arrows from the search field move the highlight, Enter toggles, disabled options are skipped", () => {
+    const onChange = jest.fn();
+    renderWithI18n(<MultiSelect options={options} selected={[]} onChange={onChange} />);
+    fireEvent.click(screen.getByRole("combobox"));
+    const search = screen.getByRole("searchbox");
+    const iga = screen.getByRole("option", { name: /Iga Woźniak/ });
+    const anna = screen.getByRole("option", { name: /Anna Kowalska/ });
+
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    expect(search).toHaveAttribute("aria-activedescendant", anna.id);
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    expect(search).toHaveAttribute("aria-activedescendant", iga.id);
+    fireEvent.keyDown(search, { key: "ArrowDown" }); // Ewa is disabled: highlight stays on Iga
+    expect(search).toHaveAttribute("aria-activedescendant", iga.id);
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(onChange).toHaveBeenLastCalledWith(["p9"]);
+
+    fireEvent.keyDown(search, { key: "ArrowUp" });
+    expect(search).toHaveAttribute("aria-activedescendant", anna.id);
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(onChange).toHaveBeenLastCalledWith(["p1"]);
+  });
+
+  test("typing resets the highlight to the first match", () => {
+    renderWithI18n(<MultiSelect options={options} selected={[]} onChange={() => undefined} />);
+    fireEvent.click(screen.getByRole("combobox"));
+    const search = screen.getByRole("searchbox");
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    fireEvent.change(search, { target: { value: "anna" } });
+    expect(search).not.toHaveAttribute("aria-activedescendant");
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    expect(search).toHaveAttribute("aria-activedescendant", screen.getByRole("option", { name: /Anna Kowalska/ }).id);
+  });
+});
