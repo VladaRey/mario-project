@@ -383,7 +383,16 @@ Build: branch `feature/penalty-list`, commits `27e676a`..`a3cc31f` on top of `45
 - **Lint debt (B7).** To get `pnpm check` green without touching `calculation-service` / `lottery-service`, the rules with pre-existing violations were downgraded to warnings: `no-unsafe-*`, `no-explicit-any`, `prefer-nullish-coalescing` (agreed), and also `no-floating-promises`, `no-unsafe-enum-comparison`, `await-thenable`, `dot-notation`, `non-nullable-type-assertion-style`, `no-unnecessary-type-assertion`, `prefer-const` (same reason; 2 of them are in the services). 227 warnings to fix separately, then turn the rules back to `error`.
 - **Not run in this environment** (same as the first run): 2.1, 3.7, 8.9, 11.12, 14.5.
 - **Differences from the mockups** other than item 5 were not changed, as agreed. The leave confirm is still the native `window.confirm` (9.8). Empty FFP price still shows "0 PLN" instead of "0.00 PLN" (5.4).
-- **Open question:** whether to drop the initials avatars everywhere (they only repeat the card-type colour). Not done; waiting for a decision.
 - **Behaviour older than the redesign, unchanged:**
   - P1: changing Hours in Defaults re-prices an existing event at its next card-usage change;
   - P2: "To be paid" is the sum of rounded per-player amounts (616.01 for 4 × 2 × 77 with 15 players).
+
+### Follow-up: avatars and 768 px
+
+- **Initials avatars removed from lists** (`ffbb1a5`), as the mockup author advised: the circle only repeated the card type already shown in the chip or meta line and took ~46 px per row. Removed from event payment rows, lottery, Players, Admin → Players, Edit event, reservations, both penalty lists and the player picker. The large avatar in the profile header stays. Rows keep min-height 52 px; lottery numbers and picker checkboxes stay as the leading element. Mobile admin payment row 91 → 81 px; touch areas unchanged (switch 44×40, stepper 40×40).
+- **768 px** (`59deef2`), found while re-scanning after the avatar change; existed before it:
+  - lottery (PL) scrolled sideways, scrollWidth 836: the two-column layout (`1_1_380px` / `999_1_520px`) had no `flex-wrap`. Added to lottery, Edit event and the public penalty list, so the columns stack when they do not fit;
+  - Admin → Reservations: players in two columns from `lg` only (names were truncated at 768);
+  - event payment filter no longer shrinks next to the card-type chips ("Wszyscy 12", "Nieopłac. 12" were truncated).
+- Scan (no horizontal scroll, no text cut by `text-overflow: ellipsis`) on 10 routes: clean at 360 EN/PL, 375 PL, 768 EN/PL, 1024 PL, 1280 EN. Still truncated, both present before these changes: "Ewa Kamińska" in Edit event current players at 1024 EN (two columns plus chips), "Dodaj 3 do wydarzenia" in the lottery setup card at 1280 PL.
+- `pnpm test` 92/92, `tsc --noEmit` passes.
