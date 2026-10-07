@@ -44,7 +44,8 @@ describe("desktop keyboard", () => {
       addEventListener: () => undefined, removeEventListener: () => undefined,
       addListener: () => undefined, removeListener: () => undefined, dispatchEvent: () => false,
     })) as typeof window.matchMedia;
-    window.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
+    const noop = () => undefined;
+    window.ResizeObserver ??= class { observe = noop; unobserve = noop; disconnect = noop; } as unknown as typeof ResizeObserver;
   });
   afterEach(() => { window.matchMedia = original; });
 
