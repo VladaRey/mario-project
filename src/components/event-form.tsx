@@ -230,7 +230,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   const sourcePicker =
     source === "reservation" ? (
-      <MultiSelect options={reservationOptions} selected={[]} placeholder={t("eventForm.selectReservations")} title={t("eventForm.srcReservation")} mode="add"
+      <MultiSelect options={reservationOptions} selected={[]} placeholder={t("eventForm.selectReservations")} title={t("eventForm.srcReservation")} mode="add" searchHint={null}
         onChange={onReservationsPicked} />
     ) : source === "waiting" ? (
       <MultiSelect options={waitingListOptions} selected={[]} placeholder={t("eventForm.selectWaiting")} mode="add"

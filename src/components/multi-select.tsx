@@ -23,10 +23,12 @@ type MultiSelectProps = {
   placeholder?: string;
   title?: string;
   /** "add": the picker adds players and stays empty (selected={[]}); the footer is a single Done button. */
+  /** Hint under the search field (mobile sheet); null hides it. Defaults to the name-matching hint. */
+  searchHint?: string | null;
   mode?: "select" | "add";
 };
 
-export function MultiSelect({ options = [], selected = [], onChange, placeholder, title, mode = "select" }: MultiSelectProps) {
+export function MultiSelect({ options = [], selected = [], onChange, placeholder, title, mode = "select", searchHint }: MultiSelectProps) {
   const t = useT();
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
@@ -97,7 +99,7 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
       <input type="search" autoFocus value={query} onChange={(e) => changeQuery(e.target.value)} onKeyDown={onSearchKeyDown}
         placeholder={t("picker.search")} aria-label={t("picker.search")}
         aria-controls={`${idPrefix}-list`} aria-activedescendant={active && visible.some((o) => o.value === active) ? optionId(active) : undefined}
-        className="min-w-0 flex-1 bg-transparent text-base font-bold outline-none" />
+        className="min-w-0 flex-1 bg-transparent text-base font-bold outline-none [&::-webkit-search-cancel-button]:appearance-none" />
       {query ? (
         <button type="button" onClick={() => changeQuery("")} aria-label={t("picker.clearSearch")}
           className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ECE7F6]"><X className="h-3.5 w-3.5" /></button>
@@ -174,7 +176,7 @@ export function MultiSelect({ options = [], selected = [], onChange, placeholder
               ))}
             </div>
           ) : null}
-          <div className="text-xs text-muted-foreground">{t("picker.searchHint")}</div>
+          {searchHint !== null ? <div className="text-xs text-muted-foreground">{searchHint ?? t("picker.searchHint")}</div> : null}
           {list}
         </div>
       </ResponsiveSheet>

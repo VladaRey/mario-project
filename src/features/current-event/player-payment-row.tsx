@@ -21,7 +21,7 @@ export function PlayerPaymentRow({ player, paid, canEdit, onPaidChange, amount, 
         <PlayerAvatar name={player.name} cardType={player.cardType} />
       </div>
       <div className="col-start-2 row-start-1 truncate text-sm font-bold md:self-end">{player.name}</div>
-      <div className="col-start-2 row-start-2 truncate text-xs text-muted-foreground md:self-start">{meta}</div>
+      <div className="col-start-2 row-start-2 break-words text-xs text-muted-foreground md:self-start">{meta}</div>
       {canEdit && hasCard ? (
         <div className="col-start-3 row-start-2 justify-self-end md:row-start-1 md:row-end-3">
           <Stepper value={usage} min={0} onChange={(v) => onUsageChange(player.id, v)} label={t("event.cardUsage", { name: player.name })} />

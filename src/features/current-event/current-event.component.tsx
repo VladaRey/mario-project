@@ -334,6 +334,11 @@ export function CurrentEvent({ id }: CurrentEventProps) {
               ]} />
           </div>
           <div className="mt-2 grid grid-cols-1 divide-y divide-[#F0ECF7] rounded-2xl border border-line bg-white px-3 md:mt-0 md:grid-cols-2 md:gap-x-7 md:divide-y-0 md:rounded-none md:border-0 md:px-[18px] md:py-1.5 lg:grid-cols-3 [&>*]:border-[#F0ECF7] md:[&>*]:border-b">
+            {visiblePlayers.length === 0 && filter !== "all" ? (
+              <p className="py-6 text-center text-sm text-muted-foreground md:col-span-full">
+                {t(filter === "paid" ? "event.emptyPaid" : "event.emptyUnpaid")}
+              </p>
+            ) : null}
             {visiblePlayers.map((player) => (
               <PlayerPaymentRow key={player.id} player={player} paid={!!paymentStatus[player.id]} canEdit={canEdit}
                 onPaidChange={handlePaymentChange} amount={playerPaymentAmount[player.id]}

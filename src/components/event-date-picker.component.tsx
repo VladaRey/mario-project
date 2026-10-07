@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { type FC, useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -20,16 +20,17 @@ export const EventDatePicker: FC<EventDatePickerProps> = ({
   setDate,
 }) => {
   const { fmt, locale } = useI18n();
+  const [open, setOpen] = useState(false);
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="h-12 w-full justify-start rounded-xl text-[15px] font-bold">
           <CalendarIcon />{date && fmt(date, "EEE d MMM yyyy")}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
-        <Calendar mode="single" locale={locale === "pl" ? pl : enGB} selected={date} onSelect={setDate} />
+        <Calendar mode="single" locale={locale === "pl" ? pl : enGB} selected={date} onSelect={(d) => { setDate(d); if (d) setOpen(false); }} />
       </PopoverContent>
     </Popover>
   );

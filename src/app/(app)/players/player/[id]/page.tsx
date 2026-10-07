@@ -36,8 +36,7 @@ export default function PlayerDetailPage() {
         />
         <PageBody>
           <EmptyState
-            title={t("players.notFoundTitle")}
-            text={t("players.notFoundText")}
+            title={t("players.notFoundText")}
             action={<Button asChild><Link href="/players">{t("players.back")}</Link></Button>}
           />
         </PageBody>

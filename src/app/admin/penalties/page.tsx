@@ -99,7 +99,7 @@ function PenaltiesPage() {
                   meta={t("adminPen.since", { date: fmt(player.penalty_since!, "dd.MM.yyyy"), days: t("penalties.days", { count: daysSince(player.penalty_since!) }) })}
                   trailing={
                     <ConfirmDialog
-                      trigger={<Button size="sm" variant="outline" className="border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]"><Check />{t("adminPen.paid")}</Button>}
+                      trigger={<Button size="sm" variant="outline" aria-label={t("adminPen.paidFor", { name: player.name })} className="border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]"><Check />{t("adminPen.paid")}</Button>}
                       title={t("adminPen.paidTitle", { name: player.name })} description={t("adminPen.paidText")}
                       confirmLabel={t("adminPen.paidConfirm")} onConfirm={() => void handleRemove(player)} />
                   } />
