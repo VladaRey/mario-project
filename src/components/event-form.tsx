@@ -221,7 +221,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
     ...(mode === "edit" ? [{ label: t("eventForm.delete"), destructive: true, onSelect: () => setDeleteOpen(true) }] : []),
   ];
   const saveButton = (
-    <Button type="submit" form="event-form" disabled={loading} className="flex-1 md:flex-none">
+    <Button type="submit" form="event-form" disabled={loading} className="w-full md:w-auto">
       {loading ? <Loader2 className="animate-spin" /> : null}{saveLabel}
     </Button>
   );
@@ -291,7 +291,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
       </form>
 
       <ActionDock>
-        <div className="flex flex-1 flex-col gap-1">{unsaved}{saveButton}</div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">{unsaved}{saveButton}</div>
         <MoreMenu label={t("common.more")} items={moreItems} />
       </ActionDock>
 
