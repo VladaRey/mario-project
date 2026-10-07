@@ -7,7 +7,7 @@ import { Role } from "~/lib/roles";
 import { useT } from "~/i18n/i18n-provider";
 import { GuardedLink, useNavigationGuard } from "./navigation-guard";
 
-const pill = "flex h-10 items-center gap-2 rounded-full border border-white/25 pl-1.5 pr-3 text-[13px] font-bold text-white";
+const pill = "flex h-10 flex-none items-center whitespace-nowrap gap-2 rounded-full border border-white/25 pl-1.5 pr-3 text-[13px] font-bold text-white";
 
 export function AccountMenu() {
   const t = useT();
@@ -23,9 +23,9 @@ export function AccountMenu() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" className={pill}>
+        <button type="button" aria-label={t("account.loggedInAs", { role: roleLabel })} className={`${pill} max-lg:pr-2`}>
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.16]"><Icon className="h-[15px] w-[15px]" /></span>
-          {roleLabel}<ChevronDown className="h-4 w-4" />
+          <span className="hidden lg:inline">{roleLabel}</span><ChevronDown className="h-4 w-4" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-60 rounded-2xl p-1.5">
