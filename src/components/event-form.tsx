@@ -29,7 +29,7 @@ import { ActionDock } from "~/components/ds/action-dock";
 import { SkeletonRows } from "~/components/ds/skeleton-rows";
 import { MoreMenu } from "~/components/ds/more-menu";
 import { PenaltyBadge } from "./penalty-badge";
-import { isEventFormDirty, type EventFormSnapshot, type PlayerSource } from "~/utils/event-form-state";
+import { defaultEventName, isEventFormDirty, type EventFormSnapshot, type PlayerSource } from "~/utils/event-form-state";
 
 type EventFormProps = {
   initialEvent?: Event;
@@ -53,19 +53,9 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
 
   const [date, setDate] = useState<Date | undefined>(initialEvent?.date ? new Date(initialEvent.date) : new Date());
 
-  const formatDate = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    };
-    return date.toLocaleDateString("en-GB", options);
-  };
-
+  const { t, locale } = useI18n();
+  const formatDate = (date: Date) => defaultEventName(date, locale);
   const [eventName, setEventName] = useState(initialEvent?.name || formatDate(new Date()));
-
-  const { t } = useI18n();
   const [source, setSource] = useState<PlayerSource>("reservation");
   const [skippedFrom, setSkippedFrom] = useState<string[]>([]);
   const [baseline, setBaseline] = useState<EventFormSnapshot>(() => ({
@@ -87,6 +77,18 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
   const penalizedIds = getPenalizedIds(availablePlayers);
   const penaltyOption = (id: string) =>
     penalizedIds.has(id) ? { disabled: true, hint: t("penalty.chip") } : {};
+
+  // A new event's generated name follows the language (the locale is read after the first render)
+  // until the admin types their own name.
+  const [prevLocale, setPrevLocale] = useState(locale);
+  if (prevLocale !== locale) {
+    setPrevLocale(locale);
+    if (!initialEvent?.name && date && eventName === defaultEventName(date, prevLocale)) {
+      const name = defaultEventName(date, locale);
+      setEventName(name);
+      setBaseline((b) => (b.name === defaultEventName(new Date(), prevLocale) ? { ...b, name: defaultEventName(new Date(), locale) } : b));
+    }
+  }
 
   const handleSetDate = (date: Date | undefined) => {
     setDate(date);
@@ -252,7 +254,7 @@ export function EventForm({ initialEvent, onSave, mode }: EventFormProps) {
           </section>
           <section className="flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-3.5 md:p-[18px]">
             <SectionLabel>{t("eventForm.addFrom")}</SectionLabel>
-            <Segmented<PlayerSource> ariaLabel={t("eventForm.addFrom")} value={source} onChange={setSource}
+            <Segmented<PlayerSource> fit ariaLabel={t("eventForm.addFrom")} value={source} onChange={setSource}
               options={[
                 { value: "reservation", label: t("eventForm.srcReservation") },
                 ...(waitingListPlayers.length > 0 ? [{ value: "waiting" as const, label: t("eventForm.srcWaiting", { count: waitingListPlayers.length }) }] : []),

@@ -40,7 +40,7 @@ export default function PlayerActivityCalendarComponent({
             dark: ["#ECE7F6", "#C9B3EA", "#8A5CC4", "#5B2D8C", "#3B1F6E"],
           }}
           labels={{
-            totalCount: t("profile.totalCount"),
+            totalCount: t("profile.totalCount", { count: data.reduce((sum, d) => sum + d.count, 0) }),
             legend: {
               less: t("profile.less"),
               more: t("profile.more"),

@@ -54,10 +54,11 @@ export function LotteryResults({
           <ListRow key={player.id} muted={isPenalized(player)}
             leading={<>{num(i, true)}<PlayerAvatar name={player.name} cardType={player.cardType} size="sm" /></>}
             title={player.name}
-            meta={<span className="flex min-w-0 items-center gap-1.5"><span className="truncate">{t(`cardType.${player.cardType}`)}</span><PenaltyBadge player={player} /></span>}
+            meta={<span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5"><span>{t(`cardType.${player.cardType}`)}</span><PenaltyBadge player={player} /></span>}
             trailing={<>
               {isAdmin ? <>
-                <Button size="sm" variant="outline" disabled={isPenalized(player)} onClick={() => handleAddPlayer(player)}><Plus />{t("common.add")}</Button>
+                <Button size="sm" variant="outline" disabled={isPenalized(player)} onClick={() => handleAddPlayer(player)}
+                  aria-label={t("lottery.addOne", { name: player.name })} className="max-md:w-9 max-md:px-0"><Plus /><span className="hidden md:inline">{t("common.add")}</span></Button>
                 <Button size="icon" variant="ghost" aria-label={`${t("common.remove")} ${player.name}`} onClick={() => handleRemoveFromWaitingList(player)}><X /></Button>
               </> : null}
             </>} />

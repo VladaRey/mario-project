@@ -82,10 +82,11 @@ export function PlayersList({ refreshTrigger = 0 }: PlayersListProps) {
               className="md:border-b md:border-[#F0ECF7]"
               leading={<PlayerAvatar name={player.name} cardType={player.cardType} />}
               title={player.name}
+              // Mobile: chips go under the name so the name is not truncated.
+              meta={<span className="flex items-center gap-1 md:hidden"><PenaltyBadge player={player} /><CardTypeChip cardType={player.cardType} short /></span>}
               trailing={
                 <span className="flex flex-none items-center gap-1">
-                  <PenaltyBadge player={player} />
-                  <CardTypeChip cardType={player.cardType} short />
+                  <span className="hidden items-center gap-1 md:flex"><PenaltyBadge player={player} /><CardTypeChip cardType={player.cardType} short /></span>
                   <PlayerSheet
                     mode="edit"
                     player={player}
