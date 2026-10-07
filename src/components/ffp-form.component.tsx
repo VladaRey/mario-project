@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { calculateStatistics } from "~/services/calculation-service";
 import { transformState } from "~/utils/util";
-import { ResultsPanel } from "./ResultsPanel.component";
+import { PerPlayerResults, PinnedTotals, ResultsPanel } from "./ResultsPanel.component";
 import { type Statistics } from "~/services/calculation-service";
 import { Stepper } from "~/components/ds/stepper";
 import { SectionLabel } from "~/components/ds/section-label";
 import { useT } from "~/i18n/i18n-provider";
+import { useIsDesktop } from "~/hooks/use-media-query";
 
 interface FfpFormProps {
   ml?: number;
@@ -20,6 +21,7 @@ interface FfpFormProps {
 
 export function FfpForm({ ml = 0, mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }: FfpFormProps) {
   const t = useT();
+  const isDesktop = useIsDesktop();
   const playersCount = ml + mc + ms + msc + nc;
   const courtCount = Math.ceil(playersCount / 4);
 
@@ -113,9 +115,19 @@ export function FfpForm({ ml = 0, mc = 0, ms = 0, msc = 0, nc = 0, onCalculate }
           </div>
         </section>
       </div>
-      <div className="md:sticky md:top-0 md:flex-[1_1_300px]">
-        <ResultsPanel statistics={statistics} />
-      </div>
+      {isDesktop ? (
+        <div className="md:sticky md:top-0 md:flex-[1_1_300px]">
+          <ResultsPanel statistics={statistics} />
+        </div>
+      ) : (
+        <>
+          <PerPlayerResults statistics={statistics} />
+          {/* Pinned to the bottom of the scrolling sheet; -mx/-mb cancel the sheet body padding. */}
+          <div className="sticky bottom-0 z-10 -mx-4 -mb-4">
+            <PinnedTotals statistics={statistics} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
