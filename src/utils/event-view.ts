@@ -30,8 +30,11 @@ export function pricingHints(a: {
   draft: { courts: number; hours: number; pricePerHour: number };
   defaults: { hours: number; pricePerHour: number };
 }) {
+  // Events always store courts (addEvent/updateEvent write ceil(players / 4)), so a saved value
+  // equal to the auto value for the current player count is treated as auto.
+  const auto = getCourtsFromPlayersCount(a.playersCount);
   return {
-    courtsAuto: a.eventCourts == null && a.draft.courts === getCourtsFromPlayersCount(a.playersCount),
+    courtsAuto: (a.eventCourts == null || a.eventCourts === auto) && a.draft.courts === auto,
     hoursFromDefaults: a.draft.hours === a.defaults.hours,
     priceFromDefaults: a.draft.pricePerHour === a.defaults.pricePerHour,
   };
