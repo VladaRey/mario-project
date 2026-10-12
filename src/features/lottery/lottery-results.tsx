@@ -1,6 +1,6 @@
 import { Clock, Copy, Plus, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
-import { Player } from "~/lib/db";
+import type { Event, Player } from "~/lib/db";
 import { Button } from "~/components/ui/button";
 import { ListRow } from "~/components/ds/list";
 import { SectionLabel } from "~/components/ds/section-label";
@@ -13,6 +13,8 @@ import { buildLotteryMessage } from "~/utils/lottery-message";
 
 
 interface LotteryResultsProps {
+  event: Event | null;
+  penalizedPlayers: Player[];
   winnersList: Player[];
   waitingList: Player[];
   addPlayersToEvent: (players: Player[]) => void;
@@ -22,6 +24,8 @@ interface LotteryResultsProps {
 }
 
 export function LotteryResults({
+  event,
+  penalizedPlayers,
   winnersList,
   waitingList,
   handleAddPlayer,
@@ -35,7 +39,12 @@ export function LotteryResults({
 
   const copyMessage = async () => {
     try {
-      await navigator.clipboard.writeText(buildLotteryMessage(winnersList, waitingList));
+      await navigator.clipboard.writeText(buildLotteryMessage({
+        event: { name: event?.name ?? "", url: `${window.location.origin}/event/${event?.id ?? ""}` },
+        winners: winnersList,
+        waiting: waitingList,
+        penalized: penalizedPlayers,
+      }));
       toast.success(t("lottery.messageCopied"));
     } catch (error) {
       console.error("Failed to copy lottery message:", error);

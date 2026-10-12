@@ -20,6 +20,7 @@ import { Notice } from "~/components/ds/notice";
 import { useI18n } from "~/i18n/i18n-provider";
 import {
   getPenalizedIds,
+  isPenalized,
   partitionNewIds,
   withFreshPenalty,
 } from "~/utils/penalty-util";
@@ -163,6 +164,8 @@ export default function LotteryPage() {
   const winnersCount = winnersList.length;
   const results = (
     <LotteryResults
+      event={event}
+      penalizedPlayers={allPlayers.filter(isPenalized).sort((a, b) => (b.penalty_since ?? "").localeCompare(a.penalty_since ?? ""))}
       winnersList={withFreshPenalty(winnersList, allPlayers)}
       waitingList={withFreshPenalty(waitingList, allPlayers)}
       addPlayersToEvent={addPlayersToEvent}
