@@ -1,5 +1,4 @@
-import { FC } from "react";
-import { Label } from "./ui/label";
+import { type FC, useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -8,7 +7,8 @@ import {
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { enGB, pl } from "date-fns/locale";
+import { useI18n } from "~/i18n/i18n-provider";
 
 interface EventDatePickerProps {
   date: Date;
@@ -19,27 +19,19 @@ export const EventDatePicker: FC<EventDatePickerProps> = ({
   date,
   setDate,
 }) => {
-
+  const { fmt, locale } = useI18n();
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-y-2">
-      <Label>
-        Event Date
-      </Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant={"outline"}
-            className={"w-full pl-3 text-base font-normal text-slate-900 flex justify-start"}
-          >
-            <CalendarIcon className="h-4 w-4 opacity-50" />
-            {date && format(date, "dd/MM/yyyy")}           
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="w-auto p-0">
-          <Calendar mode="single" selected={date} onSelect={setDate} />
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="h-12 w-full justify-start rounded-xl text-[15px] font-bold">
+          <CalendarIcon />{date && fmt(date, "EEE d MMM yyyy")}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-0">
+        <Calendar mode="single" locale={locale === "pl" ? pl : enGB} selected={date} onSelect={(d) => { setDate(d); if (d) setOpen(false); }} />
+      </PopoverContent>
+    </Popover>
   );
 };

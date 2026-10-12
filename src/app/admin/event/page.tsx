@@ -3,21 +3,22 @@
 import { EventForm } from "~/components/event-form";
 import { eventOperations } from "~/lib/db";
 import { withAdminLayout } from "~/components/with-admin-layout";
+import { ScreenHeader } from "~/components/shell/screen-header";
+import { PageBody } from "~/components/ds/page-body";
+import { useT } from "~/i18n/i18n-provider";
 
-const CreateEventPage = () => {
+function CreateEventPage() {
+  const t = useT();
   const handleCreateEvent = async (event: { name: string; date: string; players: string[] }) => {
     await eventOperations.addEvent(event.name, event.date, event.players);
   };
-
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">
-        Create New Event
-      </h1>
-      <EventForm onSave={handleCreateEvent} mode="create" />
-    </div>
+    <>
+      <ScreenHeader title={t("eventForm.createTitle")} adminSection="events" back={{ href: "/admin/events", label: t("admin.events") }}
+        crumbs={[{ label: t("hub.title"), href: "/admin" }, { label: t("admin.events"), href: "/admin/events" }, { label: t("eventForm.createTitle") }]} />
+      <PageBody><EventForm onSave={handleCreateEvent} mode="create" /></PageBody>
+    </>
   );
 }
 
 export default withAdminLayout(CreateEventPage);
-

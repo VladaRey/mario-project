@@ -1,64 +1,81 @@
-import { Input } from "~/components/ui/input";
-import { PlayerCard } from "~/components/player-card";
-import { useEffect, useState } from "react";
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { Player, playerOperations } from "~/lib/db";
-import { useRouter } from "next/navigation";
+import { matchesQuery, groupByLetter } from "~/utils/search";
+import { useT } from "~/i18n/i18n-provider";
+import { useIsDesktop } from "~/hooks/use-media-query";
+import { ListCard, ListRow } from "~/components/ds/list";
+import { CardTypeChip } from "~/components/ds/chip";
+import { SectionLabel } from "~/components/ds/section-label";
+import { EmptyState } from "~/components/ds/empty-state";
+import { SkeletonRows } from "~/components/ds/skeleton-rows";
+import { PenaltyBadge } from "~/components/penalty-badge";
 
-export default function PlayerSearchList() {
-  const router = useRouter();
-
+export default function PlayerSearchList({ onLoaded }: { onLoaded?: (count: number) => void }) {
+  const t = useT();
+  const isDesktop = useIsDesktop();
   const [players, setPlayers] = useState<Player[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredPlayers = players.filter((player) => {
-    const playerName = player.name.toLowerCase();
-    const search = searchTerm.toLowerCase();
-
-    return playerName.includes(search);
-  });
-
-  const refreshPlayers = async () => {
-    const dbPlayers = await playerOperations.getAllPlayers();
-    setPlayers(dbPlayers);
-  };
-
   useEffect(() => {
-    refreshPlayers();
+    let cancelled = false;
+    void playerOperations.getAllPlayers().then((p) => {
+      if (cancelled) return;
+      setPlayers(p);
+      setLoaded(true);
+      onLoaded?.(p.length);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePlayerClick = (player: Player) => {
-    router.push(`/players/player/${player.id}`);
-  };
+  const groups = useMemo(
+    () => groupByLetter(players.filter((p) => matchesQuery(p.name, searchTerm))),
+    [players, searchTerm],
+  );
 
   return (
-    <div className="space-y-3">
-      {/* search input */}
-      <div className="flex items-center gap-2">
-        <Input
-          type="text"
-          placeholder="Search by first letter..."
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <input
+          type="search"
+          aria-label={t("players.search")}
+          placeholder={t("players.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="h-11 w-full rounded-xl border border-line bg-white pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
         />
       </div>
 
-      {/* players list */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {filteredPlayers.map((player) => (
-          <div
-            key={player.id}
-            onClick={() => handlePlayerClick(player)}
-            className="cursor-pointer rounded-xl transition-transform hover:shadow-md"
-          >
-            <PlayerCard player={player} />
-          </div>
-        ))}
-      </div>
-
-      {/* no players found */}
-      {filteredPlayers.length === 0 && searchTerm && (
-        <div className="py-8 text-center text-gray-500">
-          No players found matching "{searchTerm}"
+      {!loaded ? (
+        <SkeletonRows count={8} />
+      ) : groups.length === 0 && searchTerm ? (
+        <EmptyState title={t("common.noResults")} />
+      ) : (
+        <div className="grid gap-x-8 gap-y-4 md:grid-cols-2">
+          {groups.map((g) => (
+            <section key={g.letter} className="min-w-0 space-y-1.5">
+              <SectionLabel>{g.letter}</SectionLabel>
+              <ListCard>
+                {g.items.map((p) => (
+                  <ListRow
+                    key={p.id}
+                    href={`/players/player/${p.id}`}
+                    title={p.name}
+                    trailing={
+                      <span className="flex flex-none items-center gap-1.5">
+                        <PenaltyBadge player={p} />
+                        <CardTypeChip cardType={p.cardType} short={!isDesktop} />
+                      </span>
+                    }
+                  />
+                ))}
+              </ListCard>
+            </section>
+          ))}
         </div>
       )}
     </div>

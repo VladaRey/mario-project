@@ -1,9 +1,8 @@
 import { Suspense, type ReactNode } from "react";
-import FullSizeLoader from "~/components/full-size-loader";
 
 export default function LoginLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={<FullSizeLoader />}>
+    <Suspense fallback={<div className="min-h-dvh bg-brand-900" />}>
       <div>{children}</div>
     </Suspense>
   );

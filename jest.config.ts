@@ -3,9 +3,12 @@ export default {
   testEnvironment: "jest-environment-jsdom",
   transform: {
     "^.+\\.tsx?$": "ts-jest",
-    // process `*.tsx` files with `ts-jest`
   },
   moduleNameMapper: {
+    "^~/(.*)$": "<rootDir>/src/$1",
+    "\\.(css)$": "identity-obj-proxy",
     "\\.(gif|ttf|eot|svg|png)$": "<rootDir>/test/__ mocks __/fileMock.js",
   },
+  setupFiles: ["<rootDir>/jest.env.ts"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 };

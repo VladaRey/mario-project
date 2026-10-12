@@ -8,15 +8,11 @@ export default {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'var(--font-geist-sans)',
+  				'var(--font-manrope)',
                     ...fontFamily.sans
                 ]
   		},
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
-  		},
+  		borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)", xl: "14px", "2xl": "16px", "3xl": "24px" },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -48,6 +44,16 @@ export default {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
+  			coral: 'hsl(var(--coral))',
+  			brand: { 50: "#F1EBFB", 600: "#7A3E9D", 700: "#5B2D8C", 900: "#3B1F6E" },
+  			"coral-soft": "#FFF1E6",
+  			ink: "#1C1530",
+  			line: "#E7E2F2",
+  			"danger-soft": "#FEE4E2",
+  			"danger-ink": "#B42318",
+  			"warn-bg": "#FFF4ED",
+  			"warn-line": "#FED7AA",
+  			"warn-ink": "#7C2D12",
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',

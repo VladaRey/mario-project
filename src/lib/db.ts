@@ -1,14 +1,23 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   getCourtsFromPlayersCount,
   DEFAULT_HOURS,
   DEFAULT_PRICE_PER_HOUR,
 } from "~/constants/event-pricing-defaults";
+import {
+  mockDefaultAdminValuesOperations,
+  mockEventOperations,
+  mockPlayerOperations,
+  mockReservationOperations,
+} from "./db.mock";
+
+/** Local testing without Supabase: data lives in the browser (see src/lib/db.mock.ts). */
+export const USE_MOCK_DB = process.env.NEXT_PUBLIC_USE_MOCK_DB === "1";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!USE_MOCK_DB && (!supabaseUrl || !supabaseAnonKey)) {
   throw new Error("Missing Supabase environment variables");
 }
 
@@ -21,7 +30,9 @@ const options = {
   },
 };
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey, options);
+const supabase: SupabaseClient = USE_MOCK_DB
+  ? (null as unknown as SupabaseClient)
+  : createClient(supabaseUrl!, supabaseAnonKey!, options);
 
 export type CardType = "Medicover" | "Medicover Light" | "Multisport" | "Classic" | "No card";
 
@@ -42,6 +53,8 @@ export type Player = {
   amount: number;
   /** Card usage count for this player in the event (from player_events.card_usage). */
   cardUsage?: number;
+  /** Set when the player has an unpaid penalty; null/undefined otherwise. */
+  penalty_since?: string | null;
 };
 
 export type ReservationList = {
@@ -79,7 +92,7 @@ export type DefaultAdminValues = {
 };
 
 // Player operations
-export const playerOperations = {
+const supabasePlayerOperations = {
   async getAllPlayers(): Promise<Player[]> {
     const { data, error } = await supabase
       .from("players")
@@ -123,6 +136,24 @@ export const playerOperations = {
     if (error) throw error;
   },
 
+  async addPenalty(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("players")
+      .update({ penalty_since: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) throw error;
+  },
+
+  async removePenalty(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("players")
+      .update({ penalty_since: null })
+      .eq("id", id);
+
+    if (error) throw error;
+  },
+
   async getPlayerEventDates(playerId: string): Promise<string[]> {
     const { data, error } = await supabase
       .from("player_events")
@@ -140,7 +171,7 @@ export const playerOperations = {
   }
 };
 
-export const DefaultAdminValuesOperations = {
+const supabaseDefaultAdminValuesOperations = {
   async getDefaultAdminValues(): Promise<DefaultAdminValues> {
     const { data, error } = await supabase
       .from("default_admin_values")
@@ -166,7 +197,7 @@ export const DefaultAdminValuesOperations = {
 };
 
 // Reservation List operations
-export const reservationOperations = {
+const supabaseReservationOperations = {
   async getAllReservationLists(): Promise<ReservationList[]> {
     const { data, error } = await supabase
       .from("reservation_lists")
@@ -176,7 +207,7 @@ export const reservationOperations = {
         name,
         created_at,
         players:player_reservations(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -230,7 +261,7 @@ export const reservationOperations = {
         name,
         created_at,
         players:player_reservations(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -282,10 +313,16 @@ export const reservationOperations = {
       if (insertError) throw insertError;
     }
   },
+
+  async renameReservationList(id: string, name: string): Promise<void> {
+    const { data, error } = await supabase.from("reservation_lists").update({ name }).eq("id", id).select("id");
+    if (error) throw error;
+    if (!data || data.length === 0) throw new Error("Reservation not renamed");
+  },
 };
 
 // Event operations
-export const eventOperations = {
+const supabaseEventOperations = {
   async addEvent(
     name: string,
     date: string,
@@ -340,7 +377,7 @@ export const eventOperations = {
         price_per_hour,
         fame_total,
         players:player_events(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -551,7 +588,7 @@ export const eventOperations = {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(player:players(id, name, created_at, cardType))`,
+      `id, name, created_at, date, hours, courts, price_per_hour, fame_total, players:player_events(paid, player:players(id, name, created_at, cardType, penalty_since))`,
     )
     .eq("is_deleted", false)
     .order("created_at", { ascending: false });
@@ -560,7 +597,7 @@ export const eventOperations = {
 
   const groupedEvents = data.reduce(
     (acc, event) => {
-      const eventDate = event.date; 
+      const eventDate = event.date;
       if (!acc[eventDate]) {
         acc[eventDate] = [];
       }
@@ -573,7 +610,7 @@ export const eventOperations = {
         courts: event.courts,
         price_per_hour: event.price_per_hour,
         fame_total: event.fame_total ?? null,
-        players: event.players.flatMap((pe: any) => pe.player),
+        players: event.players.map((pe: any) => ({ ...pe.player, paid: pe.paid ?? false })),
       });
       return acc;
     },
@@ -645,7 +682,7 @@ export const eventOperations = {
         price_per_hour,
         fame_total,
         players:player_events(
-          players(id, name, created_at, cardType)
+          players(id, name, created_at, cardType, penalty_since)
         )
       `,
       )
@@ -901,3 +938,15 @@ async updatePlayerPaymentAmountForPlayer(
     await Promise.all(updates);
   },
 }; 
+// Mock objects are typed against the real ones, so a signature drift fails typecheck.
+export const playerOperations: typeof supabasePlayerOperations = USE_MOCK_DB
+  ? mockPlayerOperations
+  : supabasePlayerOperations;
+export const DefaultAdminValuesOperations: typeof supabaseDefaultAdminValuesOperations =
+  USE_MOCK_DB ? mockDefaultAdminValuesOperations : supabaseDefaultAdminValuesOperations;
+export const reservationOperations: typeof supabaseReservationOperations = USE_MOCK_DB
+  ? mockReservationOperations
+  : supabaseReservationOperations;
+export const eventOperations: typeof supabaseEventOperations = USE_MOCK_DB
+  ? mockEventOperations
+  : supabaseEventOperations;

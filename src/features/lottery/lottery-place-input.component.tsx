@@ -1,5 +1,6 @@
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
+import { SectionLabel } from "~/components/ds/section-label";
+import { Stepper } from "~/components/ds/stepper";
+import { useT } from "~/i18n/i18n-provider";
 
 interface LotteryPlaceInputProps {
     selectedPlayers: string[];
@@ -8,30 +9,16 @@ interface LotteryPlaceInputProps {
 }
 
 export function LotteryPlaceInput({selectedPlayers, places, setPlaces}: LotteryPlaceInputProps) {
+  const t = useT();
   const invalidPlaces = selectedPlayers.length > 0 && places > selectedPlayers.length;
 
   return (
-    <div>
-      <Label htmlFor="places" className="text-sm mb-1 block font-medium">
-        Number of Places
-      </Label>
-      <Input
-        id="places"
-        type="number"
-        min={1}
-        value={places || ""}
-        className="h-10 w-full bg-white"
-        onChange={(e) => {
-          const value = e.target.value;
-          setPlaces(value === "" ? 0 : Number.parseInt(value));
-        }}
-      />
-      {invalidPlaces && (
-        <p className="py-2 text-sm text-red-500">
-          You cannot have more places than players.
-        </p>
-      )}
-    </div>
+    <>
+      <div className="flex items-center justify-between border-t border-[#F0ECF7] pt-3">
+        <SectionLabel>{t("lottery.places")}</SectionLabel>
+        <Stepper size="lg" value={places} min={1} onChange={setPlaces} label={t("lottery.places")} />
+      </div>
+      {invalidPlaces ? <p className="text-sm font-bold text-danger-ink">{t("lottery.tooManyPlaces")}</p> : null}
+    </>
   );
 }
-

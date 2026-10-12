@@ -1,62 +1,64 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import PlayerInfoCards from "~/features/players-page/player-info-cards";
+import { ProfileHero } from "~/features/players-page/player-info-cards";
 import PlayerHistory from "~/features/players-page/player-history";
 import { useGetPlayerData } from "~/hooks/use-get-player-data";
-import { Breadcrumbs } from "~/components/breadcrumbs.component";
-import FullSizeLoader from "~/components/full-size-loader";
+import { ScreenHeader } from "~/components/shell/screen-header";
+import { GuardedLink } from "~/components/shell/navigation-guard";
+import { PageBody } from "~/components/ds/page-body";
+import { Notice } from "~/components/ds/notice";
+import { EmptyState } from "~/components/ds/empty-state";
+import { SkeletonRows } from "~/components/ds/skeleton-rows";
+import { isPenalized } from "~/utils/penalty-util";
+import { useT } from "~/i18n/i18n-provider";
 
 export default function PlayerDetailPage() {
+  const t = useT();
   const params = useParams();
-  const router = useRouter();
-
   const playerId = params.id as string;
 
-  const { player, playerEventDates, loading, lotteryResults } =
-    useGetPlayerData({ playerId });
+  const { player, playerEventDates, loading, lotteryResults } = useGetPlayerData({ playerId });
 
   if (loading) {
-    return <FullSizeLoader />;
+    return <PageBody><SkeletonRows count={4} /></PageBody>;
   }
 
   if (!player) {
     return (
-      <div className="container mx-auto p-4">
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <h2 className="mb-2 text-2xl font-bold">Player not found</h2>
-            <p className="mb-4 text-gray-600">
-              The player you're looking for doesn't exist.
-            </p>
-            <Button onClick={() => router.push("/players")}>
-              Back to Players
-            </Button>
-          </div>
-        </div>
-      </div>
+      <>
+        <ScreenHeader
+          title={t("players.notFoundTitle")}
+          back={{ href: "/players", label: t("nav.players") }}
+          crumbs={[{ label: t("nav.players"), href: "/players" }]}
+        />
+        <PageBody>
+          <EmptyState
+            title={t("players.notFoundText")}
+            action={<Button asChild><Link href="/players">{t("players.back")}</Link></Button>}
+          />
+        </PageBody>
+      </>
     );
   }
 
   return (
-    <div className="px-2 space-y-4">
-        <Breadcrumbs
-          items={[
-            { label: "Players", href: "/players" },
-            { label: player.name, href: `/players/player/${player.id}` },
-          ]}
-        />
-
-      {/* Additional player details */}
-      <PlayerInfoCards
-        player={player}
-        playerEventDates={playerEventDates}
-        lotteryResults={lotteryResults}
+    <>
+      <ScreenHeader
+        title={player.name}
+        back={{ href: "/players", label: t("nav.players") }}
+        crumbs={[{ label: t("nav.players"), href: "/players" }, { label: player.name }]}
+        mobileHero={<ProfileHero player={player} />}
       />
-
-      {/* Statistics overview */}
-      <PlayerHistory player={player} lotteryResults={lotteryResults} playerEventDates={playerEventDates} />
-    </div>
+      <PageBody>
+        <div className="hidden md:block"><ProfileHero player={player} desktop /></div>
+        {isPenalized(player) ? (
+          <Notice>{t("profile.penaltyNotice")} <GuardedLink href="/penalties" className="font-extrabold underline">{t("profile.seePenalties")}</GuardedLink></Notice>
+        ) : null}
+        <PlayerHistory player={player} lotteryResults={lotteryResults} playerEventDates={playerEventDates} />
+      </PageBody>
+    </>
   );
 }

@@ -12,15 +12,27 @@ import { useGetRole } from "~/hooks/use-get-role";
 import { LotteryForm } from "~/features/lottery/lottery-form.component";
 import { LotteryResults } from "~/features/lottery/lottery-results";
 import { useLotteryService } from "~/services/lottery-service";
-import { toast, Toaster } from "sonner";
-import FullSizeLoader from "~/components/full-size-loader";
-import { Navbar } from "~/components/navbar";
+import { toast } from "sonner";
+import { ScreenHeader } from "~/components/shell/screen-header";
+import { PageBody } from "~/components/ds/page-body";
+import { SkeletonRows } from "~/components/ds/skeleton-rows";
+import { Notice } from "~/components/ds/notice";
+import { useI18n } from "~/i18n/i18n-provider";
+import {
+  getPenalizedIds,
+  isPenalized,
+  partitionNewIds,
+  withFreshPenalty,
+} from "~/utils/penalty-util";
 
 export default function LotteryPage() {
   const params = useParams();
   const id = params.id as string;
 
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
+  // Fresh players: lottery_results holds stale JSON snapshots without current penalties.
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const penalizedIds = getPenalizedIds(allPlayers);
 
   const [winnersList, setWinnersList] = useState<Player[]>([]);
   const [waitingList, setWaitingList] = useState<Player[]>([]);
@@ -30,6 +42,7 @@ export default function LotteryPage() {
   const isWinners = winnersList.length > 0;
 
   const { role } = useGetRole();
+  const { t } = useI18n();
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,6 +62,7 @@ export default function LotteryPage() {
           ]);
 
         setEvent(currentEvent);
+        setAllPlayers(players);
         setWinnersList(winnersList);
         setWaitingList(waitingList);
 
@@ -68,7 +82,16 @@ export default function LotteryPage() {
     loadData();
   }, []);
 
-  const addPlayersToEvent = async (players: Player[]) => {
+  const addPlayersToEvent = async (winners: Player[]) => {
+    const { added, skipped } = partitionNewIds(
+      winners.map((p) => p.id),
+      event?.players.map((p) => p.id) || [],
+      penalizedIds,
+    );
+    if (skipped.length > 0) {
+      toast.warning(t("lottery.skipped", { count: skipped.length }));
+    }
+    const players = winners.filter((p) => added.includes(p.id));
     if (players.length === 0) return;
 
     try {
@@ -80,23 +103,27 @@ export default function LotteryPage() {
         event?.date || "",
       );
 
-      toast.success("Players added to event successfully!");
+      toast.success(t("lottery.added"));
       router.push(`/admin/event/${event?.id}`);
     } catch (error) {
       console.error("Failed to add players to event:", error);
-      toast.error("Failed to add players to event.");
+      toast.error(t("lottery.addFailed"));
     }
   };
 
   const handleAddPlayer = async (player: Player) => {
+    if (penalizedIds.has(player.id)) {
+      toast.error(t("lottery.hasPenalty", { name: player.name }));
+      return;
+    }
     try {
       await eventOperations.addToWinnersList(event?.id || "", player);
       setWinnersList((prev) => [...prev, player]);
       setWaitingList((prev) => prev.filter((p) => p.id !== player.id));
-      toast.success("Player added to winners list successfully!");
+      toast.success(t("lottery.promoted"));
     } catch (error) {
       console.error("Failed to add player to winners list:", error);
-      toast.error("Failed to add player to winners list.");
+      toast.error(t("lottery.promoteFailed"));
     }
   };
 
@@ -104,10 +131,10 @@ export default function LotteryPage() {
     try {
       await eventOperations.removeFromWinnersList(event?.id || "", player.id);
       setWinnersList((prev) => prev.filter((p) => p.id !== player.id));
-      toast.success("Player removed from winners list successfully!");
+      toast.success(t("lottery.removedWinner"));
     } catch (error) {
       console.error("Failed to remove player from winners list:", error);
-      toast.error("Failed to remove player from winners list.");
+      toast.error(t("lottery.removeWinnerFailed"));
     }
   };
 
@@ -115,10 +142,10 @@ export default function LotteryPage() {
     try {
       await eventOperations.removeFromWaitingList(event?.id || "", player.id);
       setWaitingList((prev) => prev.filter((p) => p.id !== player.id));
-      toast.success("Player removed from waiting list successfully!");
+      toast.success(t("lottery.removedWaiting"));
     } catch (error) {
       console.error("Failed to remove player from waiting list:", error);
-      toast.error("Failed to remove player from waiting list.");
+      toast.error(t("lottery.removeWaitingFailed"));
     }
   };
 
@@ -132,47 +159,47 @@ export default function LotteryPage() {
     setWaitingList(waiting);
   };
 
-  if (isLoading) {
-    return <FullSizeLoader />;
-  }
+  if (isLoading) return <PageBody><SkeletonRows count={6} /></PageBody>;
 
+  const winnersCount = winnersList.length;
+  const results = (
+    <LotteryResults
+      event={event}
+      penalizedPlayers={allPlayers.filter(isPenalized).sort((a, b) => (b.penalty_since ?? "").localeCompare(a.penalty_since ?? ""))}
+      winnersList={withFreshPenalty(winnersList, allPlayers)}
+      waitingList={withFreshPenalty(waitingList, allPlayers)}
+      addPlayersToEvent={addPlayersToEvent}
+      handleAddPlayer={handleAddPlayer}
+      handleRemoveWinner={handleRemoveWinner}
+      handleRemoveFromWaitingList={handleRemoveFromWaitingList}
+    />
+  );
   return (
-    <div className="mx-auto p-4">
-      <Toaster position="top-center" />
-
-      <div className="space-y-6">
-        {/* <Navbar /> */}
-
-        <div className="space-y-8 max-w-6xl mx-auto">
-          <div className="space-y-6">
-            <div className="mb-2 space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <h2 className="text-xl md:text-2xl font-bold">Event: {event?.name}</h2>
-              <p className="text-sm">
-                Choose random players to add to the event
-              </p>
+    <>
+      <ScreenHeader
+        title={t("lottery.title")}
+        back={{ href: `/event/${id}`, label: event?.name ?? t("nav.events") }}
+        crumbs={[{ label: t("nav.events"), href: "/" }, { label: event?.name ?? "", href: `/event/${id}` }, { label: t("lottery.title") }]}
+        meta={t("lottery.hint")}
+      />
+      <PageBody className={role === "admin" ? "pb-24 md:pb-0" : undefined}>
+        {role === "admin" ? (
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:gap-5">
+            <div className="md:flex-[1_1_380px]">
+              <LotteryForm event={event} availablePlayers={availablePlayers} isWinners={isWinners}
+                onReset={handleReset} onLotteryGenerated={handleLotteryGenerated}
+                winnersCount={winnersCount} onAddWinners={() => void addPlayersToEvent(winnersList)}
+                courts={event?.courts} playersInEvent={event?.players.length ?? 0} />
             </div>
-
-            {role === "admin" && (
-              <LotteryForm
-                event={event}
-                availablePlayers={availablePlayers}
-                isWinners={isWinners}
-                onReset={handleReset}
-                onLotteryGenerated={handleLotteryGenerated}
-              />
-            )}
+            <div className="flex flex-col gap-3 md:flex-[999_1_520px]">{results}</div>
           </div>
-
-          <LotteryResults
-            winnersList={winnersList}
-            waitingList={waitingList}
-            addPlayersToEvent={addPlayersToEvent}
-            handleAddPlayer={handleAddPlayer}
-            handleRemoveWinner={handleRemoveWinner}
-            handleRemoveFromWaitingList={handleRemoveFromWaitingList}
-          />
-        </div>
-      </div>
-    </div>
+        ) : (
+          <>
+            {results}
+            <Notice tone="info">{t("lottery.guestInfo")}</Notice>
+          </>
+        )}
+      </PageBody>
+    </>
   );
 }

@@ -1,32 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Calculator, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
-
-/** Standalone trigger button to open the pricing sheet (use with AutoPricingSheet showTrigger={false} for one sheet, multiple triggers). */
-export function AutoPricingSheetTrigger({ onOpen }: { onOpen: () => void }) {
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      className="w-fit rounded-lg border-[#7B3C7D] bg-[#7B3C7D] px-4 py-2 text-white transition-colors hover:bg-[#2E2A5D] hover:text-white"
-      onClick={onOpen}
-    >
-      <Calculator className="h-4 w-4" />
-      Calculate
-    </Button>
-  );
-}
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
+import { ResponsiveSheet } from "~/components/ds/responsive-sheet";
 import type { AutoParams } from "~/utils/auto-pricing-util";
 import {
   PricingParamsForm,
@@ -34,6 +11,7 @@ import {
 } from "./pricing-params-form";
 import { useGetRole } from "~/hooks/use-get-role";
 import { Role } from "~/lib/roles";
+import { useT } from "~/i18n/i18n-provider";
 
 interface AutoPricingSheetProps {
   open: boolean;
@@ -43,12 +21,17 @@ interface AutoPricingSheetProps {
   isDirty: boolean;
   onSave: () => void;
   saving?: boolean;
-  /** When false, no trigger is rendered; use for a single sheet with external triggers (e.g. one for mobile, one for desktop). */
+  /** Kept for compatibility; the sheet never renders its own trigger. */
   showTrigger?: boolean;
   /** Display-only: Fame discount (from calculated statistics). */
   fameDiscount?: string;
   /** Display-only: To be paid (from calculated statistics). */
   priceAfterDiscount?: string;
+  eventName: string;
+  hints: { courtsAuto: boolean; hoursFromDefaults: boolean; priceFromDefaults: boolean };
+  fameCleared: boolean;
+  playersCount: number;
+  discountPerUsage: number;
 }
 
 export function AutoPricingSheet({
@@ -59,11 +42,16 @@ export function AutoPricingSheet({
   isDirty,
   onSave,
   saving = false,
-  showTrigger = true,
   fameDiscount,
   priceAfterDiscount,
+  eventName,
+  hints,
+  fameCleared,
+  playersCount,
+  discountPerUsage,
 }: AutoPricingSheetProps) {
   const { role } = useGetRole();
+  const t = useT();
 
   const formValue = useMemo(
     () => ({
@@ -85,54 +73,34 @@ export function AutoPricingSheet({
     });
   };
 
-  const triggerButton = (
-    <Button
-      type="button"
-      variant="outline"
-      className="w-fit rounded-lg border-[#7B3C7D] bg-[#7B3C7D] px-4 py-2 text-white transition-colors hover:bg-[#2E2A5D] hover:text-white"
-      onClick={() => onOpenChange(true)}
-    >
-      <Calculator className="h-4 w-4" />
-      Calculate
-    </Button>
-  );
+  const footer =
+    role === Role.Admin || role === Role.Fame ? (
+      <Button variant="accent" className="w-full" onClick={onSave} disabled={!isDirty || saving}>
+        {saving ? <Loader2 className="animate-spin" /> : null}
+        {t("pricing.apply")}
+      </Button>
+    ) : (
+      <div className="text-center text-xs text-muted-foreground">{t("pricing.readOnly")}</div>
+    );
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      {showTrigger ? (
-        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
-      ) : null}
-      <SheetContent className="w-full overflow-y-auto">
-        <SheetHeader className="pb-8">
-          <SheetTitle className="hidden">Live pricing</SheetTitle>
-          <SheetDescription className="hidden">
-            Set parameters for automatic pricing. Card usage is set on each
-            player card.
-          </SheetDescription>
-        </SheetHeader>
-        <div>
-          <PricingParamsForm
-            value={formValue}
-            onChange={handleParamsFormChange}
-            fameDiscount={fameDiscount}
-            priceAfterDiscount={priceAfterDiscount}
-          />
-        </div>
-        {(role === Role.Admin || role === Role.Fame) && (
-          <SheetFooter className="pt-4">
-            <Button
-              className="w-full"
-              onClick={onSave}
-              disabled={!isDirty || saving}
-            >
-              {saving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Apply
-            </Button>
-          </SheetFooter>
-        )}
-      </SheetContent>
-    </Sheet>
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t("pricing.title")}
+      description={t("pricing.subtitle", { name: eventName, players: t("common.players", { count: playersCount }) })}
+      footer={footer}
+    >
+      <PricingParamsForm
+        value={formValue}
+        onChange={handleParamsFormChange}
+        fameDiscount={fameDiscount}
+        priceAfterDiscount={priceAfterDiscount}
+        hints={hints}
+        fameCleared={fameCleared}
+        playersCount={playersCount}
+        discountPerUsage={discountPerUsage}
+      />
+    </ResponsiveSheet>
   );
 }

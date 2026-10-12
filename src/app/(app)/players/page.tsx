@@ -1,22 +1,24 @@
 "use client";
-
+import { useState } from "react";
 import PlayerSearchList from "~/features/players-page/player-search-list";
-import { Breadcrumbs } from "~/components/breadcrumbs.component";
+import { ScreenHeader } from "~/components/shell/screen-header";
+import { PageBody } from "~/components/ds/page-body";
+import { useT } from "~/i18n/i18n-provider";
 
 export default function PlayersPage() {
+  const t = useT();
+  const [count, setCount] = useState<number | null>(null);
   return (
-    <div className="px-2 space-y-4">
-      <Breadcrumbs
-        items={[{ label: "Players", href: "/players" }]}
-        className="mb-4"
+    <>
+      <ScreenHeader
+        title={
+          <>
+            {t("players.title")}
+            {count !== null ? <> <span className="text-base font-bold text-muted-foreground">{count}</span></> : null}
+          </>
+        }
       />
-
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Players</h2>
-        
-        {/* players list with search input*/}
-        <PlayerSearchList />
-      </div>
-    </div>
+      <PageBody><PlayerSearchList onLoaded={setCount} /></PageBody>
+    </>
   );
 }
