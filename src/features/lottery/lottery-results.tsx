@@ -52,7 +52,7 @@ export function LotteryResults({
       <section className="rounded-2xl border border-line bg-white px-3.5 py-3 md:px-[18px]">
         <div className="mb-1 flex flex-col gap-2 md:flex-row md:items-center">
           <div className="flex items-center gap-2 text-brand-700"><Trophy className="h-[18px] w-[18px]" /><SectionLabel className="text-brand-700">{t("lottery.winners", { count: winnersList.length })}</SectionLabel></div>
-          {isAdmin && winnersList.length > 0 ? (
+          {winnersList.length > 0 ? (
             <Button size="sm" variant="outline" className="w-full md:ml-auto md:w-auto" onClick={() => void copyMessage()}><Copy /><span>{t("lottery.copyMessage")}</span></Button>
           ) : null}
         </div>
