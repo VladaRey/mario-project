@@ -1,4 +1,5 @@
-import { Clock, Plus, Trophy, X } from "lucide-react";
+import { Clock, Copy, Plus, Trophy, X } from "lucide-react";
+import { toast } from "sonner";
 import { Player } from "~/lib/db";
 import { Button } from "~/components/ui/button";
 import { ListRow } from "~/components/ds/list";
@@ -8,6 +9,7 @@ import { useGetRole } from "~/hooks/use-get-role";
 import { useT } from "~/i18n/i18n-provider";
 import { cn } from "~/lib/utils";
 import { isPenalized } from "~/utils/penalty-util";
+import { buildLotteryMessage } from "~/utils/lottery-message";
 
 
 interface LotteryResultsProps {
@@ -31,6 +33,16 @@ export function LotteryResults({
   const t = useT();
   const isAdmin = role === "admin";
 
+  const copyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(buildLotteryMessage(winnersList, waitingList));
+      toast.success(t("lottery.messageCopied"));
+    } catch (error) {
+      console.error("Failed to copy lottery message:", error);
+      toast.error(t("lottery.messageCopyFailed"));
+    }
+  };
+
   const num = (i: number, muted = false) => (
     <span className={cn("flex h-6 w-6 flex-none items-center justify-center rounded-lg text-xs font-extrabold",
       muted ? "bg-[#F4F2F8] text-muted-foreground" : "bg-brand-50 text-brand-700")}>{i + 1}</span>
@@ -38,7 +50,12 @@ export function LotteryResults({
   return (
     <>
       <section className="rounded-2xl border border-line bg-white px-3.5 py-3 md:px-[18px]">
-        <div className="mb-1 flex items-center gap-2 text-brand-700"><Trophy className="h-[18px] w-[18px]" /><SectionLabel className="text-brand-700">{t("lottery.winners", { count: winnersList.length })}</SectionLabel></div>
+        <div className="mb-1 flex flex-col gap-2 md:flex-row md:items-center">
+          <div className="flex items-center gap-2 text-brand-700"><Trophy className="h-[18px] w-[18px]" /><SectionLabel className="text-brand-700">{t("lottery.winners", { count: winnersList.length })}</SectionLabel></div>
+          {isAdmin && winnersList.length > 0 ? (
+            <Button size="sm" variant="outline" className="w-full md:ml-auto md:w-auto" onClick={() => void copyMessage()}><Copy /><span>{t("lottery.copyMessage")}</span></Button>
+          ) : null}
+        </div>
         {winnersList.length === 0 ? <p className="py-3 text-sm text-muted-foreground">{t("lottery.noWinners")}</p> : null}
         {winnersList.map((player, i) => (
           <ListRow key={player.id} leading={num(i)}
