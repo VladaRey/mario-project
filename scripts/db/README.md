@@ -5,7 +5,7 @@ Run them **in numeric order** and **before** deploying the code that needs them.
 
 | # | Script | Needed by | Applied to prod |
 |---|---|---|---|
-| 001 | `001_2026-10-06_add_penalty_since.sql`: adds `players.penalty_since` (penalty list) | `feature/penalty-list` | ☐ not yet |
+| 001 | `001_2026-10-06_add_penalty_since.sql`: adds `players.penalty_since` (penalty list) | `feature/penalty-list` | ☑ 2026-10-12 |
 
 When a script has been applied, tick the last column in the same PR or commit.
 
