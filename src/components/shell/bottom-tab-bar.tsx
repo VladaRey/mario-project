@@ -11,12 +11,13 @@ import { GuardedLink } from "./navigation-guard";
 import { useFfp } from "./ffp-launcher";
 import { AccountSheet } from "./account-sheet";
 
-export type TabKey = "events" | "players" | "penalties" | "admin" | "login" | "fame";
+export type TabKey = "events" | "players" | "penalties" | "admin" | "login" | "fame" | "rules";
 
 export function activeTab(pathname: string): TabKey | null {
   if (pathname === "/" || pathname.startsWith("/event")) return "events";
   if (pathname.startsWith("/players")) return "players";
   if (pathname.startsWith("/penalties")) return "penalties";
+  if (pathname.startsWith("/rules")) return "rules";
   if (pathname.startsWith("/admin")) return "admin";
   if (pathname.startsWith("/login")) return "login";
   return null;

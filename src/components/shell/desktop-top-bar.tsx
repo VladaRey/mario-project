@@ -36,6 +36,7 @@ export function DesktopTopBar() {
           {link("events", "/", t("nav.events"))}
           {link("players", "/players", t("nav.players"))}
           {link("penalties", "/penalties", t("nav.penalties"), penaltyCount || undefined)}
+          {link("rules", "/rules", t("nav.rules"))}
           {role === Role.Admin ? link("admin", "/admin", t("nav.admin")) : null}
         </nav>
         <div className="ml-auto flex flex-none items-center gap-2.5">

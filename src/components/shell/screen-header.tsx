@@ -1,5 +1,5 @@
 "use client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { Logo } from "./logo";
 import { LangSwitch } from "./lang-switch";
 import { GuardedLink } from "./navigation-guard";
@@ -29,7 +29,13 @@ export function ScreenHeader({ title, back, crumbs, meta, actions, mobileBarActi
             <ChevronLeft className="h-[22px] w-[22px] flex-none" aria-hidden="true" /><span className="truncate">{back.label}</span>
           </GuardedLink>
         ) : <div className="pl-3"><Logo /></div>}
-        <div className="flex flex-none items-center gap-2">{mobileBarAction}<LangSwitch /></div>
+        <div className="flex flex-none items-center gap-2">
+          {mobileBarAction}
+          <GuardedLink href="/rules" aria-label={t("nav.rules")} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.12]">
+            <BookOpen className="h-[18px] w-[18px]" aria-hidden="true" />
+          </GuardedLink>
+          <LangSwitch />
+        </div>
       </div>
 
       {adminSection === "hub" ? <div className="hidden md:block"><AdminSubNav /></div> : adminSection ? <AdminSubNav active={adminSection} /> : null}
